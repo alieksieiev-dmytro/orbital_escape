@@ -5,6 +5,7 @@ Shader "Custom/CircleShader"
         _Color("Color", Color) = (1, 1, 1, 1)
         _ThicknessWS("Ring Thickness (world units)", Float) = 0.5
         _EdgeSoftness("Edge Softness", Float) = 1.0
+        _RiftCount("Rift Count", Int) = 0
     }
 
     SubShader
@@ -15,8 +16,9 @@ Shader "Custom/CircleShader"
             "RenderType"="Transparent"
             "IgnoreProjector"="True"
             "DisableBatching"="True"
-            "RenderPipeline"="UniversalPipeline"            
+            "RenderPipeline"="UniversalPipeline"
         }
+
         Blend One OneMinusSrcAlpha
         ZWrite Off
         ZTest Always
@@ -44,6 +46,9 @@ Shader "Custom/CircleShader"
             float _ThicknessWS;
             float _EdgeSoftness;
 
+            int _RiftCount;
+            float4 _Rifts[32];
+
             v2f vert(appdata v)
             {
                 v2f o;
@@ -51,6 +56,28 @@ Shader "Custom/CircleShader"
                 o.posCS = TransformObjectToHClip(v.vertex.xyz);
                 o.posWS = worldPos.xy;
                 return o;
+            }
+
+            float Angle01(float theta)
+            {
+                const float TwoPi = 6.2831853071795864769;
+                theta = fmod(theta, TwoPi);
+                theta = theta < 0.0 ? theta + TwoPi : theta;
+                return theta;
+            }
+
+            bool InAngleInterval(float theta, float start, float delta)
+            {
+                const float TwoPi = 6.2831853071795864769;
+
+                float end = start + delta;
+                if (end <= TwoPi)
+                {
+                    return (theta >= start) && (theta <= end);
+                }
+
+                float wrappedEnd = end - TwoPi;
+                return (theta >= start) || (theta <= wrappedEnd);
             }
 
             float4 frag(v2f i) : SV_Target
@@ -61,10 +88,47 @@ Shader "Custom/CircleShader"
                 float sy = length(float3(unity_ObjectToWorld._m01, unity_ObjectToWorld._m11, unity_ObjectToWorld._m21));
 
                 float R = 0.5 * min(sx, sy) - (_ThicknessWS * 0.5);
+
                 float distance = length(i.posWS - centerWS);
                 float sdf = abs(distance - R) - (_ThicknessWS * 0.5);
                 float aa = max(fwidth(distance), 1e-4) * _EdgeSoftness;
                 float alpha = saturate(0.5 - sdf / (2.0 * aa));
+
+                float2 posOS = mul(unity_WorldToObject, float4(i.posWS.x, i.posWS.y, 0.0, 1.0)).xy;
+                float theta = Angle01(atan2(posOS.y, posOS.x));
+
+                if (alpha  > 0.0 && _RiftCount > 0)
+                {
+                    float safeR = max(R, 1e-4);
+
+                    [unroll]
+                    for (int k = 0; k < 32; k++)
+                    {
+                        if (k >= _RiftCount)
+                        {
+                            break;
+                        }
+
+                        float4 r = _Rifts[k];
+
+                        float start = Angle01(r.x);
+                        float arcLen = r.y;
+                        float enabled = r.w;
+
+                        if (enabled <= 0.0 || arcLen <= 0.0)
+                        {
+                            continue;
+                        }
+
+                        float delta = arcLen / safeR;
+
+                        if (InAngleInterval(theta, start, delta))
+                        {
+                            alpha = 0.0;
+                            break;
+                        }
+                    }
+                }
 
                 float4 col = _Color;
                 col.a *= alpha;
