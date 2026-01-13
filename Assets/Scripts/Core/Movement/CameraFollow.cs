@@ -1,22 +1,29 @@
 using UnityEngine;
 
-public class CameraFollow : MonoBehaviour
+namespace OrbitalEscape.Movement
 {
-    [SerializeField] private Transform _target;
-    [SerializeField] private Vector2 _offset;
-
-    private void Awake()
+    public class CameraFollow : MonoBehaviour
     {
-        GetComponent<Camera>().orthographic = true;
-    }
+        [SerializeField] private Transform _target;
+        [SerializeField] private Transform _center;
+        [SerializeField] private Vector3 _offset;
 
-    private void LateUpdate()
-    {
-        if (_target == null) { return; }
+        private void LateUpdate()
+        {
+            Vector3 targetPos = _target.position;
+            Vector3 centerPos = _center.position;
+            
+            Vector2 radius = targetPos - centerPos;
+            Vector2 tangent = new Vector2(radius.y, -radius.x);           
+            
+            float angle = Mathf.Atan2(tangent.y, tangent.x) * Mathf.Rad2Deg;
+            Quaternion rot = Quaternion.Euler(0f, 0f, angle);
 
-        Vector3 targetPos = _target.position + new Vector3(_offset.x, _offset.y, 0f);
-        Quaternion targetRot = new Quaternion(0f, 0f, _target.rotation.z, _target.rotation.w);
-        transform.position = new Vector3(targetPos.x, targetPos.y, transform.position.z);
-        transform.eulerAngles = new Vector3(targetRot.eulerAngles.x, targetRot.eulerAngles.y, targetRot.eulerAngles.z - 180f);
+            Vector3 rotatedOffset = rot * _offset;
+
+            Vector3 cameraPos = targetPos + rotatedOffset;
+            transform.position = new Vector3(cameraPos.x, cameraPos.y, transform.position.z);
+            transform.rotation = rot;
+        }
     }
 }
