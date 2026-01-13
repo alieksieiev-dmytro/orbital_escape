@@ -15,7 +15,7 @@ namespace OrbitalEscape.Injection
         
         public override void InstallBindings()
         {
-            _movementController = new PlayerMovementController(_player, _star.position, 15.0f, 3.0f);
+            _movementController = new PlayerMovementController(_player, _star.position, 15.0f, 5.0f);
             
             Container.BindInterfacesAndSelfTo<PlayerMovementController>().FromInstance(_movementController).AsSingle();
             InstallKeyBindings();
@@ -27,6 +27,7 @@ namespace OrbitalEscape.Injection
             
             Container.Bind<MoveClockwiseCommand>().AsTransient();
             Container.Bind<MoveCounterClockwiseCommand>().AsTransient();
+            Container.Bind<JumpCommand>().AsTransient();
 
             Container.Bind<KeyBinding>().FromMethod(ctx =>
                 new KeyBinding(nameof(KeyCode.D).ToLower(), ctx.Container.Resolve<MoveClockwiseCommand>())
@@ -34,6 +35,10 @@ namespace OrbitalEscape.Injection
 
             Container.Bind<KeyBinding>().FromMethod(ctx =>
                 new KeyBinding(nameof(KeyCode.A).ToLower(), ctx.Container.Resolve<MoveCounterClockwiseCommand>())
+            ).AsTransient();
+            
+            Container.Bind<KeyBinding>().FromMethod(ctx =>
+                new KeyBinding(nameof(KeyCode.Space).ToLower(), ctx.Container.Resolve<JumpCommand>())
             ).AsTransient();
 
 
