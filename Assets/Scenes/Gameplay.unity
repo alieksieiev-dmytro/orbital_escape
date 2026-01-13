@@ -536,6 +536,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 542070274}
+  - component: {fileID: 542070276}
   - component: {fileID: 542070275}
   m_Layer: 0
   m_Name: orbit_2
@@ -617,6 +618,25 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 2
   m_SpriteSortPoint: 0
+--- !u!114 &542070276
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 542070273}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e268264d630034c40a22f609fb8673f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.RiftController
+  _rifts:
+  - StartAngleDegrees: 54
+    ArcLength: 25
+    Enabled: 1
+  - StartAngleDegrees: 150
+    ArcLength: 3
+    Enabled: 1
 --- !u!1 &570801300
 GameObject:
   m_ObjectHideFlags: 0
@@ -1117,6 +1137,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1010786090}
   - component: {fileID: 1010786091}
+  - component: {fileID: 1010786092}
   m_Layer: 0
   m_Name: orbit_5
   m_TagString: Untagged
@@ -1197,6 +1218,22 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 2
   m_SpriteSortPoint: 0
+--- !u!114 &1010786092
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1010786089}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e268264d630034c40a22f609fb8673f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Rifts.RiftController
+  _rifts:
+  - StartAngleDegrees: 219
+    ArcLength: 3
+    Enabled: 0
 --- !u!1 &1051990736
 GameObject:
   m_ObjectHideFlags: 0
