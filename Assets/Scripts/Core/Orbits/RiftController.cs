@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace OrbitalEscape.Rifts
+namespace OrbitalEscape.Orbits
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Renderer))]
@@ -10,46 +10,27 @@ namespace OrbitalEscape.Rifts
         private static readonly int RiftCountId = Shader.PropertyToID("_RiftCount");
         private static readonly int RiftsId = Shader.PropertyToID("_Rifts");
         
-        [SerializeField] private List<Rift> _rifts;
-        
         private readonly Vector4[] _riftsPacked = new Vector4[32];
         private MaterialPropertyBlock _materialPropertyBlock;
         private Renderer _cachedRenderer;
-        
-        public IReadOnlyList<Rift> Rifts => _rifts;
+        private List<Rift> _rifts;
 
-        private void Awake()
+        public void Initialize(List<Rift> rifts)
         {
-            _cachedRenderer = GetComponent<Renderer>();
-            _materialPropertyBlock = new MaterialPropertyBlock();
-            this.Apply();
-        }
-
-        private void OnEnable()
-        {
-            this.Apply();
-        }
-
-        private void OnValidate()
-        {
-            if (_cachedRenderer == null)
-            {
-                _cachedRenderer = GetComponent<Renderer>();
-            }
-
-            _materialPropertyBlock ??= new MaterialPropertyBlock();
-
+            _rifts = rifts;
             Apply();
         }
 
         private void Apply()
         {
+            if (_rifts == null) return;
+            
             int count = 0;
 
             for (int i = 0; i < _rifts.Count && count < 32; i++)
             {
                 var rift = _rifts[i];
-                if (rift == null || !rift.Enabled || rift.ArcLength <= 0.0f)
+                if (Equals(rift, default(Rift)) || rift.ArcLength <= 0.0f)
                 {
                     continue;
                 }
@@ -68,6 +49,24 @@ namespace OrbitalEscape.Rifts
             _materialPropertyBlock.SetInt(RiftCountId, count);
             _materialPropertyBlock.SetVectorArray(RiftsId, _riftsPacked);
             _cachedRenderer.SetPropertyBlock(_materialPropertyBlock);
+        }
+
+        private void Awake()
+        {
+            _cachedRenderer = GetComponent<Renderer>();
+            _materialPropertyBlock = new MaterialPropertyBlock();
+            Apply();
+        }
+
+        private void OnEnable() => Apply();
+
+        private void OnValidate()
+        {
+            if (_cachedRenderer == null) _cachedRenderer = GetComponent<Renderer>();
+
+            _materialPropertyBlock ??= new MaterialPropertyBlock();
+
+            Apply();
         }
     }
 }
