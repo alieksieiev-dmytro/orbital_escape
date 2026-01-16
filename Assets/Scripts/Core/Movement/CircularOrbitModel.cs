@@ -2,32 +2,40 @@ using UnityEngine;
 
 namespace OrbitalEscape.Movement
 {
-    public class CircularOrbitModel
+    public class CircularOrbitModel : IMovementModel
     {
         private const float TWO_PI = Mathf.PI * 2.0f;
         private const float MIN_RADIUS = 0.0001f;
         
         private float _angleRadians;
+        private float _radius;
         
-        public CircularOrbitModel(float angleRadians)
+        public float Radius
         {
-            _angleRadians = angleRadians;
+            get => _radius;
+            set => _radius = Mathf.Max(value, MIN_RADIUS);
         }
         
-        public void Step(float linearSpeedUnitsPerSec, float radius, float deltaTime, MovementDirection direction)
+        public CircularOrbitModel(float angleRadians, float radius)
         {
-            float safeRadius = Mathf.Max(radius, MIN_RADIUS);
+            _angleRadians = angleRadians;
+            _radius = radius;
+        }
+        
+        public void Step(float linearSpeedUnitsPerSec, float deltaTime, MovementDirection direction)
+        {
+            float safeRadius = Mathf.Max(_radius, MIN_RADIUS);
             float angularSpeed = linearSpeedUnitsPerSec / safeRadius;
             float signedAngularSpeed = angularSpeed * (int)direction;
             
             _angleRadians = WrapAngle(_angleRadians + signedAngularSpeed * deltaTime);
         }
 
-        public Vector2 GetPosition(Vector2 center, float radius)
+        public Vector2 GetPosition(Vector2 center)
         {
             float x = Mathf.Cos(_angleRadians);
             float y = Mathf.Sin(_angleRadians);
-            return center + new Vector2(x, y) * radius;
+            return center + new Vector2(x, y) * _radius;
         }
 
         private float WrapAngle(float angleRad)
