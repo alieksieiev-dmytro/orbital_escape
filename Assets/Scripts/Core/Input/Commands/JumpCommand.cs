@@ -1,24 +1,22 @@
-﻿using OrbitalEscape.Movement;
+﻿using DG.Tweening;
+using OrbitalEscape.Movement;
 using Zenject;
 
 namespace OrbitalEscape.Input
 {
     public sealed class JumpCommand : ICommand
     {
-        private readonly PlayerMovementController _playerMovementController;
-
-        private bool _isUpperOrbit = false;
+        private JumpBehaviour _jumpBehaviour; 
         
         [Inject]
-        public JumpCommand(PlayerMovementController playerMovementController)
+        public void Construct(JumpBehaviour jumpBehaviour)
         {
-            _playerMovementController = playerMovementController;
+            _jumpBehaviour = jumpBehaviour;
         }
         
         public void Execute()
         {
-            _isUpperOrbit = !_isUpperOrbit;
-            _playerMovementController.SetRadius(_isUpperOrbit ? 20.0f : 15.0f);
+            _jumpBehaviour.Jump();
         }
     }
 }
