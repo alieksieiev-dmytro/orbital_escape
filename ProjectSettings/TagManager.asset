@@ -44,5 +44,8 @@ TagManager:
   - name: Orbits
     uniqueID: 2226767779
     locked: 0
+  - name: Player
+    uniqueID: 1939876703
+    locked: 0
   m_RenderingLayers:
   - Default
