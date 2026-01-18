@@ -71,7 +71,7 @@ namespace OrbitalEscape.Movement
             _jumpSequence.Play();
             _isJumping = true;
             
-            EventBus<PassedThroughOrbitEvent>.Raise(new PassedThroughOrbitEvent(_currentOrbit.Index, isJumpingOut));
+            EventBus<PassedThroughOrbitEvent>.Raise(new PassedThroughOrbitEvent(_currentOrbit, isJumpingOut));
         }
         
         private void JumpToOppositeOrbit()

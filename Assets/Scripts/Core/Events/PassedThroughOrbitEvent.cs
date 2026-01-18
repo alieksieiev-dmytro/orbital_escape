@@ -1,13 +1,15 @@
+using OrbitalEscape.Orbits;
+
 namespace OrbitalEscape.Events
 {
     public struct PassedThroughOrbitEvent : IEvent
     {
-        public readonly int OrbitIndex;
-        public bool IsOuterOrbit;
+        public readonly Orbit Orbit;
+        public readonly bool IsOuterOrbit;
         
-        public PassedThroughOrbitEvent(int orbitIndex, bool isOuterOrbit)
+        public PassedThroughOrbitEvent(Orbit orbit, bool isOuterOrbit)
         {
-            OrbitIndex = orbitIndex;
+            Orbit = orbit;
             IsOuterOrbit = isOuterOrbit;
         }
     }

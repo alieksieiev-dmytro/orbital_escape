@@ -888,7 +888,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CameraFollow
   _target: {fileID: 487543701}
   _center: {fileID: 234212938}
-  _offset: {x: 0, y: 1.65, z: 0}
+  _radius: 16.65
+  _innerOffset: 3.35
+  _outerOffset: 1.65
 --- !u!1 &591658045
 GameObject:
   m_ObjectHideFlags: 0
