@@ -25,10 +25,10 @@ namespace OrbitalEscape.Orbits
         {
             BuildLevel();
             _passedThroughOrbitBinding = new EventBinding<PassedThroughOrbitEvent>((@event => {
-                var currentOrbit = _mockupData[@event.OrbitIndex];
+                var currentOrbit = _mockupData[@event.Orbit.Index];
                 var oppositeOrbitIndex = (@event.IsOuterOrbit)
-                    ? _mockupData[@event.OrbitIndex + 1]
-                    : _mockupData[@event.OrbitIndex - 1];
+                    ? _mockupData[@event.Orbit.Index + 1]
+                    : _mockupData[@event.Orbit.Index - 1];
                 _jumpBehaviour.SetOrbits(currentOrbit, oppositeOrbitIndex);
             }));
         }
