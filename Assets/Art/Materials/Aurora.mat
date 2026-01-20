@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Aurora
+  m_Shader: {fileID: 4800000, guid: 65037a8dca9e9814ba1b7bb572a2103a, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _AlphaTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MaskTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AuroraAngle: 0
+    - _AuroraHeight: 1
+    - _AuroraHeightSoftness: 0.15
+    - _AuroraHeightWidth: 1
+    - _AuroraMaskStrength: 0.6
+    - _BandAmount: 0.35
+    - _BandFreq: 7
+    - _BandSpeed: 0.2
+    - _Emission: 3
+    - _EmissionFromBands: 1
+    - _EnableExternalAlpha: 0
+    - _FlowSpeed: 0.5
+    - _GradientPower: 32
+    - _Softness: 0.005
+    - _StreakAmount: 0.5
+    - _StreakFreq: 40
+    - _StreakSharpness: 3.5
+    - _WarpAmount: 0.05
+    - _WarpFreq: 2
+    - _WarpSpeed: 0.05
+    - _ZWrite: 0
+    m_Colors:
+    - _CenterColor: {r: 0.3498314, g: 0.18222676, b: 0.3679245, a: 0}
+    - _Color: {r: 1, g: 0.2688679, b: 0.7608524, a: 1}
+    - _EdgeColor: {r: 1, g: 0.41981128, b: 0.9555113, a: 1}
+    - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
