@@ -1,5 +1,4 @@
-﻿using DG.Tweening;
-using OrbitalEscape.Movement;
+﻿using OrbitalEscape.Movement;
 using Zenject;
 
 namespace OrbitalEscape.Input
@@ -9,14 +8,8 @@ namespace OrbitalEscape.Input
         private JumpBehaviour _jumpBehaviour; 
         
         [Inject]
-        public void Construct(JumpBehaviour jumpBehaviour)
-        {
-            _jumpBehaviour = jumpBehaviour;
-        }
+        public void Construct(JumpBehaviour jumpBehaviour) => _jumpBehaviour = jumpBehaviour;
         
-        public void Execute()
-        {
-            _jumpBehaviour.Jump();
-        }
+        public void Execute() => _jumpBehaviour.Jump();
     }
 }

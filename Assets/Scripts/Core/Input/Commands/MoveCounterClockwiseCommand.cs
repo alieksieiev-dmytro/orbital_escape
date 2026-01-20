@@ -6,16 +6,11 @@ namespace OrbitalEscape.Input
     public sealed class MoveCounterClockwiseCommand : ICommand
     {
         private readonly PlayerMovementController _playerMovementController;
-        
+
         [Inject]
-        public MoveCounterClockwiseCommand(PlayerMovementController playerMovementController)
-        {
+        public MoveCounterClockwiseCommand(PlayerMovementController playerMovementController) =>
             _playerMovementController = playerMovementController;
-        }
         
-        public void Execute()
-        {
-            _playerMovementController.SetMovementDirection(MovementDirection.CounterClockwise);
-        }
+        public void Execute() => _playerMovementController.SetMovementDirection(MovementDirection.CounterClockwise);
     }
 }

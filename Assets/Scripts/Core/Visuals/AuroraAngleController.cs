@@ -24,14 +24,6 @@ namespace OrbitalEscape.Visuals
 
         public void LateUpdate()
         {
-            Vector2 cameraPosition = _cameraTransform.position;
-            Vector2 centerPosition = Vector2.zero;
-
-            Vector2 dir = (centerPosition - cameraPosition).normalized;
-
-            float angleRad = Mathf.Atan2(-dir.x, dir.y);
-            float angleDeg = angleRad * Mathf.Rad2Deg;
-
             _targetRenderer.GetPropertyBlock(_block);
             _block.SetFloat(AuroraAngle, -_cameraTransform.eulerAngles.z);
             _targetRenderer.SetPropertyBlock(_block);

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using OrbitalEscape.Events;
 using OrbitalEscape.Movement;
@@ -44,7 +43,7 @@ namespace OrbitalEscape.Orbits
         
         public List<Orbit> GetOrbits() => _mockupData;
 
-        public void CreateLevel(List<Orbit> orbits)
+        private void CreateLevel(List<Orbit> orbits)
         {
             _orbitObjects = new List<GameObject>();
             
@@ -70,8 +69,8 @@ namespace OrbitalEscape.Orbits
             innerOrbit.SetActive(false);
             outerOrbit.SetActive(true);
         }
-        
-        public void ClearLevel()
+
+        private void ClearLevel()
         {
             for (int i = _orbitsRoot.childCount - 1; i >= 0; i--)
             {
