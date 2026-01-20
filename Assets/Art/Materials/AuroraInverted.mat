@@ -69,7 +69,7 @@ Material:
     - _RadiusSoftness: 0.158
     - _RadiusWS: 20
     - _RadiusWidth: 0.5
-    - _Softness: 0.005
+    - _Softness: 0.003
     - _SoftnessWS: 0.05
     - _StreakAmount: 0.5
     - _StreakFreq: 40

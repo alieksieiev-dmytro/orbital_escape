@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using OrbitalEscape.Events;
 using OrbitalEscape.Movement;
+using OrbitalEscape.Visuals;
 using UnityEngine;
 using Zenject;
 
@@ -17,6 +18,7 @@ namespace OrbitalEscape.Orbits
         private Vector2 _center;
         private JumpBehaviour _jumpBehaviour;
         private EventBinding<PassedThroughOrbitEvent> _passedThroughOrbitBinding;
+        private List<GameObject> _orbitObjects;
 
         [Inject]
         public void Construct(JumpBehaviour jumpBehaviour) => _jumpBehaviour = jumpBehaviour;
@@ -44,16 +46,29 @@ namespace OrbitalEscape.Orbits
 
         public void CreateLevel(List<Orbit> orbits)
         {
+            _orbitObjects = new List<GameObject>();
+            
             foreach (var orbit in orbits)
             {
-                GameObject orbitObj = Instantiate(
+                var orbitObj = Instantiate(
                     _orbitPrefab, 
                     new Vector3(_center.x, _center.y, 0f),
                     Quaternion.identity, 
                     _orbitsRoot);
                 orbitObj.transform.localScale = new Vector3(orbit.Radius * 2, orbit.Radius * 2, 1f);
                 orbitObj.AddComponent<RiftController>().Initialize(orbit.Rifts);
+                orbitObj.GetComponent<AuroraFadeInOut>().InitAurora(orbit);
+                _orbitObjects.Add(orbitObj);
             }
+
+            var innerOrbit = _orbitObjects[0].GetComponent<AuroraFadeInOut>();
+            var outerOrbit = _orbitObjects[1].GetComponent<AuroraFadeInOut>();
+            
+            innerOrbit.InitAurora(orbits[0]);
+            outerOrbit.InitAurora(orbits[1]);
+            
+            innerOrbit.SetActive(false);
+            outerOrbit.SetActive(true);
         }
         
         public void ClearLevel()
