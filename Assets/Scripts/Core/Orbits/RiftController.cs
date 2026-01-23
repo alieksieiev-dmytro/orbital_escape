@@ -13,9 +13,9 @@ namespace OrbitalEscape.Orbits
         private readonly Vector4[] _riftsPacked = new Vector4[32];
         private MaterialPropertyBlock _materialPropertyBlock;
         private Renderer _cachedRenderer;
-        private List<Rift> _rifts;
+        private List<ArcObject> _rifts;
 
-        public void Initialize(List<Rift> rifts)
+        public void Initialize(List<ArcObject> rifts)
         {
             _rifts = rifts;
             Apply();
@@ -30,13 +30,13 @@ namespace OrbitalEscape.Orbits
             for (int i = 0; i < _rifts.Count && count < 32; i++)
             {
                 var rift = _rifts[i];
-                if (Equals(rift, default(Rift)) || rift.ArcLength <= 0.0f)
+                if (Equals(rift.Arc, default(Arc)) || rift.Arc.Length() <= 0.0f)
                 {
                     continue;
                 }
 
-                float radians = Mathf.Deg2Rad * Mathf.Repeat(rift.StartAngleDegrees, 360.0f);
-                _riftsPacked[count] = new Vector4(radians, rift.ArcLength, 0.0f, 1.0f);
+                float radians = Mathf.Deg2Rad * Mathf.Repeat(rift.Arc.StartAngleDegree, 360.0f);
+                _riftsPacked[count] = new Vector4(radians, rift.Arc.Length(), 0.0f, 1.0f);
                 count++;
             }
 
