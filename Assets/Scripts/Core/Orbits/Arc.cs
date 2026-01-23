@@ -57,6 +57,20 @@ namespace OrbitalEscape.Orbits
 
             return bArcStart <= aArcEnd || aArcStart <= bArcEnd;
         }
+        
+        public float Distance(Arc other)
+        {
+            (float aStart, float aEnd) = OrbitMath.NormalizeInterval(StartAngleDegree, EndAngleDegree);
+            (float bStart, float bEnd) = OrbitMath.NormalizeInterval(other.StartAngleDegree, other.EndAngleDegree);
+
+            if (aEnd >= bStart && bEnd >= aStart)
+                return 0f;
+
+            float gapAb = OrbitMath.NormalizeDegrees360(bStart - aEnd);
+            float gapBa = OrbitMath.NormalizeDegrees360(aStart - bEnd);
+
+            return MathF.Min(gapAb, gapBa);
+        }
 
         #region IEquatable Implementation
         
