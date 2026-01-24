@@ -15,18 +15,18 @@ namespace OrbitalEscape.Orbits.Generators
             _config = config;
         }
 
-        public List<ArcObject> GenerateArcs(float radius)
+        public List<ArcObject> GenerateArcs(Orbit orbit, ArcType arcType)
         {
             List<ArcObject> result = new List<ArcObject>();
 
             while (result.Count < _config.RiftCount)
             {
                 float startAngle = Random.Range(0.0f, 360.0f);
-                float deltaRadians = _config.RiftLength / radius;
+                float deltaRadians = _config.RiftLength / orbit.Radius;
                 float deltaDegrees = deltaRadians * OrbitMath.RADIANS_TO_DEGREES;
                 float endAngle = startAngle + deltaDegrees;
                 
-                Arc newRiftArc = new Arc(startAngle, endAngle, radius);
+                Arc newRiftArc = new Arc(startAngle, endAngle, orbit.Radius);
                 bool arcConflict = false;
 
                 foreach (var arc in result)

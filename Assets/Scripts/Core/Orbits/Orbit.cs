@@ -12,9 +12,22 @@ namespace OrbitalEscape.Orbits
         
         [field: SerializeField] public float Radius { get; private set; }
         [field: SerializeField] public int Index { get; private set; }
-        public List<Arc> InnerArcs { get; private set; }
-        public List<Arc> OuterArcs { get; private set; }
-        public List<Arc> TwoSideArcs { get; private set; }
+        
+        public List<Arc> InnerArcs => OrbitObjects
+            .Where(obj => obj.Type == ArcType.Inner)
+            .Select(obj => obj.Arc)
+            .ToList();
+        
+        public List<Arc> OuterArcs => OrbitObjects
+            .Where(obj => obj.Type == ArcType.Outer)
+            .Select(obj => obj.Arc)
+            .ToList();
+        
+        public List<Arc> TwoSideArcs => OrbitObjects
+            .Where(obj => obj.Type == ArcType.TwoSide)
+            .Select(obj => obj.Arc)
+            .ToList();
+        
         public List<ArcObject> OrbitObjects
         {
             get
@@ -30,9 +43,6 @@ namespace OrbitalEscape.Orbits
             Radius = radius;
             Index = index;
             
-            InnerArcs = new List<Arc>();
-            OuterArcs = new List<Arc>();
-            TwoSideArcs = new List<Arc>();
             _orbitObjects = new List<ArcObject>();
         }
         

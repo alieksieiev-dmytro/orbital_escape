@@ -4,6 +4,6 @@ namespace OrbitalEscape.Orbits.Generators
 {
     public interface IArcGenerator
     {
-        List<ArcObject> GenerateArcs(float radius);
+        List<ArcObject> GenerateArcs(Orbit orbit, ArcType arcType);
     }
 }
