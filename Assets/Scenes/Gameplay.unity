@@ -170,43 +170,19 @@ MonoBehaviour:
   _orbitsRoot: {fileID: 485818606}
   _obstaclesRoot: {fileID: 1440624376}
   _orbitPrefab: {fileID: 6294584048180769117, guid: 97e8c29c9fd59bd459b441084448cc88, type: 3}
-  _obstaclePrefab: {fileID: 1718740138504583630, guid: 72bd74409cf74a744a3e446194ea7e2f, type: 3}
+  _obstaclePrefab: {fileID: 1718740138504583630, guid: b98d4748dabefc7419c738002c1482f0, type: 3}
   _mockupData:
-  - <Rifts>k__BackingField: []
-    <Radius>k__BackingField: 15
+  - <Radius>k__BackingField: 15
     <Index>k__BackingField: 0
-  - <Rifts>k__BackingField:
-    - StartAngleDegrees: 12
-      ArcLength: 3
-    - StartAngleDegrees: 298
-      ArcLength: 2
-    - StartAngleDegrees: 133
-      ArcLength: 2.5
-    <Radius>k__BackingField: 20
+  - <Radius>k__BackingField: 20
     <Index>k__BackingField: 1
-  - <Rifts>k__BackingField:
-    - StartAngleDegrees: 0
-      ArcLength: 0
-    - StartAngleDegrees: 104
-      ArcLength: 4
-    - StartAngleDegrees: 196
-      ArcLength: 3
-    <Radius>k__BackingField: 25
+  - <Radius>k__BackingField: 25
     <Index>k__BackingField: 2
-  - <Rifts>k__BackingField:
-    - StartAngleDegrees: 237
-      ArcLength: 1.5
-    <Radius>k__BackingField: 30
+  - <Radius>k__BackingField: 30
     <Index>k__BackingField: 3
-  - <Rifts>k__BackingField:
-    - StartAngleDegrees: 98
-      ArcLength: 3
-    - StartAngleDegrees: 304
-      ArcLength: 2
-    <Radius>k__BackingField: 35
+  - <Radius>k__BackingField: 35
     <Index>k__BackingField: 4
-  - <Rifts>k__BackingField: []
-    <Radius>k__BackingField: 40
+  - <Radius>k__BackingField: 40
     <Index>k__BackingField: 5
 --- !u!1 &43998254
 GameObject:

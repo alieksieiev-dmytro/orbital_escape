@@ -74,12 +74,20 @@ namespace OrbitalEscape.Injection
             Container.Bind<RiftConfig>()
                 .FromScriptableObjectResource("Configs/RiftConfig")
                 .AsSingle();
+            Container.Bind<SpikeConfig>()
+                .FromScriptableObjectResource("Configs/SpikeConfig")
+                .AsSingle();
         }
         
         private void BindGenerators()
         {
             Container.Bind<IArcGenerator>()
+                .WithId(Constants.INJECTION_ID_RIFT_GENERATOR)
                 .To<RiftGenerator>()
+                .AsSingle();
+            Container.Bind<IArcGenerator>()
+                .WithId(Constants.INJECTION_ID_SPIKE_GENERATOR)
+                .To<SpikeGenerator>()
                 .AsSingle();
         }
     }

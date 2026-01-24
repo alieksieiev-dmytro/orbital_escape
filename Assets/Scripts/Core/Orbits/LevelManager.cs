@@ -18,13 +18,12 @@ namespace OrbitalEscape.Orbits
         [SerializeField] private GameObject _obstaclePrefab;
         [SerializeField] private List<Orbit> _mockupData;
         
-        [Inject(Id = Constants.INJECTION_ID_CENTRE)] 
-        private Vector2 _center;
+        [Inject(Id = Constants.INJECTION_ID_CENTRE)]          private Vector2 _center;
+        [Inject(Id = Constants.INJECTION_ID_RIFT_GENERATOR)]  private IArcGenerator _riftGenerator;
+        [Inject(Id = Constants.INJECTION_ID_SPIKE_GENERATOR)] private IArcGenerator _spikeGenerator;
         private JumpBehaviour _jumpBehaviour;
         private EventBinding<PassedThroughOrbitEvent> _passedThroughOrbitBinding;
         private List<GameObject> _orbitObjects;
-        
-        [Inject] private IArcGenerator _riftGenerator;
 
         [Inject]
         public void Construct(JumpBehaviour jumpBehaviour) => _jumpBehaviour = jumpBehaviour;
@@ -40,6 +39,7 @@ namespace OrbitalEscape.Orbits
         {
             ClearLevel();
             GenerateRifts();
+            GenerateSpikes();
             CreateLevel(_mockupData);
         }
         
@@ -60,6 +60,8 @@ namespace OrbitalEscape.Orbits
                 orbitObj.AddComponent<RiftController>().Initialize(orbit.GetOrbitObjectsByType(OrbitObjectType.Rift));
                 orbitObj.GetComponent<AuroraFadeInOut>().InitAurora(orbit);
                 _orbitObjects.Add(orbitObj);
+
+                SpawnSpikes(orbit);
             }
 
             var innerOrbit = _orbitObjects[0].GetComponent<AuroraFadeInOut>();
@@ -70,6 +72,55 @@ namespace OrbitalEscape.Orbits
             
             innerOrbit.SetActive(false);
             outerOrbit.SetActive(true);
+        }
+        
+        private void SpawnSpikes(Orbit orbit)
+        {
+            var outerSpikes = orbit.GetOrbitObjectsByType(OrbitObjectType.Spike)
+                .Where(x => x.Type == ArcType.Outer);
+            foreach (var spike in outerSpikes)
+            {
+                var spikeObj = Instantiate(
+                    _obstaclePrefab,
+                    new Vector3(_center.x, _center.y, 0f),
+                    Quaternion.identity,
+                    _obstaclesRoot);
+                    
+                spikeObj.transform.localScale =
+                    new Vector3(spike.Arc.Length(), ((SpikeObstacle)spike.Object).Height, 1f);
+                
+                var angleDelta = OrbitMath.DeltaDegrees(spike.Arc.StartAngleDegree, spike.Arc.EndAngleDegree) / 2f;
+                var angle = spike.Arc.StartAngleDegree + angleDelta * 0.5f;
+                var position = OrbitMath.GetPointOnCircle(_center, orbit.Radius - 0.1f, angle);
+                Vector2 dir = _center - position;
+                var rotation = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+                
+                spikeObj.transform.rotation = Quaternion.Euler(0f, 0f, rotation + 90.0f);
+                spikeObj.transform.localPosition = new Vector3(position.x, position.y, 0f);
+            }
+                
+            var innerSpikes = orbit.GetOrbitObjectsByType(OrbitObjectType.Spike)
+                .Where(x => x.Type == ArcType.Inner);
+            foreach (var spike in innerSpikes)
+            {
+                var spikeObj = Instantiate(
+                    _obstaclePrefab,
+                    new Vector3(_center.x, _center.y, 0f),
+                    Quaternion.identity,
+                    _obstaclesRoot);
+                
+                spikeObj.transform.localScale =
+                    new Vector3(spike.Arc.Length(), ((SpikeObstacle)spike.Object).Height, 1f);
+                
+                var angleDelta = OrbitMath.DeltaDegrees(spike.Arc.StartAngleDegree, spike.Arc.EndAngleDegree) / 2f;
+                var angle = spike.Arc.StartAngleDegree + angleDelta * 0.5f;
+                var position = OrbitMath.GetPointOnCircle(_center, orbit.Radius, angle);
+                Vector2 dir = position - _center;
+                var rotation = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+                
+                spikeObj.transform.rotation = Quaternion.Euler(0f, 0f, rotation + 90.0f);
+                spikeObj.transform.localPosition = new Vector3(position.x, position.y, 0f);
+            }
         }
 
         private void ClearLevel()
@@ -90,8 +141,20 @@ namespace OrbitalEscape.Orbits
             for (int i = 1; i < _mockupData.Count - 1; i++)
             {
                 var orbit = _mockupData[i];
-                var riftArcs = _riftGenerator.GenerateArcs(orbit.Radius);
+                var riftArcs = _riftGenerator.GenerateArcs(orbit, ArcType.TwoSide);
                 orbit.OrbitObjects.AddRange(riftArcs);
+            }
+        }
+
+        private void GenerateSpikes()
+        {
+            for (int i = 1; i < _mockupData.Count - 1; i++)
+            {
+                var orbit = _mockupData[i];
+                var outerSpikes = _spikeGenerator.GenerateArcs(orbit, ArcType.Outer);
+                var innerSpikes = _spikeGenerator.GenerateArcs(orbit, ArcType.Inner);
+                orbit.OrbitObjects.AddRange(outerSpikes);
+                orbit.OrbitObjects.AddRange(innerSpikes);
             }
         }
         
