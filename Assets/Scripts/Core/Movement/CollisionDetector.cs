@@ -14,7 +14,7 @@ namespace OrbitalEscape.Movement
             _centre = centre;
         }
 
-        public bool IsOnRift(ICollection<Rift> rifts, Vector2 point, float orbitRadius)
+        public bool IsOnRift(ICollection<ArcObject> rifts, Vector2 point, float orbitRadius)
         {
             if (rifts == null || rifts.Count == 0) return false;
             
@@ -30,7 +30,7 @@ namespace OrbitalEscape.Movement
             
             foreach (var rift in rifts)
             {
-                if (IsAngleOnRift(pointAngle, rift.StartAngleDegrees, ArcLengthToDegrees(rift.ArcLength, orbitRadius),
+                if (IsAngleOnRift(pointAngle, rift.Arc.StartAngleDegree, ArcLengthToDegrees(rift.Arc.Length(), orbitRadius),
                     Constants.ANGLE_TOLERANCE_DEGREES))
                 {
                     return true;

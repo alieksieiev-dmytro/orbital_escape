@@ -37,7 +37,7 @@ namespace OrbitalEscape.Movement
 
         public void Jump()
         {
-            if (!_isJumping && _collisionDetector.IsOnRift(_currentOrbit.Rifts, _movementModel.GetPosition(_centre),
+            if (!_isJumping && _collisionDetector.IsOnRift(_currentOrbit.GetOrbitObjectsByType(OrbitObjectType.Rift), _movementModel.GetPosition(_centre),
                 _currentOrbit.Radius))
             {
                 JumpThroughRift();

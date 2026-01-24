@@ -1,6 +1,7 @@
 using OrbitalEscape.Input;
 using OrbitalEscape.Movement;
 using OrbitalEscape.Orbits;
+using OrbitalEscape.Orbits.Generators;
 using UnityEngine;
 using Zenject;
 
@@ -16,6 +17,9 @@ namespace OrbitalEscape.Injection
         
         public override void InstallBindings()
         {
+            BindConfigs();
+            BindGenerators();
+            
             Container.Bind<Vector2>().WithId(Constants.INJECTION_ID_CENTRE).FromInstance(_centre);
             
             Container.Bind<IMovementModel>().To<CircularOrbitModel>()
@@ -63,6 +67,28 @@ namespace OrbitalEscape.Injection
 
 
             Container.BindInterfacesTo<InputController>().AsSingle().NonLazy();
+        }
+        
+        private void BindConfigs()
+        {
+            Container.Bind<RiftConfig>()
+                .FromScriptableObjectResource("Configs/RiftConfig")
+                .AsSingle();
+            Container.Bind<SpikeConfig>()
+                .FromScriptableObjectResource("Configs/SpikeConfig")
+                .AsSingle();
+        }
+        
+        private void BindGenerators()
+        {
+            Container.Bind<IArcGenerator>()
+                .WithId(Constants.INJECTION_ID_RIFT_GENERATOR)
+                .To<RiftGenerator>()
+                .AsSingle();
+            Container.Bind<IArcGenerator>()
+                .WithId(Constants.INJECTION_ID_SPIKE_GENERATOR)
+                .To<SpikeGenerator>()
+                .AsSingle();
         }
     }
 }
