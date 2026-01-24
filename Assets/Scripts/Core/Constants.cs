@@ -6,5 +6,7 @@ namespace OrbitalEscape
         public const float ANGLE_TOLERANCE_DEGREES = 0.005f;
         
         public const string INJECTION_ID_CENTRE = "Centre";
+        public const string INJECTION_ID_RIFT_GENERATOR = "RiftGenerator";
+        public const string INJECTION_ID_SPIKE_GENERATOR = "SpikeGenerator";
     }
 }
