@@ -1,7 +1,6 @@
 using DG.Tweening;
 using OrbitalEscape.Events;
 using OrbitalEscape.Orbits;
-using UnityEngine;
 
 namespace OrbitalEscape.Movement
 {
@@ -10,23 +9,25 @@ namespace OrbitalEscape.Movement
         private const float JUMP_THROUGH_RIFT_HEIGHT = 1f;
         
         private readonly IMovementModel _movementModel;
-        private readonly CollisionDetector _collisionDetector;
-        private readonly Vector2 _centre;
-        
+
         private Orbit _currentOrbit;
         private Orbit _oppositeOrbit;
         private Sequence _jumpSequence;
         private bool _isJumping;
+        private bool _canGoThroughRift;
+        
+        private float Offset => _currentOrbit.Radius < _oppositeOrbit.Radius
+            ? -Constants.CHARACTER_OFFSET_FROM_ORBIT
+            : Constants.CHARACTER_OFFSET_FROM_ORBIT;
 
-        public JumpBehaviour(IMovementModel movementModel, CollisionDetector collisionDetector, Vector2 centre,
-            Orbit currentOrbit, Orbit oppositeOrbit)
+        public JumpBehaviour(IMovementModel movementModel, Orbit currentOrbit, Orbit oppositeOrbit)
         {
-            _centre = centre;
             _movementModel = movementModel;
-            _collisionDetector = collisionDetector;
             _currentOrbit = currentOrbit;
             _oppositeOrbit = oppositeOrbit;
             _isJumping = false;
+            var onObstacleCollidedEvent = new EventBinding<OnObstacleCollidedEvent>(OnObstacleCollided);
+            EventBus<OnObstacleCollidedEvent>.Register(onObstacleCollidedEvent);
         }
         
         public void SetOrbits(Orbit currentOrbit, Orbit oppositeOrbit)
@@ -37,8 +38,7 @@ namespace OrbitalEscape.Movement
 
         public void Jump()
         {
-            if (!_isJumping && _collisionDetector.IsOnRift(_currentOrbit.GetOrbitObjectsByType(OrbitObjectType.Rift), _movementModel.GetPosition(_centre),
-                _currentOrbit.Radius))
+            if (!_isJumping && _canGoThroughRift)
             {
                 JumpThroughRift();
             }
@@ -64,7 +64,7 @@ namespace OrbitalEscape.Movement
             _jumpSequence.Append(DOTween.To(
                 () => _movementModel.Radius, 
                 x => _movementModel.Radius = x,
-                _currentOrbit.Radius, 0.2f)
+                _currentOrbit.Radius + Offset, 0.2f)
                 .SetEase(Ease.InQuad));
             
             _jumpSequence.onComplete += OnJumpComplete;
@@ -79,7 +79,7 @@ namespace OrbitalEscape.Movement
             _jumpSequence?.Kill();
             _jumpSequence = DOTween.Sequence();
             _jumpSequence.Append(DOTween.To(() => _movementModel.Radius, x => _movementModel.Radius = x, 
-                _oppositeOrbit.Radius, 0.5f).SetEase(Ease.OutQuad));
+                _oppositeOrbit.Radius + Offset, 0.5f).SetEase(Ease.OutQuad));
             (_currentOrbit, _oppositeOrbit) = (_oppositeOrbit, _currentOrbit);
             _jumpSequence.onComplete += OnJumpComplete;
             _jumpSequence.Play();
@@ -87,5 +87,13 @@ namespace OrbitalEscape.Movement
         }
         
         private void OnJumpComplete() => _isJumping = false;
+        
+        private void OnObstacleCollided(OnObstacleCollidedEvent @event)
+        {
+            if (@event.ObstacleType == ArcObjectType.Rift)
+            {
+                _canGoThroughRift = @event.Entered;
+            }
+        }
     }
 }
