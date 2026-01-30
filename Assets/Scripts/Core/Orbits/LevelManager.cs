@@ -57,7 +57,7 @@ namespace OrbitalEscape.Orbits
                     Quaternion.identity, 
                     _orbitsRoot);
                 orbitObj.transform.localScale = new Vector3(orbit.Radius * 2, orbit.Radius * 2, 1f);
-                orbitObj.AddComponent<RiftController>().Initialize(orbit.GetOrbitObjectsByType(OrbitObjectType.Rift));
+                orbitObj.GetComponent<RiftController>().Initialize(orbit.GetOrbitObjectsByType(ArcObjectType.Rift));
                 orbitObj.GetComponent<AuroraFadeInOut>().InitAurora(orbit);
                 _orbitObjects.Add(orbitObj);
 
@@ -76,7 +76,7 @@ namespace OrbitalEscape.Orbits
         
         private void SpawnSpikes(Orbit orbit)
         {
-            var outerSpikes = orbit.GetOrbitObjectsByType(OrbitObjectType.Spike)
+            var outerSpikes = orbit.GetOrbitObjectsByType(ArcObjectType.Spike)
                 .Where(x => x.Type == ArcType.Outer);
             foreach (var spike in outerSpikes)
             {
@@ -99,7 +99,7 @@ namespace OrbitalEscape.Orbits
                 spikeObj.transform.localPosition = new Vector3(position.x, position.y, 0f);
             }
                 
-            var innerSpikes = orbit.GetOrbitObjectsByType(OrbitObjectType.Spike)
+            var innerSpikes = orbit.GetOrbitObjectsByType(ArcObjectType.Spike)
                 .Where(x => x.Type == ArcType.Inner);
             foreach (var spike in innerSpikes)
             {

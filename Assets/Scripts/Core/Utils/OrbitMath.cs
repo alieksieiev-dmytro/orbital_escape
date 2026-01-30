@@ -41,5 +41,12 @@ namespace OrbitalEscape.Utils
             var (start, end) = NormalizeInterval(startAngleDegrees, endAngleDegrees);
             return end - start;
         }
+
+        public static float GetZRotation2D(Vector2 centre, Vector2 point)
+        {
+            var direction = point - centre;
+            float angle = Mathf.Atan2(direction.y, direction.x) * RADIANS_TO_DEGREES;
+            return angle;
+        }
     }
 }

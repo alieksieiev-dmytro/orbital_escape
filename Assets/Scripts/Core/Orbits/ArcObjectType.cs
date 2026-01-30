@@ -1,6 +1,6 @@
 namespace OrbitalEscape.Orbits
 {
-    public enum OrbitObjectType
+    public enum ArcObjectType
     {
         None = -1,
         Rift = 0,

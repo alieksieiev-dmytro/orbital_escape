@@ -23,7 +23,7 @@ namespace OrbitalEscape.Injection
             Container.Bind<Vector2>().WithId(Constants.INJECTION_ID_CENTRE).FromInstance(_centre);
             
             Container.Bind<IMovementModel>().To<CircularOrbitModel>()
-                .FromInstance(new CircularOrbitModel(0.0f, 15f))
+                .FromInstance(new CircularOrbitModel(0.0f, 15f + Constants.CHARACTER_OFFSET_FROM_ORBIT))
                 .AsSingle();
             
             Container.BindInterfacesAndSelfTo<PlayerMovementController>()
@@ -37,12 +37,17 @@ namespace OrbitalEscape.Injection
             
             Container.Bind<JumpBehaviour>()
                 .AsSingle()
-                .WithArguments(_centre, _levelManager.GetOrbits()[0], _levelManager.GetOrbits()[1])
+                .WithArguments(_levelManager.GetOrbits()[0], _levelManager.GetOrbits()[1])
                 .NonLazy();
 
             Container.Bind<LevelManager>()
                 .FromComponentInHierarchy()
                 .AsSingle();
+            
+            Container.Bind<PlayerController>()
+                .AsSingle()
+                .WithArguments(_player)
+                .NonLazy();
             
             InstallKeyBindings();
         }

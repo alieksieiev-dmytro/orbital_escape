@@ -71,6 +71,12 @@ namespace OrbitalEscape.Orbits
 
             return MathF.Min(gapAb, gapBa);
         }
+        
+        public float MidAngleDegree()
+        {
+            (float start, float end) = OrbitMath.NormalizeInterval(StartAngleDegree, EndAngleDegree);
+            return (start + end) / 2f;
+        }
 
         #region IEquatable Implementation
         

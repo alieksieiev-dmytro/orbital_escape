@@ -232,6 +232,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e268264d630034c40a22f609fb8673f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.RiftController
+  _riftColliderPrefab: {fileID: 0}
 --- !u!212 &43998257
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1672,6 +1673,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e268264d630034c40a22f609fb8673f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.RiftController
+  _riftColliderPrefab: {fileID: 0}
 --- !u!212 &775989250
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1886,6 +1888,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e268264d630034c40a22f609fb8673f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.RiftController
+  _riftColliderPrefab: {fileID: 0}
 --- !u!212 &817449717
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -2110,6 +2113,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e268264d630034c40a22f609fb8673f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.RiftController
+  _riftColliderPrefab: {fileID: 0}
 --- !u!212 &830814638
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -2428,6 +2432,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e268264d630034c40a22f609fb8673f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.RiftController
+  _riftColliderPrefab: {fileID: 0}
 --- !u!212 &1371870660
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -3050,6 +3055,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e268264d630034c40a22f609fb8673f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.RiftController
+  _riftColliderPrefab: {fileID: 0}
 --- !u!212 &1672574638
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -3338,7 +3344,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5362611529201632846, guid: 65b11e9e69e633e44bf41dec7feb3050, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.25
       objectReference: {fileID: 0}
     - target: {fileID: 5362611529201632846, guid: 65b11e9e69e633e44bf41dec7feb3050, type: 3}
       propertyPath: m_LocalPosition.z
