@@ -12,6 +12,7 @@ namespace OrbitalEscape.Movement
         [Inject] private IMovementModel _movementModel;
         
         private MovementDirection _currentDirection;
+        private bool _isMoving;
 
         public PlayerMovementController(Transform playerTransform, float linearSpeedPerSecond,
             IMovementModel movementModel)
@@ -19,11 +20,15 @@ namespace OrbitalEscape.Movement
             _playerTransform = playerTransform;
             _linearSpeedPerSecond = linearSpeedPerSecond;
             _movementModel = movementModel;
+            _isMoving = true;
             SetMovementDirection(MovementDirection.Clockwise);
         }
 
         public void Tick()
         {
+            if (!_isMoving)
+                return;
+            
             _movementModel.Step(_linearSpeedPerSecond, Time.deltaTime, _currentDirection);
             var newPos = _movementModel.GetPosition(_center);
             _playerTransform.position = new Vector3(newPos.x, newPos.y, _playerTransform.position.z);
@@ -40,6 +45,11 @@ namespace OrbitalEscape.Movement
         public void SetMovementDirection(MovementDirection direction)
         {
             _currentDirection = direction;
+        }
+        
+        public void StopMovement()
+        {
+            _isMoving = false;
         }
     }
 }
