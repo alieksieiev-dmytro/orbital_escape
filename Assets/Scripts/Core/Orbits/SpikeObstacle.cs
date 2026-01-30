@@ -4,7 +4,7 @@ namespace OrbitalEscape.Orbits
     {
         public float Height { get; }
         
-        public OrbitObjectType Type => OrbitObjectType.Spike;
+        public ArcObjectType Type => ArcObjectType.Spike;
         
         public SpikeObstacle(float height)
         {

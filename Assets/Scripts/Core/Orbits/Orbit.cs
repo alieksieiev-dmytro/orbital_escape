@@ -46,7 +46,7 @@ namespace OrbitalEscape.Orbits
             _orbitObjects = new List<ArcObject>();
         }
         
-        public List<ArcObject> GetOrbitObjectsByType(OrbitObjectType type)
+        public List<ArcObject> GetOrbitObjectsByType(ArcObjectType type)
         {
             return OrbitObjects.Count != 0
                 ? _orbitObjects.Where(obj => obj.Object.Type == type).ToList()
