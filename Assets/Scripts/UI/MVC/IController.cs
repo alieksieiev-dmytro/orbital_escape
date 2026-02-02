@@ -2,8 +2,12 @@ using System;
 
 namespace OrbitalEscape.UI
 {
-    public class IController
+    public interface IController
     {
-        public IConvertible Type { get; }
+        IConvertible Type { get; }
+        
+        event Action<IConvertible, ScreenData> ScreenRequested;
+        
+        void Initialize(ScreenData screenData);
     }
 }
