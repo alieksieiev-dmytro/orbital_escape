@@ -9,5 +9,6 @@ namespace OrbitalEscape.UI
         event Action<IConvertible, ScreenData> ScreenRequested;
         
         void Initialize(ScreenData screenData);
+        void Complete();
     }
 }

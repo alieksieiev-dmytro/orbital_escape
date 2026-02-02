@@ -25,6 +25,7 @@ namespace OrbitalEscape.UI
         public event Action<IConvertible, ScreenData> ScreenRequested;
 
         public abstract void Initialize(ScreenData screenData);
+        public abstract void Complete();
         protected abstract TView CreateView();
     }
 }
