@@ -2,12 +2,12 @@
 using UnityEditor;
 using UnityEditor.SceneManagement;
 
-namespace OrbitalEscape
+namespace OrbitalEscape.Editor
 {
     [InitializeOnLoad]
     public sealed class SceneBootstrapper
     {
-        private const string BootstrapScenePath = "Assets/Scenes/Launcher.unity";
+        private const string BOOTSTRAP_SCENE_PATH = "Assets/Scenes/Launcher.unity";
 
         static SceneBootstrapper()
         {
@@ -21,7 +21,7 @@ namespace OrbitalEscape
                 return;
             }
 
-            if (EditorSceneManager.GetActiveScene().path == BootstrapScenePath)
+            if (EditorSceneManager.GetActiveScene().path == BOOTSTRAP_SCENE_PATH)
             {
                 return;
             }
@@ -32,7 +32,7 @@ namespace OrbitalEscape
                 return;
             }
 
-            EditorSceneManager.OpenScene(BootstrapScenePath);
+            EditorSceneManager.OpenScene(BOOTSTRAP_SCENE_PATH);
         }
     }
 }
