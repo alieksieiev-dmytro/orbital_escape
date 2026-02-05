@@ -1,7 +1,9 @@
+using System;
 using OrbitalEscape.Input;
 using OrbitalEscape.Movement;
 using OrbitalEscape.Orbits;
 using OrbitalEscape.Orbits.Generators;
+using OrbitalEscape.UI;
 using UnityEngine;
 using Zenject;
 
@@ -14,11 +16,12 @@ namespace OrbitalEscape.Injection
         [SerializeField] private Vector2 _centre;
         
         private PlayerMovementController _movementController;
-        
+
         public override void InstallBindings()
         {
             BindConfigs();
             BindGenerators();
+            InstallCommands();
             
             Container.Bind<Vector2>().WithId(Constants.INJECTION_ID_CENTRE).FromInstance(_centre);
             
@@ -37,41 +40,13 @@ namespace OrbitalEscape.Injection
             
             Container.Bind<JumpBehaviour>()
                 .AsSingle()
-                .WithArguments(_levelManager.GetOrbits()[0], _levelManager.GetOrbits()[1])
-                .NonLazy();
+                .WithArguments(_levelManager.GetOrbits()[0], _levelManager.GetOrbits()[1]);
 
             Container.Bind<LevelManager>()
                 .FromComponentInHierarchy()
                 .AsSingle();
             
-            Container.Bind<PlayerController>()
-                .AsSingle()
-                .WithArguments(_player)
-                .NonLazy();
-            
-            InstallKeyBindings();
-        }
-
-        private void InstallKeyBindings()
-        {
-            Container.Bind<MoveClockwiseCommand>().AsTransient();
-            Container.Bind<MoveCounterClockwiseCommand>().AsTransient();
-            Container.Bind<JumpCommand>().AsTransient();
-
-            Container.Bind<KeyBinding>().FromMethod(ctx =>
-                new KeyBinding(nameof(KeyCode.D).ToLower(), ctx.Container.Resolve<MoveClockwiseCommand>())
-            ).AsTransient();
-
-            Container.Bind<KeyBinding>().FromMethod(ctx =>
-                new KeyBinding(nameof(KeyCode.A).ToLower(), ctx.Container.Resolve<MoveCounterClockwiseCommand>())
-            ).AsTransient();
-            
-            Container.Bind<KeyBinding>().FromMethod(ctx =>
-                new KeyBinding(nameof(KeyCode.Space).ToLower(), ctx.Container.Resolve<JumpCommand>())
-            ).AsTransient();
-
-
-            Container.BindInterfacesTo<InputController>().AsSingle().NonLazy();
+            Container.Bind(typeof(PlayerController), typeof(IDisposable)).To<PlayerController>().AsSingle().WithArguments(_player).NonLazy();
         }
         
         private void BindConfigs()
@@ -94,6 +69,20 @@ namespace OrbitalEscape.Injection
                 .WithId(Constants.INJECTION_ID_SPIKE_GENERATOR)
                 .To<SpikeGenerator>()
                 .AsSingle();
+        }
+
+        private void InstallCommands()
+        {
+            InstallCommand<RestartCommand>(nameof(CommandType.Restart), Constants.SCENE_GAMEPLAY);
+            InstallCommand<JumpCommand>(nameof(CommandType.Jump));
+            InstallCommand<MoveClockwiseCommand>(nameof(CommandType.MoveClockwise));
+            InstallCommand<MoveCounterClockwiseCommand>(nameof(CommandType.MoveCounterClockwise));
+        }
+
+        private void InstallCommand<TCommand>(string id, params object[] args) where TCommand : Command
+        {
+            Container.BindInterfacesAndSelfTo<TCommand>().AsSingle().WithArguments(args).NonLazy();
+            Container.Bind<Command>().WithId(id).FromResolveGetter<TCommand>(x => x);
         }
     }
 }

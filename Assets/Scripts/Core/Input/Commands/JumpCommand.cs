@@ -1,15 +1,17 @@
-﻿using OrbitalEscape.Movement;
+﻿using System;
+using OrbitalEscape.Movement;
 using Zenject;
 
 namespace OrbitalEscape.Input
 {
-    public sealed class JumpCommand : ICommand
+    public sealed class JumpCommand : Command
     {
-        private JumpBehaviour _jumpBehaviour; 
+        public override IConvertible Type => CommandType.Jump;
+        
+        private readonly JumpBehaviour _jumpBehaviour; 
         
         [Inject]
-        public void Construct(JumpBehaviour jumpBehaviour) => _jumpBehaviour = jumpBehaviour;
-        
-        public void Execute() => _jumpBehaviour.Jump();
+        public JumpCommand(JumpBehaviour jumpBehaviour) => _jumpBehaviour = jumpBehaviour;
+        public override void Execute() => _jumpBehaviour.Jump();
     }
 }

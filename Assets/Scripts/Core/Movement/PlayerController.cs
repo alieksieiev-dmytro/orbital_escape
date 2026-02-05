@@ -1,36 +1,41 @@
+using System;
 using OrbitalEscape.Events;
 using OrbitalEscape.Orbits;
+using OrbitalEscape.UI;
 using UnityEngine;
 using Zenject;
 
 namespace OrbitalEscape.Movement
 {
-    public class PlayerController
+    public class PlayerController : IDisposable
     {
-        private PlayerMovementController _playerMovementController;
-        
-        [Inject]
-        public void Construct(PlayerMovementController playerMovementController)
-        {
-            _playerMovementController = playerMovementController;
-        }
-        
+        private readonly PlayerMovementController _playerMovementController;
+        private readonly IUIManager _uiManager;
         private readonly Transform _playerTransform;
-        
-        public PlayerController(Transform playerTransform)
+        private readonly EventBinding<OnObstacleCollidedEvent> _onObstacleCollidedEvent;
+
+        [Inject]
+        public PlayerController(Transform playerTransform, PlayerMovementController playerMovementController,
+            IUIManager uiManager)
         {
-            var onObstacleCollidedEvent = new EventBinding<OnObstacleCollidedEvent>(OnObstacleCollidedEvent);
-            EventBus<OnObstacleCollidedEvent>.Register(onObstacleCollidedEvent);
+            _onObstacleCollidedEvent = new EventBinding<OnObstacleCollidedEvent>(OnObstacleCollidedEvent);
+            EventBus<OnObstacleCollidedEvent>.Register(_onObstacleCollidedEvent);
+
+            _playerMovementController = playerMovementController;
+            _uiManager = uiManager;
             _playerTransform = playerTransform;
         }
         
+        public void Dispose() => EventBus<OnObstacleCollidedEvent>.Deregister(_onObstacleCollidedEvent);
+        
         private void OnObstacleCollidedEvent(OnObstacleCollidedEvent @event)
         {
-            if (@event.ObstacleType == ArcObjectType.Spike)
-            {
-                _playerTransform.gameObject.SetActive(false);
-                _playerMovementController.StopMovement();
-            }
+            if (@event.ObstacleType != ArcObjectType.Spike || !@event.Entered)
+                return;
+            
+            _playerTransform.gameObject.SetActive(false);
+            _playerMovementController.StopMovement();
+            _uiManager.OpenWindow(WindowType.Restart, null);
         }
     }
 }

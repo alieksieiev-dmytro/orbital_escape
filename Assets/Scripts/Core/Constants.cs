@@ -9,5 +9,9 @@ namespace OrbitalEscape
         public const string INJECTION_ID_CENTRE = "Centre";
         public const string INJECTION_ID_RIFT_GENERATOR = "RiftGenerator";
         public const string INJECTION_ID_SPIKE_GENERATOR = "SpikeGenerator";
+        
+        public const string WINDOW_PREFAB_PATH = "Prefabs/UI/Windows/"; 
+        
+        public const string SCENE_GAMEPLAY = "Gameplay";
     }
 }
