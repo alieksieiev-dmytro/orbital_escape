@@ -3,6 +3,7 @@ using OrbitalEscape.Input;
 using OrbitalEscape.Movement;
 using OrbitalEscape.Orbits;
 using OrbitalEscape.Orbits.Generators;
+using OrbitalEscape.Score;
 using OrbitalEscape.UI;
 using UnityEngine;
 using Zenject;
@@ -47,6 +48,7 @@ namespace OrbitalEscape.Injection
                 .AsSingle();
             
             Container.Bind(typeof(PlayerController), typeof(IDisposable)).To<PlayerController>().AsSingle().WithArguments(_player).NonLazy();
+            Container.Bind(typeof(IScoreService), typeof(IDisposable)).To<ScoreService>().AsSingle().NonLazy();
         }
         
         private void BindConfigs()
