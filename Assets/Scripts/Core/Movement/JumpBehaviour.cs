@@ -38,7 +38,7 @@ namespace OrbitalEscape.Movement
 
         public void Jump()
         {
-            if (!_isJumping && _canGoThroughRift)
+            if (_canGoThroughRift)
             {
                 JumpThroughRift();
             }
