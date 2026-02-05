@@ -38,15 +38,12 @@ namespace OrbitalEscape.Injection
                 .AsSingle()
                 .WithArguments(_centre)
                 .NonLazy();
-            
-            Container.Bind<JumpBehaviour>()
-                .AsSingle()
-                .WithArguments(_levelManager.GetOrbits()[0], _levelManager.GetOrbits()[1]);
 
             Container.Bind<LevelManager>()
                 .FromComponentInHierarchy()
                 .AsSingle();
             
+            Container.Bind(typeof(JumpBehaviour), typeof(IDisposable)).To<JumpBehaviour>().AsSingle().WithArguments(_levelManager.GetOrbits()[0], _levelManager.GetOrbits()[1]);
             Container.Bind(typeof(PlayerController), typeof(IDisposable)).To<PlayerController>().AsSingle().WithArguments(_player).NonLazy();
             Container.Bind(typeof(IScoreService), typeof(IDisposable)).To<ScoreService>().AsSingle().NonLazy();
         }

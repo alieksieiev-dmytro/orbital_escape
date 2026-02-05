@@ -1,15 +1,17 @@
+using System;
 using DG.Tweening;
 using OrbitalEscape.Events;
 using OrbitalEscape.Orbits;
 
 namespace OrbitalEscape.Movement
 {
-    public class JumpBehaviour
+    public class JumpBehaviour : IDisposable
     {
         private const float JUMP_THROUGH_RIFT_HEIGHT = 1f;
         private const float JUMP_SPEED = 0.4f;
         
         private readonly IMovementModel _movementModel;
+        private readonly EventBinding<OnObstacleCollidedEvent> _onObstacleCollidedEvent;
 
         private Orbit _currentOrbit;
         private Orbit _oppositeOrbit;
@@ -25,8 +27,8 @@ namespace OrbitalEscape.Movement
             _movementModel = movementModel;
             _currentOrbit = currentOrbit;
             _oppositeOrbit = oppositeOrbit;
-            var onObstacleCollidedEvent = new EventBinding<OnObstacleCollidedEvent>(OnObstacleCollided);
-            EventBus<OnObstacleCollidedEvent>.Register(onObstacleCollidedEvent);
+            _onObstacleCollidedEvent = new EventBinding<OnObstacleCollidedEvent>(OnObstacleCollided);
+            EventBus<OnObstacleCollidedEvent>.Register(_onObstacleCollidedEvent);
         }
         
         public void SetOrbits(Orbit currentOrbit, Orbit oppositeOrbit)
@@ -38,13 +40,9 @@ namespace OrbitalEscape.Movement
         public void Jump()
         {
             if (_canGoThroughRift)
-            {
                 JumpThroughRift();
-            }
             else
-            {
                 JumpToOppositeOrbit();
-            }
         }
 
         private void JumpThroughRift()
@@ -87,6 +85,12 @@ namespace OrbitalEscape.Movement
             {
                 _canGoThroughRift = @event.Entered;
             }
+        }
+
+        public void Dispose()
+        {
+            _jumpSequence?.Kill();
+            EventBus<OnObstacleCollidedEvent>.Deregister(_onObstacleCollidedEvent);
         }
     }
 }
