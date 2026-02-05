@@ -7,13 +7,13 @@ namespace OrbitalEscape.Movement
     public class JumpBehaviour
     {
         private const float JUMP_THROUGH_RIFT_HEIGHT = 1f;
+        private const float JUMP_SPEED = 0.4f;
         
         private readonly IMovementModel _movementModel;
 
         private Orbit _currentOrbit;
         private Orbit _oppositeOrbit;
         private Sequence _jumpSequence;
-        private bool _isJumping;
         private bool _canGoThroughRift;
         
         private float Offset => _currentOrbit.Radius < _oppositeOrbit.Radius
@@ -25,7 +25,6 @@ namespace OrbitalEscape.Movement
             _movementModel = movementModel;
             _currentOrbit = currentOrbit;
             _oppositeOrbit = oppositeOrbit;
-            _isJumping = false;
             var onObstacleCollidedEvent = new EventBinding<OnObstacleCollidedEvent>(OnObstacleCollided);
             EventBus<OnObstacleCollidedEvent>.Register(onObstacleCollidedEvent);
         }
@@ -59,17 +58,15 @@ namespace OrbitalEscape.Movement
                 () => _movementModel.Radius, 
                 x => _movementModel.Radius = x,
                 _currentOrbit.Radius + jumpHeight, 0.2f)
-                .SetEase(Ease.OutQuad));
+                .SetEase(Ease.Linear));
             
             _jumpSequence.Append(DOTween.To(
                 () => _movementModel.Radius, 
                 x => _movementModel.Radius = x,
                 _currentOrbit.Radius + Offset, 0.2f)
-                .SetEase(Ease.InQuad));
+                .SetEase(Ease.Linear));
             
-            _jumpSequence.onComplete += OnJumpComplete;
             _jumpSequence.Play();
-            _isJumping = true;
             
             EventBus<PassedThroughOrbitEvent>.Raise(new PassedThroughOrbitEvent(_currentOrbit, isJumpingOut));
         }
@@ -79,14 +76,10 @@ namespace OrbitalEscape.Movement
             _jumpSequence?.Kill();
             _jumpSequence = DOTween.Sequence();
             _jumpSequence.Append(DOTween.To(() => _movementModel.Radius, x => _movementModel.Radius = x, 
-                _oppositeOrbit.Radius + Offset, 0.5f).SetEase(Ease.OutQuad));
+                _oppositeOrbit.Radius + Offset, JUMP_SPEED).SetEase(Ease.OutQuad));
             (_currentOrbit, _oppositeOrbit) = (_oppositeOrbit, _currentOrbit);
-            _jumpSequence.onComplete += OnJumpComplete;
             _jumpSequence.Play();
-            _isJumping = true;
         }
-        
-        private void OnJumpComplete() => _isJumping = false;
         
         private void OnObstacleCollided(OnObstacleCollidedEvent @event)
         {
