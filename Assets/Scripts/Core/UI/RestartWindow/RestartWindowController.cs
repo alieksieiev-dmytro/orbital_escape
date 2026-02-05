@@ -7,17 +7,18 @@ namespace OrbitalEscape.UI
     public class RestartWindowController : BaseController<RestartWindowView>
     {
         private readonly IViewFactory _viewFactory;
-        private readonly ICommand _restartCommand;
+        private readonly Command _restartCommand;
         
         public override IConvertible Type => WindowType.Restart;
-        
+
         [Inject]
-        public RestartWindowController(IViewFactory viewFactory, ICommand restartCommand)
+        public RestartWindowController(IViewFactory viewFactory,
+            [Inject(Id = nameof(CommandType.Restart))] Command restartCommand)
         {
             _viewFactory = viewFactory;
             _restartCommand = restartCommand;
         }
-        
+
         public override void Initialize(ScreenData screenData)
         {
             View.RestartClicked += OnRestartClicked;
