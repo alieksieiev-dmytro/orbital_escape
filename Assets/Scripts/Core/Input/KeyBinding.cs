@@ -2,13 +2,13 @@ namespace OrbitalEscape.Input
 {
     public class KeyBinding
     {
-        public string Action { get; }
-        public ICommand Command { get; }
+        public string Key { get; }
+        public string CommandId { get; }
         
-        public KeyBinding(string action, ICommand command)
+        public KeyBinding(string key, string commandId)
         {
-            Action = action;
-            Command = command;
+            Key = key;
+            CommandId = commandId;
         }
     }
 }

@@ -1,17 +1,26 @@
+using System;
+using UnityEngine.SceneManagement;
+using Zenject;
+
 namespace OrbitalEscape.Input
 {
-    public sealed class RestartCommand : ICommand
+    public sealed class RestartCommand : Command
     {
-        private string _sceneName;
+        public override IConvertible Type => CommandType.Restart;
 
-        public RestartCommand(string sceneName)
+        private readonly string _sceneName;
+        private readonly ZenjectSceneLoader _zenjectSceneLoader;
+
+        [Inject]
+        public RestartCommand(ZenjectSceneLoader zenjectSceneLoader, string sceneName)
         {
+            _zenjectSceneLoader = zenjectSceneLoader;
             _sceneName = sceneName;
         }
         
-        public void Execute()
+        public override void Execute()
         {
-            UnityEngine.SceneManagement.SceneManager.LoadScene(_sceneName);
+            _zenjectSceneLoader.LoadScene(_sceneName);
         }
     }
 }

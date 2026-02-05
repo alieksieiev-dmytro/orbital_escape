@@ -1,23 +1,27 @@
 using System.Collections.Generic;
+using OrbitalEscape.Events;
 using Zenject;
 
 namespace OrbitalEscape.Input
 {
     public class InputController : ITickable
     {
-        private List<KeyBinding> _keyBindings = new List<KeyBinding>();
-        
+        private readonly List<KeyBinding> _keyBindings;
+
         [Inject]
-        public void Construct(List<KeyBinding> keyBindings) => _keyBindings = keyBindings;
+        public InputController(List<KeyBinding> keyBindings)
+        {
+            _keyBindings = keyBindings;
+        }
 
         public void Tick()
         {
             foreach (var keyBinding in _keyBindings)
             {
-                if (UnityEngine.Input.GetKeyDown(keyBinding.Action))
-                {
-                    keyBinding.Command.Execute();
-                }
+                if (!UnityEngine.Input.GetKeyDown(keyBinding.Key))
+                    continue;
+                
+                EventBus<CommandCalledEvent>.Raise(new CommandCalledEvent(keyBinding.CommandId));
             }
         }
     }
