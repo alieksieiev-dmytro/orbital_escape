@@ -2,6 +2,8 @@ namespace OrbitalEscape
 {
     public static class Constants
     {
+        public const int SCORE_PER_ORBIT = 1;
+        
         public const float RIFT_COLLISION_TOLERANCE = 0.001f;
         public const float ANGLE_TOLERANCE_DEGREES = 0.005f;
         public const float CHARACTER_OFFSET_FROM_ORBIT = 0.25f;
