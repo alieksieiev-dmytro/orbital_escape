@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using OrbitalEscape.Data;
 using OrbitalEscape.Events;
 
 namespace OrbitalEscape.Score
 {
     public class ScoreService : IScoreService
     {
+        private readonly IDataService _dataService;
         private readonly EventBinding<PassedThroughOrbitEvent> _passedThroughOrbitEvent;
         private readonly List<int> _passedOrbitsIds;
         
@@ -13,8 +15,9 @@ namespace OrbitalEscape.Score
 
         public event Action<float> ScoreChanged;
 
-        public ScoreService()
+        public ScoreService(IDataService dataService)
         {
+            _dataService = dataService;
             _passedOrbitsIds = new List<int>();
             _passedThroughOrbitEvent = new EventBinding<PassedThroughOrbitEvent>(OnPassedThroughOrbit);
             EventBus<PassedThroughOrbitEvent>.Register(_passedThroughOrbitEvent);
@@ -29,6 +32,11 @@ namespace OrbitalEscape.Score
         public void UpdateScore(float delta)
         {
             Score += delta;
+            
+            var scoreData = _dataService.Load<ScoreData>();
+            scoreData.BestScore = Score;
+            _dataService.Save(scoreData);
+            
             ScoreChanged?.Invoke(Score);
         }
 
