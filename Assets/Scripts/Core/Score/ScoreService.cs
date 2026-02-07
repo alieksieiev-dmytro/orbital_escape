@@ -12,12 +12,14 @@ namespace OrbitalEscape.Score
         private readonly List<int> _passedOrbitsIds;
         
         public float Score { get; private set; }
+        public float PreviousBestScore { get; private set; }
 
         public event Action<float> ScoreChanged;
 
         public ScoreService(IDataService dataService)
         {
             _dataService = dataService;
+            PreviousBestScore = _dataService.Load<ScoreData>().BestScore;
             _passedOrbitsIds = new List<int>();
             _passedThroughOrbitEvent = new EventBinding<PassedThroughOrbitEvent>(OnPassedThroughOrbit);
             EventBus<PassedThroughOrbitEvent>.Register(_passedThroughOrbitEvent);
