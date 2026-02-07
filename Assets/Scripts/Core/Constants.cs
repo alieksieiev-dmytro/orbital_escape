@@ -15,5 +15,7 @@ namespace OrbitalEscape
         public const string WINDOW_PREFAB_PATH = "Prefabs/UI/Windows/"; 
         
         public const string SCENE_GAMEPLAY = "Gameplay";
+        
+        public const string SERIALIZED_PLAYER_DATA_KEY = "6803dce101593782842b5ae601c3ceb3";
     }
 }
