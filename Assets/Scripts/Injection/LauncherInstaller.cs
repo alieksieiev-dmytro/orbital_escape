@@ -1,7 +1,11 @@
+using System;
+using System.Collections.Generic;
+using OrbitalEscape.Data;
 using OrbitalEscape.Input;
 using OrbitalEscape.UI;
 using UnityEngine;
 using Zenject;
+using static OrbitalEscape.Constants;
 
 namespace OrbitalEscape.Injection
 {
@@ -13,15 +17,27 @@ namespace OrbitalEscape.Injection
         {
             _windowsRoot = FindObjectsByType<WindowRoot>(FindObjectsSortMode.None)[0].transform;
             DontDestroyOnLoad(_windowsRoot.gameObject);
-            
+
+            InstallData();
             InstallFactory();
             InstallKeyBindings();
             InstallInputController();
         }
 
+        private void InstallData()
+        {
+            var dataSectionBindings = new List<(string key, Type dataType)>
+            {
+                (PLAYER_DATA_SCORE_SECTION, typeof(ScoreData)),
+            };
+            
+            Container.Bind(typeof(IDataSectionRegistry<string>)).To<DataSectionRegistry>().AsSingle().WithArguments(dataSectionBindings);
+            Container.Bind(typeof(IDataService), typeof(IDisposable)).To<PlayerPrefsDataService>().AsSingle();
+        }
+
         private void InstallFactory()
         {
-            Container.Bind(typeof(IViewFactory)).To<ViewFactory>().AsSingle().WithArguments(_windowsRoot, Constants.WINDOW_PREFAB_PATH);
+            Container.Bind(typeof(IViewFactory)).To<ViewFactory>().AsSingle().WithArguments(_windowsRoot, WINDOW_PREFAB_PATH);
         }
         
         private void InstallKeyBindings()
