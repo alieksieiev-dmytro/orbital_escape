@@ -20,7 +20,6 @@ namespace OrbitalEscape.Injection
 
         public override void InstallBindings()
         {
-            BindConfigs();
             BindGenerators();
             InstallCommands();
             
@@ -46,16 +45,6 @@ namespace OrbitalEscape.Injection
             Container.Bind(typeof(JumpBehaviour), typeof(IDisposable)).To<JumpBehaviour>().AsSingle().WithArguments(_levelManager.GetOrbits()[0], _levelManager.GetOrbits()[1]);
             Container.Bind(typeof(PlayerController), typeof(IDisposable)).To<PlayerController>().AsSingle().WithArguments(_player).NonLazy();
             Container.Bind(typeof(IScoreService), typeof(IDisposable)).To<ScoreService>().AsSingle().NonLazy();
-        }
-        
-        private void BindConfigs()
-        {
-            Container.Bind<RiftConfig>()
-                .FromScriptableObjectResource("Configs/RiftConfig")
-                .AsSingle();
-            Container.Bind<SpikeConfig>()
-                .FromScriptableObjectResource("Configs/SpikeConfig")
-                .AsSingle();
         }
         
         private void BindGenerators()
