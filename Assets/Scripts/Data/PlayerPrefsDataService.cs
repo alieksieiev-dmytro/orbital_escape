@@ -10,9 +10,13 @@ namespace OrbitalEscape.Data
     {
         private readonly IDataSectionRegistry<string> _registry;
         private readonly List<IDataSection> _dataSections;
-        
+
         [Inject]
-        public PlayerPrefsDataService(IDataSectionRegistry<string> registry) => _registry = registry;
+        public PlayerPrefsDataService(IDataSectionRegistry<string> registry)
+        {
+            _registry = registry;
+            _dataSections = new List<IDataSection>();
+        }
 
         public void Dispose() => _dataSections.Clear();
         
