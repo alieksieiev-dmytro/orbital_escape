@@ -51,7 +51,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.UI.ScoreHUD
   _scoreText: {fileID: 6017529779074897423}
-  _newRecordText: {fileID: 0}
+  _newRecordText: {fileID: 4994825489897865968}
 --- !u!1 &6585880311671855534
 GameObject:
   m_ObjectHideFlags: 0
