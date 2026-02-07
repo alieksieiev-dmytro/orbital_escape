@@ -32,7 +32,7 @@ namespace OrbitalEscape.Injection
             };
             
             Container.Bind(typeof(IDataSectionRegistry<string>)).To<DataSectionRegistry>().AsSingle().WithArguments(dataSectionBindings);
-            Container.Bind(typeof(IDataService)).To<PlayerPrefsDataService>().AsSingle();
+            Container.Bind(typeof(IDataService), typeof(IDisposable)).To<PlayerPrefsDataService>().AsSingle();
         }
 
         private void InstallFactory()
