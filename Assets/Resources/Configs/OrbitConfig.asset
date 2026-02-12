@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fcb72af5160db3f43bb6816862cfc898, type: 3}
   m_Name: OrbitConfig
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.OrbitConfig
-  <FirstOrbitRadius>k__BackingField: 5
+  <FirstOrbitRadius>k__BackingField: 15
   <OrbitRadiusStep>k__BackingField: 5
