@@ -9,12 +9,12 @@ namespace OrbitalEscape.Orbits
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            EventBus<OnObstacleCollidedEvent>.Raise(new OnObstacleCollidedEvent(_obstacleType, true));
+            EventBus<ObstacleCollidedEvent>.Raise(new ObstacleCollidedEvent(_obstacleType, true));
         }
         
         private void OnTriggerExit2D(Collider2D other)
         {
-            EventBus<OnObstacleCollidedEvent>.Raise(new OnObstacleCollidedEvent(_obstacleType, false));
+            EventBus<ObstacleCollidedEvent>.Raise(new ObstacleCollidedEvent(_obstacleType, false));
         }
     }
 }
