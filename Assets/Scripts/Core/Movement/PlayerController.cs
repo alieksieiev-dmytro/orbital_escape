@@ -12,23 +12,23 @@ namespace OrbitalEscape.Movement
         private readonly PlayerMovementController _playerMovementController;
         private readonly IUIManager _uiManager;
         private readonly Transform _playerTransform;
-        private readonly EventBinding<OnObstacleCollidedEvent> _onObstacleCollidedEvent;
+        private readonly EventBinding<ObstacleCollidedEvent> _onObstacleCollidedEvent;
 
         [Inject]
         public PlayerController(Transform playerTransform, PlayerMovementController playerMovementController,
             IUIManager uiManager)
         {
-            _onObstacleCollidedEvent = new EventBinding<OnObstacleCollidedEvent>(OnObstacleCollidedEvent);
-            EventBus<OnObstacleCollidedEvent>.Register(_onObstacleCollidedEvent);
+            _onObstacleCollidedEvent = new EventBinding<ObstacleCollidedEvent>(OnObstacleCollidedEvent);
+            EventBus<ObstacleCollidedEvent>.Register(_onObstacleCollidedEvent);
 
             _playerMovementController = playerMovementController;
             _uiManager = uiManager;
             _playerTransform = playerTransform;
         }
         
-        public void Dispose() => EventBus<OnObstacleCollidedEvent>.Deregister(_onObstacleCollidedEvent);
+        public void Dispose() => EventBus<ObstacleCollidedEvent>.Deregister(_onObstacleCollidedEvent);
         
-        private void OnObstacleCollidedEvent(OnObstacleCollidedEvent @event)
+        private void OnObstacleCollidedEvent(ObstacleCollidedEvent @event)
         {
             if (@event.ObstacleType != ArcObjectType.Spike || !@event.Entered)
                 return;
