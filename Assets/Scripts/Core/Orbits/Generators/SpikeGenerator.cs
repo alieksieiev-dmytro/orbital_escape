@@ -1,11 +1,11 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using OrbitalEscape.Orbits.Generators;
 using OrbitalEscape.Utils;
 using Zenject;
 using Random = UnityEngine.Random;
 
-namespace OrbitalEscape.Orbits.Generators
+namespace OrbitalEscape.Orbits
 {
     public class SpikeGenerator : IArcGenerator
     {
