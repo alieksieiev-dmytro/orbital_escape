@@ -32,7 +32,6 @@ namespace OrbitalEscape.Injection
             
             Container.Bind<IMovementModel>().To<CircularOrbitModel>().FromInstance(new CircularOrbitModel(0.0f, 15f + CHARACTER_OFFSET_FROM_ORBIT)).AsSingle();
             Container.BindInterfacesAndSelfTo<PlayerMovementController>().AsSingle().WithArguments(_player, 5.0f);
-            Container.Bind<CollisionDetector>().AsSingle().WithArguments(Center).NonLazy();
             Container.Bind<LevelManager>().FromComponentInHierarchy().AsSingle();
 
             Container.Bind(typeof(JumpBehaviour), typeof(IDisposable)).To<JumpBehaviour>().AsSingle().NonLazy();
