@@ -1,7 +1,12 @@
+using UnityEngine;
+
 namespace OrbitalEscape
 {
     public static class Constants
     {
+        public static readonly Vector2 Center = new Vector2(0, 0);
+        public static readonly Vector3 Center3D = new Vector3(0, 0, 0);
+
         public const int SCORE_PER_ORBIT = 1;
         
         public const float RIFT_COLLISION_TOLERANCE = 0.001f;

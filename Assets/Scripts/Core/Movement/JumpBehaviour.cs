@@ -2,6 +2,7 @@ using System;
 using DG.Tweening;
 using OrbitalEscape.Events;
 using OrbitalEscape.Orbits;
+using Zenject;
 
 namespace OrbitalEscape.Movement
 {
@@ -11,7 +12,8 @@ namespace OrbitalEscape.Movement
         private const float JUMP_SPEED = 0.4f;
         
         private readonly IMovementModel _movementModel;
-        private readonly EventBinding<OnObstacleCollidedEvent> _onObstacleCollidedEvent;
+        private readonly EventBinding<ObstacleCollidedEvent> _onObstacleCollidedEvent;
+        private readonly EventBinding<OrbitsSetEvent> _onOrbitsSetEvent;
 
         private Orbit _currentOrbit;
         private Orbit _oppositeOrbit;
@@ -22,19 +24,17 @@ namespace OrbitalEscape.Movement
             ? -Constants.CHARACTER_OFFSET_FROM_ORBIT
             : Constants.CHARACTER_OFFSET_FROM_ORBIT;
 
-        public JumpBehaviour(IMovementModel movementModel, Orbit currentOrbit, Orbit oppositeOrbit)
+        [Inject]
+        public JumpBehaviour(IMovementModel movementModel, OrbitGenerator orbitGenerator)
         {
             _movementModel = movementModel;
-            _currentOrbit = currentOrbit;
-            _oppositeOrbit = oppositeOrbit;
-            _onObstacleCollidedEvent = new EventBinding<OnObstacleCollidedEvent>(OnObstacleCollided);
-            EventBus<OnObstacleCollidedEvent>.Register(_onObstacleCollidedEvent);
-        }
-        
-        public void SetOrbits(Orbit currentOrbit, Orbit oppositeOrbit)
-        {
-            _currentOrbit = currentOrbit;
-            _oppositeOrbit = oppositeOrbit;
+            _currentOrbit = orbitGenerator.GetOrbit(0);
+            _oppositeOrbit = orbitGenerator.GetOrbit(1);
+            
+            _onObstacleCollidedEvent = new EventBinding<ObstacleCollidedEvent>(OnObstacleCollided);
+            _onOrbitsSetEvent = new EventBinding<OrbitsSetEvent>(OnOrbitsSet);
+            EventBus<ObstacleCollidedEvent>.Register(_onObstacleCollidedEvent);
+            EventBus<OrbitsSetEvent>.Register(_onOrbitsSetEvent);
         }
 
         public void Jump()
@@ -79,18 +79,25 @@ namespace OrbitalEscape.Movement
             _jumpSequence.Play();
         }
         
-        private void OnObstacleCollided(OnObstacleCollidedEvent @event)
+        private void OnObstacleCollided(ObstacleCollidedEvent @event)
         {
             if (@event.ObstacleType == ArcObjectType.Rift)
             {
                 _canGoThroughRift = @event.Entered;
             }
         }
+        
+        private void OnOrbitsSet(OrbitsSetEvent @event)
+        {
+            _currentOrbit = @event.CurrentOrbit;
+            _oppositeOrbit = @event.OppositeOrbit;
+        }
 
         public void Dispose()
         {
             _jumpSequence?.Kill();
-            EventBus<OnObstacleCollidedEvent>.Deregister(_onObstacleCollidedEvent);
+            EventBus<OrbitsSetEvent>.Deregister(_onOrbitsSetEvent);
+            EventBus<ObstacleCollidedEvent>.Deregister(_onObstacleCollidedEvent);
         }
     }
 }

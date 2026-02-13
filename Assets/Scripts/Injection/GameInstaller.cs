@@ -1,12 +1,13 @@
 using System;
+using OrbitalEscape.Factories;
 using OrbitalEscape.Input;
 using OrbitalEscape.Movement;
 using OrbitalEscape.Orbits;
 using OrbitalEscape.Orbits.Generators;
 using OrbitalEscape.Score;
-using OrbitalEscape.UI;
 using UnityEngine;
 using Zenject;
+using static OrbitalEscape.Constants;
 
 namespace OrbitalEscape.Injection
 {
@@ -14,60 +15,42 @@ namespace OrbitalEscape.Injection
     {
         [SerializeField] private LevelManager _levelManager;
         [SerializeField] private Transform _player;
-        [SerializeField] private Vector2 _centre;
+        
+        [SerializeField] private Transform _orbitRoot;
+        [SerializeField] private GameObject _orbitPrefab;
+        [SerializeField] private GameObject _spikePrefab;
         
         private PlayerMovementController _movementController;
 
         public override void InstallBindings()
         {
-            BindConfigs();
             BindGenerators();
+            BindFactories();
             InstallCommands();
             
-            Container.Bind<Vector2>().WithId(Constants.INJECTION_ID_CENTRE).FromInstance(_centre);
+            Container.Bind<Vector2>().WithId(INJECTION_ID_CENTRE).FromInstance(Center);
             
-            Container.Bind<IMovementModel>().To<CircularOrbitModel>()
-                .FromInstance(new CircularOrbitModel(0.0f, 15f + Constants.CHARACTER_OFFSET_FROM_ORBIT))
-                .AsSingle();
-            
-            Container.BindInterfacesAndSelfTo<PlayerMovementController>()
-                .AsSingle()
-                .WithArguments(_player, 5.0f);
-            
-            Container.Bind<CollisionDetector>()
-                .AsSingle()
-                .WithArguments(_centre)
-                .NonLazy();
+            Container.Bind<IMovementModel>().To<CircularOrbitModel>().FromInstance(new CircularOrbitModel(0.0f, 15f + CHARACTER_OFFSET_FROM_ORBIT)).AsSingle();
+            Container.BindInterfacesAndSelfTo<PlayerMovementController>().AsSingle().WithArguments(_player, 5.0f);
+            Container.Bind<CollisionDetector>().AsSingle().WithArguments(Center).NonLazy();
+            Container.Bind<LevelManager>().FromComponentInHierarchy().AsSingle();
 
-            Container.Bind<LevelManager>()
-                .FromComponentInHierarchy()
-                .AsSingle();
-            
-            Container.Bind(typeof(JumpBehaviour), typeof(IDisposable)).To<JumpBehaviour>().AsSingle().WithArguments(_levelManager.GetOrbits()[0], _levelManager.GetOrbits()[1]);
+            Container.Bind(typeof(JumpBehaviour), typeof(IDisposable)).To<JumpBehaviour>().AsSingle().NonLazy();
             Container.Bind(typeof(PlayerController), typeof(IDisposable)).To<PlayerController>().AsSingle().WithArguments(_player).NonLazy();
             Container.Bind(typeof(IScoreService), typeof(IDisposable)).To<ScoreService>().AsSingle().NonLazy();
         }
         
-        private void BindConfigs()
-        {
-            Container.Bind<RiftConfig>()
-                .FromScriptableObjectResource("Configs/RiftConfig")
-                .AsSingle();
-            Container.Bind<SpikeConfig>()
-                .FromScriptableObjectResource("Configs/SpikeConfig")
-                .AsSingle();
-        }
-        
         private void BindGenerators()
         {
-            Container.Bind<IArcGenerator>()
-                .WithId(Constants.INJECTION_ID_RIFT_GENERATOR)
-                .To<RiftGenerator>()
-                .AsSingle();
-            Container.Bind<IArcGenerator>()
-                .WithId(Constants.INJECTION_ID_SPIKE_GENERATOR)
-                .To<SpikeGenerator>()
-                .AsSingle();
+            Container.Bind(typeof(OrbitGenerator)).To<OrbitGenerator>().AsSingle();
+            Container.Bind<IArcGenerator>().WithId(ArcObjectType.Rift).To<RiftGenerator>().AsSingle();
+            Container.Bind<IArcGenerator>().WithId(ArcObjectType.Spike).To<SpikeGenerator>().AsSingle();
+        }
+        
+        private void BindFactories()
+        {
+            Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.OrbitFactory).To<OrbitFactory>().AsSingle().WithArguments(_orbitPrefab, _orbitRoot);
+            Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.SpikeFactory).To<SpikeFactory>().AsSingle().WithArguments(_spikePrefab);
         }
 
         private void InstallCommands()

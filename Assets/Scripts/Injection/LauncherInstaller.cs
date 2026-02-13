@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using OrbitalEscape.Data;
 using OrbitalEscape.Input;
+using OrbitalEscape.Orbits.Generators;
 using OrbitalEscape.UI;
 using UnityEngine;
 using Zenject;
@@ -18,6 +19,7 @@ namespace OrbitalEscape.Injection
             _windowsRoot = FindObjectsByType<WindowRoot>(FindObjectsSortMode.None)[0].transform;
             DontDestroyOnLoad(_windowsRoot.gameObject);
 
+            InstallConfigs();
             InstallData();
             InstallFactory();
             InstallKeyBindings();
@@ -62,6 +64,13 @@ namespace OrbitalEscape.Injection
         private void InstallInputController()
         {
             Container.BindInterfacesTo<InputController>().AsSingle().NonLazy();
+        }
+        
+        private void InstallConfigs()
+        {
+            Container.Bind(typeof(OrbitConfig)).To<OrbitConfig>().FromScriptableObjectResource("Configs/OrbitConfig").AsSingle();
+            Container.Bind(typeof(RiftConfig)).To<RiftConfig>().FromScriptableObjectResource("Configs/RiftConfig").AsSingle();
+            Container.Bind(typeof(SpikeConfig)).To<SpikeConfig>().FromScriptableObjectResource("Configs/SpikeConfig").AsSingle();
         }
     }
 }
