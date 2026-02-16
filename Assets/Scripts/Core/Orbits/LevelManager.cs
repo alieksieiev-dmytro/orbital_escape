@@ -82,7 +82,7 @@ namespace OrbitalEscape.Orbits
         {
             if (@event.Orbit.Index >= _orbitsData.Count * 0.5f)
             {
-                int newOrbitsCount = _orbitsData.Count * ORBIT_MULTIPLIER - _orbitsData.Count;
+                int newOrbitsCount = Mathf.Clamp(_orbitsData.Count * ORBIT_MULTIPLIER - _orbitsData.Count, 0, MAX_ORBIT_PER_GENERATION);
                 var newOrbits = ExpandLevel(newOrbitsCount);
                 
                 StartCoroutine(DelayedObjectsCreation(CreateOrbitObjects, newOrbits));
