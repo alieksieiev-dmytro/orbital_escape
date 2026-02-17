@@ -8,7 +8,7 @@ namespace OrbitalEscape.Orbits
     [RequireComponent(typeof(Renderer))]
     public class RiftController : MonoBehaviour
     {
-        [SerializeField] private ObstacleCollider _riftColliderPrefab;
+        [SerializeField] private GameObject _riftColliderPrefab;
         
         private static readonly int RiftCountId = Shader.PropertyToID("_RiftCount");
         private static readonly int RiftsId = Shader.PropertyToID("_Rifts");

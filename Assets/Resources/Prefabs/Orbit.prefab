@@ -224,7 +224,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e268264d630034c40a22f609fb8673f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.RiftController
-  _riftColliderPrefab: {fileID: 7154826092151628576, guid: 75bb67dae8d955b4a870d21545bad9b0, type: 3}
+  _riftColliderPrefab: {fileID: 435072072052540399, guid: 75bb67dae8d955b4a870d21545bad9b0, type: 3}
 --- !u!1 &8911652982013164806
 GameObject:
   m_ObjectHideFlags: 0
