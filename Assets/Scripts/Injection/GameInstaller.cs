@@ -18,6 +18,7 @@ namespace OrbitalEscape.Injection
         
         [SerializeField] private Transform _orbitRoot;
         [SerializeField] private GameObject _orbitPrefab;
+        [SerializeField] private RiftObject _riftObject;
         [SerializeField] private GameObject _spikePrefab;
         
         private PlayerMovementController _movementController;
@@ -49,6 +50,7 @@ namespace OrbitalEscape.Injection
         private void BindFactories()
         {
             Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.OrbitFactory).To<OrbitFactory>().AsSingle().WithArguments(_orbitPrefab, _orbitRoot);
+            Container.Bind(typeof(IObjectFactory<RiftObject>)).WithId(FactoryType.RiftFactory).To<RiftFactory>().AsSingle().WithArguments(_riftObject);
             Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.SpikeFactory).To<SpikeFactory>().AsSingle().WithArguments(_spikePrefab);
         }
 
