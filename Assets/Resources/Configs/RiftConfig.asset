@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: RiftConfig
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.RiftConfig
   <MinDistanceBetweenRifts>k__BackingField: 75
-  <RiftLength>k__BackingField: 4.5
+  <RiftLength>k__BackingField: 5
   <RiftCount>k__BackingField: 3
-  <RiftPaddings>k__BackingField: 1
+  <RiftPaddings>k__BackingField: 1.5
