@@ -8,7 +8,7 @@ namespace OrbitalEscape.Orbits
     [RequireComponent(typeof(Renderer))]
     public class RiftController : MonoBehaviour
     {
-        [SerializeField] private ObstacleCollider _riftColliderPrefab;
+        [SerializeField] private GameObject _riftColliderPrefab;
         
         private static readonly int RiftCountId = Shader.PropertyToID("_RiftCount");
         private static readonly int RiftsId = Shader.PropertyToID("_Rifts");
@@ -22,7 +22,6 @@ namespace OrbitalEscape.Orbits
         {
             _rifts = rifts;
             Apply();
-            CreateColliders();
         }
 
         private void Apply()
@@ -39,8 +38,10 @@ namespace OrbitalEscape.Orbits
                     continue;
                 }
 
-                float radians = Mathf.Deg2Rad * Mathf.Repeat(rift.Arc.StartAngleDegree, 360.0f);
-                _riftsPacked[count] = new Vector4(radians, rift.Arc.Length(), 0.0f, 1.0f);
+                float padding = ((Rift)rift.Object).Padding;
+                float angleShift = (padding / 2) / rift.Arc.Radius * Mathf.Rad2Deg;
+                float radians = Mathf.Deg2Rad * Mathf.Repeat(rift.Arc.StartAngleDegree + angleShift, 360.0f);
+                _riftsPacked[count] = new Vector4(radians, rift.Arc.Length() - padding, 0.0f, 1.0f);
                 count++;
             }
 
@@ -53,27 +54,6 @@ namespace OrbitalEscape.Orbits
             _materialPropertyBlock.SetInt(RiftCountId, count);
             _materialPropertyBlock.SetVectorArray(RiftsId, _riftsPacked);
             _cachedRenderer.SetPropertyBlock(_materialPropertyBlock);
-        }
-
-        private void CreateColliders()
-        {
-            foreach (var arcObject in _rifts)
-            {
-                var position = OrbitMath.GetPointOnCircle(Vector2.zero, arcObject.Arc.Radius,
-                    arcObject.Arc.MidAngleDegree());
-                var rotation = Quaternion.Euler(0, 0, OrbitMath.GetZRotation2D(Vector2.zero, position));
-                
-                var colliderObj = Instantiate(
-                    _riftColliderPrefab,
-                    position,
-                    rotation,
-                    transform);
-
-                var scale = new Vector3(1, arcObject.Arc.Length() * 0.9f, 1);
-                scale.x /= transform.lossyScale.x;
-                scale.y /= transform.lossyScale.y;
-                colliderObj.transform.localScale = scale;
-            }
         }
 
         private void Awake()

@@ -42,7 +42,7 @@ namespace OrbitalEscape.Orbits.Generators
                 if (arcConflict)
                     continue;
 
-                var newRift = new ArcObject(newRiftArc, new Rift(), ArcType.TwoSide);
+                var newRift = new ArcObject(newRiftArc, new Rift(_config.RiftPaddings), ArcType.TwoSide);
                 result.Add(newRift);
             }
             

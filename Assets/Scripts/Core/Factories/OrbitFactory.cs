@@ -28,7 +28,6 @@ namespace OrbitalEscape.Factories
                 _root);
             
             orbitObj.transform.localScale = new Vector3(orbit.Radius * 2, orbit.Radius * 2, 1f);
-            orbitObj.GetComponent<RiftController>().Initialize(orbit.GetOrbitObjectsByType(ArcObjectType.Rift));
             orbitObj.GetComponent<AuroraFadeInOut>().InitAurora(orbit);
             
             _orbitObjects.Add(orbitObj);
