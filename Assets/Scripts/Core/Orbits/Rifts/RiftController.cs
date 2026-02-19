@@ -38,8 +38,10 @@ namespace OrbitalEscape.Orbits
                     continue;
                 }
 
-                float radians = Mathf.Deg2Rad * Mathf.Repeat(rift.Arc.StartAngleDegree, 360.0f);
-                _riftsPacked[count] = new Vector4(radians, rift.Arc.Length(), 0.0f, 1.0f);
+                float padding = ((Rift)rift.Object).Padding;
+                float angleShift = (padding / 2) / rift.Arc.Radius * Mathf.Rad2Deg;
+                float radians = Mathf.Deg2Rad * Mathf.Repeat(rift.Arc.StartAngleDegree + angleShift, 360.0f);
+                _riftsPacked[count] = new Vector4(radians, rift.Arc.Length() - padding, 0.0f, 1.0f);
                 count++;
             }
 
