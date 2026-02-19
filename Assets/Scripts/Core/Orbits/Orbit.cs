@@ -10,8 +10,9 @@ namespace OrbitalEscape.Orbits
     {
         private List<ArcObject> _orbitObjects;
         
-        [field: SerializeField] public float Radius { get; private set; }
-        [field: SerializeField] public int Index { get; private set; }
+        public float Radius { get; private set; }
+        public int Index { get; private set; }
+        public float Circumference => 2 * Mathf.PI * Radius;
         
         public List<Arc> InnerArcs => OrbitObjects
             .Where(obj => obj.Type == ArcType.Inner)

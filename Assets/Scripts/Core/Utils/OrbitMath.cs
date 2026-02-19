@@ -1,3 +1,4 @@
+using OrbitalEscape.Orbits;
 using UnityEngine;
 
 namespace OrbitalEscape.Utils
@@ -47,6 +48,19 @@ namespace OrbitalEscape.Utils
             var direction = point - centre;
             float angle = Mathf.Atan2(direction.y, direction.x) * RADIANS_TO_DEGREES;
             return angle;
+        }
+        
+        public static float[] DivideOrbitIntoEqualArcs(Orbit orbit, float partLength)
+        {
+            int partsCount = orbit.Circumference > partLength ? Mathf.FloorToInt(orbit.Circumference / partLength) : 1;
+            float[] angles = new float[partsCount];
+            
+            for (int i = 0; i < partsCount; i++)
+            {
+                angles[i] = (i * partLength / orbit.Circumference) * 360f;
+            }
+            
+            return angles;
         }
     }
 }
