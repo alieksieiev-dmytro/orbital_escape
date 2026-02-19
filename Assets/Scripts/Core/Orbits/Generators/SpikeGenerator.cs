@@ -23,46 +23,39 @@ namespace OrbitalEscape.Orbits
         {
             _processedOrbits.Add(orbit);
             
+            var orbitSections = OrbitMath.DivideOrbitIntoEqualArcs(orbit, _config.SpikeArcLength).ToList();
             int spikesCount = _config.BaseSpikeCount + orbit.Index * _config.AdditionalSpikeCountPerOrbit;
-            List<ArcObject> resultSpikes = new List<ArcObject>(spikesCount);
-            List<Arc> resultArcs = new List<Arc>(spikesCount);
+            List<ArcObject> resultSpikes = new List<ArcObject>();
             
             float deltaRadians = _config.SpikeArcLength / orbit.Radius;
             float deltaDegrees = deltaRadians * OrbitMath.RADIANS_TO_DEGREES;
             
-            int attempts = 0;
-            int maxAttempts = spikesCount * 100;
+            var otherObjects = orbit.GetAllObjectsExceptType(ArcObjectType.Spike, arcType);
+            otherObjects.AddRange(orbit.GetAllObjectsExceptType(ArcObjectType.Spike, ArcType.TwoSide));
 
-            while (resultSpikes.Count < spikesCount && attempts < maxAttempts)
+            while (resultSpikes.Count < spikesCount)
             {
-                attempts++;
-                float startAngle = Random.Range(0.0f, 360.0f);
+                int sectionIndex = Random.Range(0, orbitSections.Count);
+                
+                float startAngle = orbitSections[sectionIndex];
+                orbitSections.RemoveAt(sectionIndex);
+                
                 float endAngle = startAngle + deltaDegrees;
                 float height = Random.Range(_config.MinSpikeHeight, _config.MaxSpikeHeight);
-
+                
                 var arc = new Arc(startAngle, endAngle, orbit.Radius);
-
-                if (OverlapsWithOtherArcs(arc, resultArcs))
-                    continue;
                 
-                if (OverlapsWithOtherArcs(arc, orbit.TwoSideArcs))
-                    continue;
-                
-                if (arcType == ArcType.Inner && OverlapsWithOtherArcs(arc, orbit.InnerArcs))
-                    continue;
-                
-                if (arcType == ArcType.Outer && OverlapsWithOtherArcs(arc, orbit.OuterArcs))
+                if (OverlapsWithOtherArcs(arc, otherObjects))
                     continue;
                 
                 var spike = new ArcObject(arc, new SpikeObstacle(height), arcType);
 
                 if (_processedOrbits.Count > 1 && CheckOverlapFromOppositeOrbit(spike, _processedOrbits[^2].OrbitObjects))
                     continue;
-
+                
                 resultSpikes.Add(spike);
-                resultArcs.Add(arc);
             }
-
+            
             return resultSpikes;
         }
 
@@ -92,11 +85,11 @@ namespace OrbitalEscape.Orbits
             return false;
         }
 
-        private bool OverlapsWithOtherArcs(Arc spike, List<Arc> arcObjects)
+        private bool OverlapsWithOtherArcs(Arc spike, List<ArcObject> arcObjects)
         {
             for (int i = 0; i < arcObjects.Count; i++)
             {
-                if (arcObjects[i].IsOverlapping(spike))
+                if (spike.IsOverlapping(arcObjects[i].Arc))
                 {
                     return true;
                 }

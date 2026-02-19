@@ -53,5 +53,12 @@ namespace OrbitalEscape.Orbits
                 ? _orbitObjects.Where(obj => obj.Object.Type == type).ToList()
                 : new List<ArcObject>();
         }
+        
+        public List<ArcObject> GetAllObjectsExceptType(ArcObjectType type, ArcType arcType)
+        {
+            return OrbitObjects.Count != 0
+                ? _orbitObjects.Where(obj => obj.Object.Type != type && obj.Type == arcType).ToList()
+                : new List<ArcObject>();
+        }
     }
 }
