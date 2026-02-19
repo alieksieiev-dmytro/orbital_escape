@@ -23,49 +23,46 @@ namespace OrbitalEscape.Factories
         public RiftObject Create(params object[] args)
         {
             var root = (Transform)args[0];
-            var orbitData = (Orbit)args[1];
-            var riftData = orbitData.GetOrbitObjectsByType(ArcObjectType.Rift);
+            var riftData = (ArcObject)args[1];
             
-            CreateColliders(riftData, root);
-            root.GetComponent<RiftController>().Initialize(riftData);
-
-            var riftObj = Object.Instantiate(_riftPrefab, Constants.Center3D, Quaternion.identity, root);
+            var riftObj = CreateCollider(riftData, root);
+            _riftObjects.Add(riftObj);
             
             return riftObj;
         }
         
-        public RiftObject Get(int index)
-        {
-            throw new System.NotImplementedException();
-        }
+        public RiftObject Get(int index) => _riftObjects[index];
         
         public void Clear()
         {
+            for (int i = _riftObjects.Count - 1; i >= 0; i--)
+            {
+                Object.Destroy(_riftObjects[i].gameObject);
+            }
+            _riftObjects.Clear();
         }
 
-        private void CreateColliders(List<ArcObject> rifts, Transform parent)
+        private RiftObject CreateCollider(ArcObject rift, Transform parent)
         {
-            foreach (var arcObject in rifts)
-            {
-                var position = OrbitMath.GetPointOnCircle(Vector2.zero, arcObject.Arc.Radius,
-                    arcObject.Arc.MidAngleDegree());
-                var rotation = Quaternion.Euler(0, 0, OrbitMath.GetZRotation2D(Vector2.zero, position));
-                
-                var riftObject = Object.Instantiate(
-                    _riftPrefab,
-                    position,
-                    rotation,
-                    parent);
+            var position = OrbitMath.GetPointOnCircle(Vector2.zero, rift.Arc.Radius,
+                rift.Arc.MidAngleDegree());
+            var rotation = Quaternion.Euler(0, 0, OrbitMath.GetZRotation2D(Vector2.zero, position));
 
-                var arcScale = new Vector3(1, arcObject.Arc.Length(), 1);
-                var colliderScale = new Vector3(arcScale.x - _config.RiftPaddings, arcScale.y, 1f);
-                arcScale.x /= parent.lossyScale.x;
-                arcScale.y /= parent.lossyScale.y;
-                riftObject.SetScale(arcScale, colliderScale);
-                riftObject.transform.localScale = arcScale;
-                
-                _riftObjects.Add(riftObject);
-            }
+            var riftObject = Object.Instantiate(
+                _riftPrefab,
+                position,
+                rotation,
+                parent);
+
+            float padding = rift.Arc.Length() - _config.RiftPaddings;
+            var arcScale = new Vector3(1, rift.Arc.Length(), 1);
+            var colliderScale = new Vector3(1f, padding / rift.Arc.Length(), 1f);
+            arcScale.x /= parent.lossyScale.x;
+            arcScale.y /= parent.lossyScale.y;
+            riftObject.SetScale(arcScale, colliderScale);
+            riftObject.transform.localScale = arcScale;
+            
+            return riftObject;
         }
     }
 }

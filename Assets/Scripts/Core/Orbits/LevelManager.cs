@@ -20,20 +20,23 @@ namespace OrbitalEscape.Orbits
         private IArcGenerator _spikeGenerator;
         private IObjectFactory<GameObject> _orbitFactory;
         private IObjectFactory<GameObject> _spikeFactory;
+        private IObjectFactory<RiftObject> _riftFactory;
         private OrbitGenerator _orbitGenerator;
         private List<Orbit> _orbitsData;
         private EventBinding<PassedThroughOrbitEvent> _passedThroughOrbitBinding;
 
         [Inject]
         public void Construct(OrbitGenerator orbitGenerator,
-            [Inject(Id = FactoryType.OrbitFactory)] IObjectFactory<GameObject> objectFactory,
+            [Inject(Id = FactoryType.OrbitFactory)] IObjectFactory<GameObject> orbitFactory,
+            [Inject(Id = FactoryType.RiftFactory)] IObjectFactory<RiftObject> riftFactory,
             [Inject(Id = FactoryType.SpikeFactory)] IObjectFactory<GameObject> spikeFactory,
             [Inject(Id = ArcObjectType.Rift)] IArcGenerator riftGenerator,
             [Inject(Id = ArcObjectType.Spike)] IArcGenerator spikeGenerator)
         {
             _orbitGenerator = orbitGenerator;
-            _orbitFactory = objectFactory;
+            _orbitFactory = orbitFactory;
             _spikeFactory = spikeFactory;
+            _riftFactory = riftFactory;
             _riftGenerator = riftGenerator;
             _spikeGenerator = spikeGenerator;
         }
@@ -117,10 +120,16 @@ namespace OrbitalEscape.Orbits
             foreach (var orbit in orbits)
             {
                 var orbitGameObject = _orbitFactory.Create(orbit);
+                orbitGameObject.GetComponent<RiftController>().Initialize(orbit.GetOrbitObjectsByType(ArcObjectType.Rift));
 
                 foreach (var spike in orbit.GetOrbitObjectsByType(ArcObjectType.Spike))
                 {
                     _spikeFactory.Create(orbitGameObject.transform, orbit, spike);
+                }
+                
+                foreach (var rift in orbit.GetOrbitObjectsByType(ArcObjectType.Rift))
+                {
+                    _riftFactory.Create(orbitGameObject.transform, rift);
                 }
             }
         }
