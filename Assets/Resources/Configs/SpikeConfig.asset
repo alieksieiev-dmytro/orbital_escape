@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9d311345b292af44aa13873cd7124e8, type: 3}
   m_Name: SpikeConfig
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.Generators.SpikeConfig
-  <BaseSpikeCount>k__BackingField: 15
-  <AdditionalSpikeCountPerOrbit>k__BackingField: 6
-  <MinSpikeHeight>k__BackingField: 1.25
-  <MaxSpikeHeight>k__BackingField: 1.25
+  <Density>k__BackingField: 0.33
+  <ConsecutiveSpikeChance>k__BackingField: 0.4
+  <MinSpikeHeight>k__BackingField: 0.95
+  <MaxSpikeHeight>k__BackingField: 1.2
   <SpikeArcLength>k__BackingField: 0.5

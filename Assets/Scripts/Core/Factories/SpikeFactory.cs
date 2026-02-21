@@ -24,6 +24,7 @@ namespace OrbitalEscape.Factories
             var spikeData = (ArcObject)args[2];
 
             var spikeObj = Object.Instantiate(_spikePrefab, Constants.Center3D, Quaternion.identity, root);
+            spikeObj.name = $"spike_{spikeData.Type}";
 
             spikeObj.transform.localScale =
                 new Vector3(spikeData.Arc.Length() / root.localScale.x,
