@@ -11,7 +11,7 @@ namespace OrbitalEscape.Editor
 
         static SceneBootstrapper()
         {
-            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+            //EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }
 
         private static void OnPlayModeStateChanged(PlayModeStateChange state)
