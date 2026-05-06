@@ -17,7 +17,7 @@ namespace OrbitalEscape.Orbits.Generators
             _config = config;
         }
 
-        public List<ArcObject> GenerateArcs(Orbit orbit, ArcType arcType)
+        public List<ArcObject> GenerateArcs(Orbit orbit, ArcType arcType, LevelBuildContext context)
         {
             List<float> orbitSections = OrbitMath.DivideOrbitIntoEqualArcs(orbit, _config.TrapArcLength).ToList();
             int sectionCount = orbitSections.Count;

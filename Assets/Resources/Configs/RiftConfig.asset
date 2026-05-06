@@ -16,3 +16,4 @@ MonoBehaviour:
   <RiftLength>k__BackingField: 5
   <RiftCount>k__BackingField: 3
   <RiftPaddings>k__BackingField: 1.5
+  <MaxPlacementAttempts>k__BackingField: 128

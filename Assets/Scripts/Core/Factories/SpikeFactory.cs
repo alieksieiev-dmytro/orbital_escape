@@ -54,6 +54,7 @@ namespace OrbitalEscape.Factories
 
             spikeObj.transform.rotation = Quaternion.Euler(0f, 0f, rotation + 90.0f);
             spikeObj.transform.localPosition = new Vector3(position.x, position.y, 0f);
+            _spikeObjects.Add(spikeObj);
 
             return spikeObj;
         }

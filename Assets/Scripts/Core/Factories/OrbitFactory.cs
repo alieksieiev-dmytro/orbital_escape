@@ -42,6 +42,8 @@ namespace OrbitalEscape.Factories
             {
                 Object.Destroy(_root.GetChild(i).gameObject);
             }
+
+            _orbitObjects.Clear();
         }
     }
 }
