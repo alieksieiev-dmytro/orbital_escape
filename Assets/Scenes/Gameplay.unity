@@ -588,6 +588,7 @@ MonoBehaviour:
   _orbitPrefab: {fileID: 6294584048180769117, guid: 97e8c29c9fd59bd459b441084448cc88, type: 3}
   _riftObject: {fileID: 2637662853791771932, guid: 75bb67dae8d955b4a870d21545bad9b0, type: 3}
   _spikePrefab: {fileID: 1718740138504583630, guid: b98d4748dabefc7419c738002c1482f0, type: 3}
+  _impulseTrapPrefab: {fileID: 1088641660831528923, guid: 9f9be1d5d6274d39a2c73a67a1a3a27e, type: 3}
 --- !u!1 &1076020239
 GameObject:
   m_ObjectHideFlags: 0

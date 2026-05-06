@@ -6,5 +6,6 @@ namespace OrbitalEscape.Factories
         OrbitFactory = 1,
         SpikeFactory = 2,
         RiftFactory = 3,
+        ImpulseTrapFactory = 4,
     }
 }
