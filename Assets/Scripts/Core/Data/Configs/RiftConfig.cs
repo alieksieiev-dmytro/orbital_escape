@@ -9,5 +9,6 @@ namespace OrbitalEscape
         [field: SerializeField] public float RiftLength { get; private set; }
         [field: SerializeField] public float RiftCount { get; private set; }
         [field: SerializeField] public float RiftPaddings { get; private set; }
+        [field: SerializeField, Min(1)] public int MaxPlacementAttempts { get; private set; } = 128;
     }
 }

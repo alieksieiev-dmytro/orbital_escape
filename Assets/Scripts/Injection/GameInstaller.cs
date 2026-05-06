@@ -33,6 +33,7 @@ namespace OrbitalEscape.Injection
             Container.Bind<Vector2>().WithId(INJECTION_ID_CENTRE).FromInstance(Center);
             
             Container.Bind<IMovementModel>().To<CircularOrbitModel>().FromInstance(new CircularOrbitModel(0.0f, 15f + CHARACTER_OFFSET_FROM_ORBIT)).AsSingle();
+            Container.Bind<LevelState>().AsSingle();
             Container.BindInterfacesAndSelfTo<PlayerMovementController>().AsSingle().WithArguments(_player, 5.0f);
             Container.Bind<LevelManager>().FromComponentInHierarchy().AsSingle();
 
@@ -44,7 +45,11 @@ namespace OrbitalEscape.Injection
         
         private void BindGenerators()
         {
-            Container.Bind(typeof(OrbitGenerator)).To<OrbitGenerator>().AsSingle();
+            Container.Bind<OrbitGenerator>().AsSingle();
+            Container.Bind<ILevelBuilder>().To<LevelBuilder>().AsSingle();
+            Container.Bind<IOrbitContentPass>().To<RiftGenerationPass>().AsSingle();
+            Container.Bind<IOrbitContentPass>().To<SpikeGenerationPass>().AsSingle();
+            Container.Bind<IOrbitContentPass>().To<ImpulseTrapGenerationPass>().AsSingle();
             Container.Bind<IArcGenerator>().WithId(ArcObjectType.Rift).To<RiftGenerator>().AsSingle();
             Container.Bind<IArcGenerator>().WithId(ArcObjectType.Spike).To<SpikeGenerator>().AsSingle();
             Container.Bind<IArcGenerator>().WithId(ArcObjectType.ImpulseTrap).To<ImpulseTrapGenerator>().AsSingle();
@@ -56,6 +61,10 @@ namespace OrbitalEscape.Injection
             Container.Bind(typeof(IObjectFactory<RiftObject>)).WithId(FactoryType.RiftFactory).To<RiftFactory>().AsSingle().WithArguments(_riftObject);
             Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.SpikeFactory).To<SpikeFactory>().AsSingle().WithArguments(_spikePrefab);
             Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.ImpulseTrapFactory).To<ImpulseTrapFactory>().AsSingle().WithArguments(_impulseTrapPrefab);
+            Container.Bind<ILevelObjectSpawner>().To<LevelObjectSpawner>().AsSingle();
+            Container.Bind<IOrbitObjectSpawner>().To<RiftObjectSpawner>().AsSingle();
+            Container.Bind<IOrbitObjectSpawner>().To<SpikeObjectSpawner>().AsSingle();
+            Container.Bind<IOrbitObjectSpawner>().To<ImpulseTrapObjectSpawner>().AsSingle();
         }
 
         private void InstallCommands()

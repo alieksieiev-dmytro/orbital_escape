@@ -12,6 +12,7 @@ namespace OrbitalEscape.Movement
         private const float JUMP_SPEED = 0.4f;
         
         private readonly IMovementModel _movementModel;
+        private readonly LevelState _levelState;
         private readonly EventBinding<ObstacleCollidedEvent> _onObstacleCollidedEvent;
         private readonly EventBinding<OrbitsSetEvent> _onOrbitsSetEvent;
 
@@ -25,11 +26,10 @@ namespace OrbitalEscape.Movement
             : Constants.CHARACTER_OFFSET_FROM_ORBIT;
 
         [Inject]
-        public JumpBehaviour(IMovementModel movementModel, OrbitGenerator orbitGenerator)
+        public JumpBehaviour(IMovementModel movementModel, LevelState levelState)
         {
             _movementModel = movementModel;
-            _currentOrbit = orbitGenerator.GetOrbit(0);
-            _oppositeOrbit = orbitGenerator.GetOrbit(1);
+            _levelState = levelState;
             
             _onObstacleCollidedEvent = new EventBinding<ObstacleCollidedEvent>(OnObstacleCollided);
             _onOrbitsSetEvent = new EventBinding<OrbitsSetEvent>(OnOrbitsSet);
@@ -39,10 +39,32 @@ namespace OrbitalEscape.Movement
 
         public void Jump()
         {
+            if (!TryInitializeOrbits())
+            {
+                return;
+            }
+
             if (_canGoThroughRift)
                 JumpThroughRift();
             else
                 JumpToOppositeOrbit();
+        }
+
+        private bool TryInitializeOrbits()
+        {
+            if (_currentOrbit != null && _oppositeOrbit != null)
+            {
+                return true;
+            }
+
+            if (_levelState.Count < 2)
+            {
+                return false;
+            }
+
+            _currentOrbit = _levelState.GetOrbit(0);
+            _oppositeOrbit = _levelState.GetOrbit(1);
+            return true;
         }
 
         private void JumpThroughRift()

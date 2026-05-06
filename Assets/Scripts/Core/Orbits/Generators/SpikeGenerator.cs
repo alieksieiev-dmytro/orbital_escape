@@ -10,23 +10,16 @@ namespace OrbitalEscape.Orbits
 {
     public class SpikeGenerator : IArcGenerator
     {
-        private readonly List<Orbit> _processedOrbits;
         private readonly SpikeConfig _config;
         
         [Inject]
-        private SpikeGenerator(SpikeConfig config)
+        public SpikeGenerator(SpikeConfig config)
         {
-            _processedOrbits = new List<Orbit>();
             _config = config;
         }
 
-        public List<ArcObject> GenerateArcs(Orbit orbit, ArcType arcType)
+        public List<ArcObject> GenerateArcs(Orbit orbit, ArcType arcType, LevelBuildContext context)
         {
-            if (!_processedOrbits.Contains(orbit))
-            {
-                _processedOrbits.Add(orbit);
-            }
-
             List<float> orbitSections = OrbitMath.DivideOrbitIntoEqualArcs(orbit, _config.SpikeArcLength).ToList();
             int sectionCount = orbitSections.Count;
 
@@ -77,8 +70,8 @@ namespace OrbitalEscape.Orbits
 
                 ArcObject spike = new ArcObject(arc, new SpikeObstacle(height), arcType);
 
-                if (_processedOrbits.Count > 1 &&
-                    CheckOverlapFromOppositeOrbit(spike, _processedOrbits[^2].OrbitObjects))
+                if (context.TryGetPreviousOrbit(out Orbit previousOrbit) &&
+                    CheckOverlapFromOppositeOrbit(spike, previousOrbit.OrbitObjects))
                 {
                     continue;
                 }
@@ -128,14 +121,5 @@ namespace OrbitalEscape.Orbits
             return false;
         }
 
-        private List<int> GetIndexes(int count)
-        {
-            var result = new List<int>(count);
-            
-            for (int i = 0; i < count; i++)
-                result.Add(i);
-            
-            return result;
-        }
     }
 }

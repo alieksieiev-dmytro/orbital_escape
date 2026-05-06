@@ -1,9 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using OrbitalEscape.Events;
-using OrbitalEscape.Factories;
 using OrbitalEscape.Orbits.Generators;
 using OrbitalEscape.Visuals;
 using UnityEngine;
@@ -13,38 +11,23 @@ namespace OrbitalEscape.Orbits
 {
     public class LevelManager : MonoBehaviour
     {
-        private const int ORBIT_MULTIPLIER = 2;
-        private const int MAX_ORBIT_PER_GENERATION = 8;
-        
-        private IArcGenerator _riftGenerator;
-        private IArcGenerator _spikeGenerator;
-        private IArcGenerator _impulseTrapGenerator;
-        private IObjectFactory<GameObject> _orbitFactory;
-        private IObjectFactory<GameObject> _spikeFactory;
-        private IObjectFactory<GameObject> _impulseTrapFactory;
-        private IObjectFactory<RiftObject> _riftFactory;
-        private OrbitGenerator _orbitGenerator;
-        private List<Orbit> _orbitsData;
+        private ILevelBuilder _levelBuilder;
+        private ILevelObjectSpawner _levelObjectSpawner;
+        private LevelGenerationConfig _generationConfig;
+        private LevelState _levelState;
         private EventBinding<PassedThroughOrbitEvent> _passedThroughOrbitBinding;
 
         [Inject]
-        public void Construct(OrbitGenerator orbitGenerator,
-            [Inject(Id = FactoryType.OrbitFactory)] IObjectFactory<GameObject> orbitFactory,
-            [Inject(Id = FactoryType.RiftFactory)] IObjectFactory<RiftObject> riftFactory,
-            [Inject(Id = FactoryType.SpikeFactory)] IObjectFactory<GameObject> spikeFactory,
-            [Inject(Id = FactoryType.ImpulseTrapFactory)] IObjectFactory<GameObject> impulseTrapFactory,
-            [Inject(Id = ArcObjectType.Rift)] IArcGenerator riftGenerator,
-            [Inject(Id = ArcObjectType.Spike)] IArcGenerator spikeGenerator,
-            [Inject(Id = ArcObjectType.ImpulseTrap)] IArcGenerator impulseTrapGenerator)
+        public void Construct(
+            ILevelBuilder levelBuilder,
+            ILevelObjectSpawner levelObjectSpawner,
+            LevelGenerationConfig generationConfig,
+            LevelState levelState)
         {
-            _orbitGenerator = orbitGenerator;
-            _orbitFactory = orbitFactory;
-            _spikeFactory = spikeFactory;
-            _impulseTrapFactory = impulseTrapFactory;
-            _riftFactory = riftFactory;
-            _riftGenerator = riftGenerator;
-            _spikeGenerator = spikeGenerator;
-            _impulseTrapGenerator = impulseTrapGenerator;
+            _levelBuilder = levelBuilder;
+            _levelObjectSpawner = levelObjectSpawner;
+            _generationConfig = generationConfig;
+            _levelState = levelState;
         }
 
         private void Awake()
@@ -56,32 +39,31 @@ namespace OrbitalEscape.Orbits
         [ContextMenu("Build Level")]
         private void BuildLevel()
         {
-            _orbitsData = new List<Orbit>();
-            ExpandLevel(2);
-            
             ClearLevel();
-            CreateLevel(_orbitsData);
+            _levelState.Clear();
+            ExpandLevel(_generationConfig.InitialOrbitCount);
+            CreateLevel(_levelState.Orbits);
         }
 
-        private void CreateLevel(List<Orbit> orbits)
+        private void CreateLevel(IReadOnlyList<Orbit> orbits)
         {
             CreateOrbitObjects(orbits);
 
-            var innerOrbit = _orbitFactory.Get(0).GetComponent<AuroraFadeInOut>();
-            var outerOrbit = _orbitFactory.Get(1).GetComponent<AuroraFadeInOut>();
+            var innerOrbit = _levelObjectSpawner.GetOrbitObject(0).GetComponent<AuroraFadeInOut>();
+            var outerOrbit = _levelObjectSpawner.GetOrbitObject(1).GetComponent<AuroraFadeInOut>();
             
             innerOrbit.InitAurora(orbits[0]);
             outerOrbit.InitAurora(orbits[1]);
             
             innerOrbit.SetActive(false);
             outerOrbit.SetActive(true);
+
+            EventBus<OrbitsSetEvent>.Raise(new OrbitsSetEvent(orbits[0], orbits[1]));
         }
 
         private void ClearLevel()
         {
-            _orbitFactory.Clear();
-            _spikeFactory.Clear();
-            _impulseTrapFactory.Clear();
+            _levelObjectSpawner.Clear();
         }
         
         private void OnEnable() => EventBus<PassedThroughOrbitEvent>.Register(_passedThroughOrbitBinding);
@@ -90,37 +72,25 @@ namespace OrbitalEscape.Orbits
         
         private void OnPassedThroughOrbit(PassedThroughOrbitEvent @event)
         {
-            if (@event.Orbit.Index >= _orbitsData.Count * 0.5f)
+            if (@event.Orbit.Index >= _levelState.Count * 0.5f)
             {
-                int newOrbitsCount = Mathf.Clamp(_orbitsData.Count * ORBIT_MULTIPLIER - _orbitsData.Count, 0, MAX_ORBIT_PER_GENERATION);
+                int newOrbitsCount = _generationConfig.GetExtensionCount(_levelState.Count);
                 var newOrbits = ExpandLevel(newOrbitsCount);
                 
                 StartCoroutine(DelayedObjectsCreation(CreateOrbitObjects, newOrbits));
             }
 
-            var currentOrbit = _orbitsData[@event.Orbit.Index];
+            var currentOrbit = _levelState.GetOrbit(@event.Orbit.Index);
             var oppositeOrbitIndex = @event.IsOuterOrbit
-                ? _orbitsData[@event.Orbit.Index + 1]
-                : _orbitsData[@event.Orbit.Index - 1];
+                ? _levelState.GetOrbit(@event.Orbit.Index + 1)
+                : _levelState.GetOrbit(@event.Orbit.Index - 1);
             EventBus<OrbitsSetEvent>.Raise(new OrbitsSetEvent(currentOrbit, oppositeOrbitIndex));
         }
 
         private List<Orbit> ExpandLevel(int count)
         {
-            var orbits = _orbitGenerator.GenerateOrbits(count);
-            int selectedOrbits = Mathf.Clamp(_orbitsData.Count == 0 ? _orbitGenerator.Count : count, 0, MAX_ORBIT_PER_GENERATION);
-            var newOrbits = orbits.TakeLast(selectedOrbits).ToList();
-
-            foreach (var orbit in newOrbits.Where(orbit => orbit.Index != 0))
-            {
-                orbit.OrbitObjects.AddRange(_riftGenerator.GenerateArcs(orbit, ArcType.TwoSide));
-                orbit.OrbitObjects.AddRange(_spikeGenerator.GenerateArcs(orbit, ArcType.Outer));
-                orbit.OrbitObjects.AddRange(_spikeGenerator.GenerateArcs(orbit, ArcType.Inner));
-                orbit.OrbitObjects.AddRange(_impulseTrapGenerator.GenerateArcs(orbit, ArcType.Outer));
-                orbit.OrbitObjects.AddRange(_impulseTrapGenerator.GenerateArcs(orbit, ArcType.Inner));
-            }
-            
-            _orbitsData.AddRange(newOrbits);
+            List<Orbit> newOrbits = _levelBuilder.Build(_levelState.Orbits, count);
+            _levelState.AddRange(newOrbits);
             return newOrbits;
         }
 
@@ -128,23 +98,7 @@ namespace OrbitalEscape.Orbits
         {
             foreach (var orbit in orbits)
             {
-                var orbitGameObject = _orbitFactory.Create(orbit);
-                orbitGameObject.GetComponent<RiftController>().Initialize(orbit.GetOrbitObjectsByType(ArcObjectType.Rift));
-
-                foreach (var spike in orbit.GetOrbitObjectsByType(ArcObjectType.Spike))
-                {
-                    _spikeFactory.Create(orbitGameObject.transform, orbit, spike);
-                }
-
-                foreach (var impulseTrap in orbit.GetOrbitObjectsByType(ArcObjectType.ImpulseTrap))
-                {
-                    _impulseTrapFactory.Create(orbitGameObject.transform, orbit, impulseTrap);
-                }
-                
-                foreach (var rift in orbit.GetOrbitObjectsByType(ArcObjectType.Rift))
-                {
-                    _riftFactory.Create(orbitGameObject.transform, rift);
-                }
+                _levelObjectSpawner.SpawnOrbit(orbit);
             }
         }
 

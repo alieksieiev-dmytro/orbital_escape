@@ -6,33 +6,26 @@ namespace OrbitalEscape.Orbits
     public class OrbitGenerator
     {
         private readonly OrbitConfig _orbitConfig;
-        private readonly List<Orbit> _orbits;
-        
-        public int Count => _orbits.Count;
         
         [Inject]
         public OrbitGenerator(OrbitConfig orbitConfig)
         {
             _orbitConfig = orbitConfig;
-            _orbits = new List<Orbit>();
-            GenerateOrbits(2);
         }
 
-        public List<Orbit> GenerateOrbits(int count)
+        public List<Orbit> GenerateOrbits(int startIndex, int count)
         {
-            int currentCount = _orbits.Count;
+            List<Orbit> orbits = new List<Orbit>(count);
             
             for (int i = 0; i < count; i++)
             {
-                int orbitIndex = i + currentCount;
+                int orbitIndex = startIndex + i;
                 float orbitRadius = _orbitConfig.FirstOrbitRadius + orbitIndex * _orbitConfig.OrbitRadiusStep;
                 var newOrbit = new Orbit(orbitRadius, orbitIndex);
-                _orbits.Add(newOrbit);
+                orbits.Add(newOrbit);
             }
             
-            return _orbits;
+            return orbits;
         }
-        
-        public Orbit GetOrbit(int index) => _orbits[index];
     }
 }
