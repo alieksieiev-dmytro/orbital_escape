@@ -71,6 +71,7 @@ namespace OrbitalEscape.Injection
             Container.Bind(typeof(OrbitConfig)).To<OrbitConfig>().FromScriptableObjectResource("Configs/OrbitConfig").AsSingle();
             Container.Bind(typeof(RiftConfig)).To<RiftConfig>().FromScriptableObjectResource("Configs/RiftConfig").AsSingle();
             Container.Bind(typeof(SpikeConfig)).To<SpikeConfig>().FromScriptableObjectResource("Configs/SpikeConfig").AsSingle();
+            Container.Bind(typeof(ImpulseTrapConfig)).To<ImpulseTrapConfig>().FromScriptableObjectResource("Configs/ImpulseTrapConfig").AsSingle();
         }
     }
 }

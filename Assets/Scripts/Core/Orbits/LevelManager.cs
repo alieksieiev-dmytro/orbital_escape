@@ -18,8 +18,10 @@ namespace OrbitalEscape.Orbits
         
         private IArcGenerator _riftGenerator;
         private IArcGenerator _spikeGenerator;
+        private IArcGenerator _impulseTrapGenerator;
         private IObjectFactory<GameObject> _orbitFactory;
         private IObjectFactory<GameObject> _spikeFactory;
+        private IObjectFactory<GameObject> _impulseTrapFactory;
         private IObjectFactory<RiftObject> _riftFactory;
         private OrbitGenerator _orbitGenerator;
         private List<Orbit> _orbitsData;
@@ -30,15 +32,19 @@ namespace OrbitalEscape.Orbits
             [Inject(Id = FactoryType.OrbitFactory)] IObjectFactory<GameObject> orbitFactory,
             [Inject(Id = FactoryType.RiftFactory)] IObjectFactory<RiftObject> riftFactory,
             [Inject(Id = FactoryType.SpikeFactory)] IObjectFactory<GameObject> spikeFactory,
+            [Inject(Id = FactoryType.ImpulseTrapFactory)] IObjectFactory<GameObject> impulseTrapFactory,
             [Inject(Id = ArcObjectType.Rift)] IArcGenerator riftGenerator,
-            [Inject(Id = ArcObjectType.Spike)] IArcGenerator spikeGenerator)
+            [Inject(Id = ArcObjectType.Spike)] IArcGenerator spikeGenerator,
+            [Inject(Id = ArcObjectType.ImpulseTrap)] IArcGenerator impulseTrapGenerator)
         {
             _orbitGenerator = orbitGenerator;
             _orbitFactory = orbitFactory;
             _spikeFactory = spikeFactory;
+            _impulseTrapFactory = impulseTrapFactory;
             _riftFactory = riftFactory;
             _riftGenerator = riftGenerator;
             _spikeGenerator = spikeGenerator;
+            _impulseTrapGenerator = impulseTrapGenerator;
         }
 
         private void Awake()
@@ -75,6 +81,7 @@ namespace OrbitalEscape.Orbits
         {
             _orbitFactory.Clear();
             _spikeFactory.Clear();
+            _impulseTrapFactory.Clear();
         }
         
         private void OnEnable() => EventBus<PassedThroughOrbitEvent>.Register(_passedThroughOrbitBinding);
@@ -109,6 +116,8 @@ namespace OrbitalEscape.Orbits
                 orbit.OrbitObjects.AddRange(_riftGenerator.GenerateArcs(orbit, ArcType.TwoSide));
                 orbit.OrbitObjects.AddRange(_spikeGenerator.GenerateArcs(orbit, ArcType.Outer));
                 orbit.OrbitObjects.AddRange(_spikeGenerator.GenerateArcs(orbit, ArcType.Inner));
+                orbit.OrbitObjects.AddRange(_impulseTrapGenerator.GenerateArcs(orbit, ArcType.Outer));
+                orbit.OrbitObjects.AddRange(_impulseTrapGenerator.GenerateArcs(orbit, ArcType.Inner));
             }
             
             _orbitsData.AddRange(newOrbits);
@@ -125,6 +134,11 @@ namespace OrbitalEscape.Orbits
                 foreach (var spike in orbit.GetOrbitObjectsByType(ArcObjectType.Spike))
                 {
                     _spikeFactory.Create(orbitGameObject.transform, orbit, spike);
+                }
+
+                foreach (var impulseTrap in orbit.GetOrbitObjectsByType(ArcObjectType.ImpulseTrap))
+                {
+                    _impulseTrapFactory.Create(orbitGameObject.transform, orbit, impulseTrap);
                 }
                 
                 foreach (var rift in orbit.GetOrbitObjectsByType(ArcObjectType.Rift))

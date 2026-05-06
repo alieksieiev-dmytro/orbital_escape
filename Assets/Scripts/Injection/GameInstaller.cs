@@ -20,6 +20,7 @@ namespace OrbitalEscape.Injection
         [SerializeField] private GameObject _orbitPrefab;
         [SerializeField] private RiftObject _riftObject;
         [SerializeField] private GameObject _spikePrefab;
+        [SerializeField] private GameObject _impulseTrapPrefab;
         
         private PlayerMovementController _movementController;
 
@@ -37,6 +38,7 @@ namespace OrbitalEscape.Injection
 
             Container.Bind(typeof(JumpBehaviour), typeof(IDisposable)).To<JumpBehaviour>().AsSingle().NonLazy();
             Container.Bind(typeof(PlayerController), typeof(IDisposable)).To<PlayerController>().AsSingle().WithArguments(_player).NonLazy();
+            Container.Bind(typeof(ImpulseTrapController), typeof(IDisposable)).To<ImpulseTrapController>().AsSingle().NonLazy();
             Container.Bind(typeof(IScoreService), typeof(IDisposable)).To<ScoreService>().AsSingle().NonLazy();
         }
         
@@ -45,6 +47,7 @@ namespace OrbitalEscape.Injection
             Container.Bind(typeof(OrbitGenerator)).To<OrbitGenerator>().AsSingle();
             Container.Bind<IArcGenerator>().WithId(ArcObjectType.Rift).To<RiftGenerator>().AsSingle();
             Container.Bind<IArcGenerator>().WithId(ArcObjectType.Spike).To<SpikeGenerator>().AsSingle();
+            Container.Bind<IArcGenerator>().WithId(ArcObjectType.ImpulseTrap).To<ImpulseTrapGenerator>().AsSingle();
         }
         
         private void BindFactories()
@@ -52,6 +55,7 @@ namespace OrbitalEscape.Injection
             Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.OrbitFactory).To<OrbitFactory>().AsSingle().WithArguments(_orbitPrefab, _orbitRoot);
             Container.Bind(typeof(IObjectFactory<RiftObject>)).WithId(FactoryType.RiftFactory).To<RiftFactory>().AsSingle().WithArguments(_riftObject);
             Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.SpikeFactory).To<SpikeFactory>().AsSingle().WithArguments(_spikePrefab);
+            Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.ImpulseTrapFactory).To<ImpulseTrapFactory>().AsSingle().WithArguments(_impulseTrapPrefab);
         }
 
         private void InstallCommands()
