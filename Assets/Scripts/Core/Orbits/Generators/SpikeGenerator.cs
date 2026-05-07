@@ -1,30 +1,21 @@
 using System.Collections.Generic;
+using System;
 using System.Linq;
 using OrbitalEscape.Orbits.Generators;
 using OrbitalEscape.Utils;
-using UnityEngine;
-using Zenject;
-using Random = UnityEngine.Random;
 
 namespace OrbitalEscape.Orbits
 {
     public class SpikeGenerator : IArcGenerator
     {
-        private readonly SpikeConfig _config;
-        
-        [Inject]
-        public SpikeGenerator(SpikeConfig config)
-        {
-            _config = config;
-        }
-
         public List<ArcObject> GenerateArcs(Orbit orbit, ArcType arcType, LevelBuildContext context)
         {
-            List<float> orbitSections = OrbitMath.DivideOrbitIntoEqualArcs(orbit, _config.SpikeArcLength).ToList();
+            SpikeGenerationSettings config = context.Settings.Spike;
+            List<float> orbitSections = OrbitMath.DivideOrbitIntoEqualArcs(orbit, config.SpikeArcLength).ToList();
             int sectionCount = orbitSections.Count;
 
-            int spikesCount = Mathf.CeilToInt(_config.Density * sectionCount);
-            spikesCount = Mathf.Clamp(spikesCount, 0, sectionCount);
+            int spikesCount = (int)Math.Ceiling(config.Density * sectionCount);
+            spikesCount = Clamp(spikesCount, 0, sectionCount);
 
             List<int> availableSections = new List<int>(sectionCount);
             for (int i = 0; i < sectionCount; i++)
@@ -34,7 +25,7 @@ namespace OrbitalEscape.Orbits
 
             List<ArcObject> resultSpikes = new List<ArcObject>(spikesCount);
 
-            float deltaRadians = _config.SpikeArcLength / orbit.Radius;
+            float deltaRadians = config.SpikeArcLength / orbit.Radius;
             float deltaDegrees = deltaRadians * OrbitMath.RADIANS_TO_DEGREES;
 
             List<ArcObject> otherObjects = orbit.GetAllObjectsExceptType(ArcObjectType.Spike, arcType);
@@ -42,12 +33,12 @@ namespace OrbitalEscape.Orbits
 
             while (resultSpikes.Count < spikesCount && availableSections.Count > 0)
             {
-                int pickPos = Random.Range(0, availableSections.Count);
+                int pickPos = context.Random.Range(0, availableSections.Count);
                 int sectionIndex = availableSections[pickPos];
 
                 availableSections.RemoveAt(pickPos);
 
-                bool allowNeighbor = Random.Range(0.0f, 1.0f) < _config.ConsecutiveSpikeChance;
+                bool allowNeighbor = context.Random.Range(0.0f, 1.0f) < config.ConsecutiveSpikeChance;
                 if (!allowNeighbor)
                 {
                     int prev = (sectionIndex - 1 + sectionCount) % sectionCount;
@@ -59,7 +50,7 @@ namespace OrbitalEscape.Orbits
 
                 float startAngle = orbitSections[sectionIndex];
                 float endAngle = startAngle + deltaDegrees;
-                float height = Random.Range(_config.MinSpikeHeight, _config.MaxSpikeHeight);
+                float height = context.Random.Range(config.MinSpikeHeight, config.MaxSpikeHeight);
 
                 Arc arc = new Arc(startAngle, endAngle, orbit.Radius);
 
@@ -80,6 +71,11 @@ namespace OrbitalEscape.Orbits
             }
 
             return resultSpikes;
+        }
+
+        private static int Clamp(int value, int min, int max)
+        {
+            return Math.Min(Math.Max(value, min), max);
         }
 
         private bool CheckOverlapFromOppositeOrbit(ArcObject spike, IEnumerable<ArcObject> arcObjects)

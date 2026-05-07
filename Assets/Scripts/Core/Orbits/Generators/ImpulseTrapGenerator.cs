@@ -1,40 +1,31 @@
 using System.Collections.Generic;
+using System;
 using System.Linq;
 using OrbitalEscape.Utils;
-using UnityEngine;
-using Zenject;
-using Random = UnityEngine.Random;
 
 namespace OrbitalEscape.Orbits.Generators
 {
     public class ImpulseTrapGenerator : IArcGenerator
     {
-        private readonly ImpulseTrapConfig _config;
-
-        [Inject]
-        public ImpulseTrapGenerator(ImpulseTrapConfig config)
-        {
-            _config = config;
-        }
-
         public List<ArcObject> GenerateArcs(Orbit orbit, ArcType arcType, LevelBuildContext context)
         {
-            List<float> orbitSections = OrbitMath.DivideOrbitIntoEqualArcs(orbit, _config.TrapArcLength).ToList();
+            ImpulseTrapGenerationSettings config = context.Settings.ImpulseTrap;
+            List<float> orbitSections = OrbitMath.DivideOrbitIntoEqualArcs(orbit, config.TrapArcLength).ToList();
             int sectionCount = orbitSections.Count;
 
-            int trapsCount = Mathf.CeilToInt(_config.Density * sectionCount);
-            trapsCount = Mathf.Clamp(trapsCount, 0, sectionCount);
+            int trapsCount = (int)Math.Ceiling(config.Density * sectionCount);
+            trapsCount = Clamp(trapsCount, 0, sectionCount);
 
             List<int> availableSections = GetIndexes(sectionCount);
             List<ArcObject> resultTraps = new List<ArcObject>(trapsCount);
             List<ArcObject> blockingObjects = GetBlockingObjects(orbit, arcType);
 
-            float deltaRadians = _config.TrapArcLength / orbit.Radius;
+            float deltaRadians = config.TrapArcLength / orbit.Radius;
             float deltaDegrees = deltaRadians * OrbitMath.RADIANS_TO_DEGREES;
 
             while (resultTraps.Count < trapsCount && availableSections.Count > 0)
             {
-                int pickPos = Random.Range(0, availableSections.Count);
+                int pickPos = context.Random.Range(0, availableSections.Count);
                 int sectionIndex = availableSections[pickPos];
 
                 availableSections.RemoveAt(pickPos);
@@ -45,7 +36,7 @@ namespace OrbitalEscape.Orbits.Generators
                 if (OverlapsWithOtherArcs(arc, blockingObjects))
                     continue;
 
-                ArcObject trap = new ArcObject(arc, new ImpulseTrap(_config.Height), arcType);
+                ArcObject trap = new ArcObject(arc, new ImpulseTrap(config.Height), arcType);
                 resultTraps.Add(trap);
                 blockingObjects.Add(trap);
             }
@@ -73,6 +64,11 @@ namespace OrbitalEscape.Orbits.Generators
             }
 
             return false;
+        }
+
+        private static int Clamp(int value, int min, int max)
+        {
+            return Math.Min(Math.Max(value, min), max);
         }
 
         private List<int> GetIndexes(int count)

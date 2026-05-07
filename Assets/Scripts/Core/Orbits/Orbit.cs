@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace OrbitalEscape.Orbits
 {
@@ -12,7 +11,7 @@ namespace OrbitalEscape.Orbits
         
         public float Radius { get; private set; }
         public int Index { get; private set; }
-        public float Circumference => 2 * Mathf.PI * Radius;
+        public float Circumference => 2.0f * MathF.PI * Radius;
         
         public List<Arc> InnerArcs => OrbitObjects
             .Where(obj => obj.Type == ArcType.Inner)
