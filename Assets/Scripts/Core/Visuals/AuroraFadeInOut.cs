@@ -1,6 +1,7 @@
 using DG.Tweening;
 using OrbitalEscape.Events;
 using OrbitalEscape.Orbits;
+using OrbitalEscape.Visuals.Palettes;
 using UnityEngine;
 
 namespace OrbitalEscape.Visuals
@@ -41,6 +42,12 @@ namespace OrbitalEscape.Visuals
         {
             _outerAurora.gameObject.SetActive(isOuter);
             _innerAurora.gameObject.SetActive(!isOuter);
+        }
+
+        public void ApplyPalette(PaletteSnapshot palette)
+        {
+            SetMaterialColor(_innerAurora, AuroraInnerColour, palette.OutlineColor);
+            SetMaterialColor(_outerAurora, AuroraOuterColour, palette.OutlineColor);
         }
         
         private void PlayFadeIn(float duration, bool playInner, bool playOuter)
@@ -113,6 +120,18 @@ namespace OrbitalEscape.Visuals
                     PlayFadeIn(2f, true, false);
                 }
             }
+        }
+
+        private void SetMaterialColor(SpriteRenderer target, int colorId, Color color)
+        {
+            if (target == null || target.material == null || !target.material.HasProperty(colorId))
+            {
+                return;
+            }
+
+            Color currentColor = target.material.GetColor(colorId);
+            color.a = currentColor.a;
+            target.material.SetColor(colorId, color);
         }
     }
 }

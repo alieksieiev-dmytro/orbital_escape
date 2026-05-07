@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b4ac57dc5874b12afbe196d9d9029e9, type: 3}
   m_Name: LevelGenerationConfig
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.Generators.LevelGenerationConfig
-  <InitialOrbitCount>k__BackingField: 2
+  <InitialOrbitCount>k__BackingField: 4
   <OrbitMultiplier>k__BackingField: 2
   <MaxOrbitsPerGeneration>k__BackingField: 8
   <FirstOrbitIndexWithContent>k__BackingField: 1

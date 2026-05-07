@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using OrbitalEscape.Factories;
+using OrbitalEscape.Visuals.Palettes;
 using UnityEngine;
 using Zenject;
 
@@ -10,13 +11,23 @@ namespace OrbitalEscape.Orbits
     {
         private readonly IObjectFactory<GameObject> _orbitFactory;
         private readonly List<IOrbitObjectSpawner> _objectSpawners;
+        private readonly IPaletteService _paletteService;
+        private readonly IPaletteObjectPainter _paletteObjectPainter;
+        private readonly List<GameObject> _spawnedOrbitObjects;
+
+        public IReadOnlyList<GameObject> SpawnedOrbitObjects => _spawnedOrbitObjects;
 
         [Inject]
         public LevelObjectSpawner(
             [Inject(Id = FactoryType.OrbitFactory)] IObjectFactory<GameObject> orbitFactory,
-            List<IOrbitObjectSpawner> objectSpawners)
+            List<IOrbitObjectSpawner> objectSpawners,
+            IPaletteService paletteService,
+            IPaletteObjectPainter paletteObjectPainter)
         {
             _orbitFactory = orbitFactory;
+            _paletteService = paletteService;
+            _paletteObjectPainter = paletteObjectPainter;
+            _spawnedOrbitObjects = new List<GameObject>();
             _objectSpawners = objectSpawners
                 .OrderBy(spawner => spawner.Order)
                 .ToList();
@@ -31,6 +42,8 @@ namespace OrbitalEscape.Orbits
                 spawner.Spawn(orbitObject, orbit);
             }
 
+            _paletteObjectPainter.ApplyLevelObject(orbitObject, _paletteService.CurrentPalette);
+            _spawnedOrbitObjects.Add(orbitObject);
             return orbitObject;
         }
 
@@ -42,6 +55,7 @@ namespace OrbitalEscape.Orbits
         public void Clear()
         {
             _orbitFactory.Clear();
+            _spawnedOrbitObjects.Clear();
 
             foreach (IOrbitObjectSpawner spawner in _objectSpawners)
             {
