@@ -1,6 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using OrbitalEscape.Events;
 using OrbitalEscape.Orbits.Generators;
 using OrbitalEscape.Visuals;
@@ -16,6 +17,9 @@ namespace OrbitalEscape.Orbits
         private LevelGenerationConfig _generationConfig;
         private LevelState _levelState;
         private EventBinding<PassedThroughOrbitEvent> _passedThroughOrbitBinding;
+        private CancellationToken _destroyCancellationToken;
+        private bool _isBuildingLevel;
+        private bool _isExtendingLevel;
 
         [Inject]
         public void Construct(
@@ -32,17 +36,50 @@ namespace OrbitalEscape.Orbits
 
         private void Awake()
         {
-            BuildLevel();
+            _destroyCancellationToken = this.GetCancellationTokenOnDestroy();
             _passedThroughOrbitBinding = new EventBinding<PassedThroughOrbitEvent>(OnPassedThroughOrbit);
+        }
+
+        private void Start()
+        {
+            BuildLevelAsync(_destroyCancellationToken).Forget();
         }
 
         [ContextMenu("Build Level")]
         private void BuildLevel()
         {
-            ClearLevel();
-            _levelState.Clear();
-            ExpandLevel(_generationConfig.InitialOrbitCount);
-            CreateLevel(_levelState.Orbits);
+            BuildLevelAsync(_destroyCancellationToken).Forget();
+        }
+
+        private async UniTask BuildLevelAsync(CancellationToken cancellationToken)
+        {
+            if (_isBuildingLevel)
+            {
+                return;
+            }
+
+            _isBuildingLevel = true;
+
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                ClearLevel();
+                _levelState.Clear();
+
+                List<Orbit> newOrbits = await ExpandLevelAsync(_generationConfig.InitialOrbitCount, cancellationToken);
+                CreateLevel(newOrbits);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+            finally
+            {
+                _isBuildingLevel = false;
+            }
         }
 
         private void CreateLevel(IReadOnlyList<Orbit> orbits)
@@ -66,30 +103,87 @@ namespace OrbitalEscape.Orbits
             _levelObjectSpawner.Clear();
         }
         
-        private void OnEnable() => EventBus<PassedThroughOrbitEvent>.Register(_passedThroughOrbitBinding);
+        private void OnEnable()
+        {
+            if (_passedThroughOrbitBinding != null)
+            {
+                EventBus<PassedThroughOrbitEvent>.Register(_passedThroughOrbitBinding);
+            }
+        }
         
-        private void OnDisable() => EventBus<PassedThroughOrbitEvent>.Deregister(_passedThroughOrbitBinding);
+        private void OnDisable()
+        {
+            if (_passedThroughOrbitBinding != null)
+            {
+                EventBus<PassedThroughOrbitEvent>.Deregister(_passedThroughOrbitBinding);
+            }
+        }
         
         private void OnPassedThroughOrbit(PassedThroughOrbitEvent @event)
         {
-            if (@event.Orbit.Index >= _levelState.Count * 0.5f)
+            if (_isBuildingLevel || _levelState.Count == 0)
+            {
+                return;
+            }
+
+            if (@event.Orbit.Index >= _levelState.Count * 0.5f && !_isExtendingLevel)
             {
                 int newOrbitsCount = _generationConfig.GetExtensionCount(_levelState.Count);
-                var newOrbits = ExpandLevel(newOrbitsCount);
-                
-                StartCoroutine(DelayedObjectsCreation(CreateOrbitObjects, newOrbits));
+                ExtendLevelAsync(newOrbitsCount, _destroyCancellationToken).Forget();
+            }
+
+            if (@event.Orbit.Index < 0 || @event.Orbit.Index >= _levelState.Count)
+            {
+                return;
+            }
+
+            int oppositeIndex = @event.IsOuterOrbit
+                ? @event.Orbit.Index + 1
+                : @event.Orbit.Index - 1;
+            if (oppositeIndex < 0 || oppositeIndex >= _levelState.Count)
+            {
+                return;
             }
 
             var currentOrbit = _levelState.GetOrbit(@event.Orbit.Index);
-            var oppositeOrbitIndex = @event.IsOuterOrbit
-                ? _levelState.GetOrbit(@event.Orbit.Index + 1)
-                : _levelState.GetOrbit(@event.Orbit.Index - 1);
+            var oppositeOrbitIndex = _levelState.GetOrbit(oppositeIndex);
             EventBus<OrbitsSetEvent>.Raise(new OrbitsSetEvent(currentOrbit, oppositeOrbitIndex));
         }
 
-        private List<Orbit> ExpandLevel(int count)
+        private async UniTask ExtendLevelAsync(int count, CancellationToken cancellationToken)
         {
-            List<Orbit> newOrbits = _levelBuilder.Build(_levelState.Orbits, count);
+            if (count <= 0)
+            {
+                return;
+            }
+
+            _isExtendingLevel = true;
+
+            try
+            {
+                List<Orbit> newOrbits = await ExpandLevelAsync(count, cancellationToken);
+                await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
+                await CreateOrbitObjectsAsync(newOrbits, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+            finally
+            {
+                _isExtendingLevel = false;
+            }
+        }
+
+        private async UniTask<List<Orbit>> ExpandLevelAsync(int count, CancellationToken cancellationToken)
+        {
+            LevelBuildResult result = await _levelBuilder.BuildAsync(_levelState.Orbits, count, cancellationToken);
+            LogWarnings(result.Warnings);
+
+            List<Orbit> newOrbits = new List<Orbit>(result.Orbits);
             _levelState.AddRange(newOrbits);
             return newOrbits;
         }
@@ -102,10 +196,22 @@ namespace OrbitalEscape.Orbits
             }
         }
 
-        private IEnumerator DelayedObjectsCreation(Action<IEnumerable<Orbit>> action, IEnumerable<Orbit> orbits)
+        private async UniTask CreateOrbitObjectsAsync(IEnumerable<Orbit> orbits, CancellationToken cancellationToken)
         {
-            yield return null;
-            action(orbits);
+            foreach (var orbit in orbits)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                _levelObjectSpawner.SpawnOrbit(orbit);
+                await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
+            }
+        }
+
+        private void LogWarnings(IReadOnlyList<string> warnings)
+        {
+            for (int i = 0; i < warnings.Count; i++)
+            {
+                Debug.LogWarning(warnings[i]);
+            }
         }
     }
 }

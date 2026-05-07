@@ -6,16 +6,24 @@ namespace OrbitalEscape.Orbits.Generators
     public sealed class LevelBuildContext
     {
         private readonly List<Orbit> _orbits;
+        private readonly List<string> _warnings;
 
         public IReadOnlyList<Orbit> Orbits => _orbits;
+        public IReadOnlyList<string> Warnings => _warnings;
         public int StartIndex { get; }
-        public LevelGenerationConfig GenerationConfig { get; }
+        public LevelBuildSettings Settings { get; }
+        public LevelRandom Random { get; }
 
-        public LevelBuildContext(IEnumerable<Orbit> existingOrbits, LevelGenerationConfig generationConfig)
+        public LevelBuildContext(
+            IEnumerable<Orbit> existingOrbits,
+            LevelBuildSettings settings,
+            LevelRandom random)
         {
             _orbits = existingOrbits.ToList();
+            _warnings = new List<string>();
             StartIndex = _orbits.Count;
-            GenerationConfig = generationConfig;
+            Settings = settings;
+            Random = random;
         }
 
         public bool TryGetPreviousOrbit(out Orbit orbit)
@@ -33,6 +41,11 @@ namespace OrbitalEscape.Orbits.Generators
         internal void RegisterBuiltOrbit(Orbit orbit)
         {
             _orbits.Add(orbit);
+        }
+
+        public void AddWarning(string warning)
+        {
+            _warnings.Add(warning);
         }
     }
 }

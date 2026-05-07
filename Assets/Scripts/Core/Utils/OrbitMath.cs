@@ -1,3 +1,4 @@
+using System;
 using OrbitalEscape.Orbits;
 using UnityEngine;
 
@@ -5,8 +6,8 @@ namespace OrbitalEscape.Utils
 {
     public static class OrbitMath
     {
-        public const float DEGREES_TO_RADIANS = (float)(Mathf.PI / 180.0);
-        public const float RADIANS_TO_DEGREES = (float)(180.0 / Mathf.PI);
+        public const float DEGREES_TO_RADIANS = (float)(Math.PI / 180.0);
+        public const float RADIANS_TO_DEGREES = (float)(180.0 / Math.PI);
 
         public static float NormalizeDegrees360(float angleDegrees)
         {
@@ -32,8 +33,8 @@ namespace OrbitalEscape.Utils
         public static Vector2 GetPointOnCircle(Vector2 centre, float radius, float angleDegrees)
         {
             float angleRadians = angleDegrees * DEGREES_TO_RADIANS;
-            float x = centre.x + radius * Mathf.Cos(angleRadians);
-            float y = centre.y + radius * Mathf.Sin(angleRadians);
+            float x = centre.x + radius * MathF.Cos(angleRadians);
+            float y = centre.y + radius * MathF.Sin(angleRadians);
             return new Vector2(x, y);
         }
         
@@ -46,13 +47,13 @@ namespace OrbitalEscape.Utils
         public static float GetZRotation2D(Vector2 centre, Vector2 point)
         {
             var direction = point - centre;
-            float angle = Mathf.Atan2(direction.y, direction.x) * RADIANS_TO_DEGREES;
+            float angle = MathF.Atan2(direction.y, direction.x) * RADIANS_TO_DEGREES;
             return angle;
         }
         
         public static float[] DivideOrbitIntoEqualArcs(Orbit orbit, float partLength)
         {
-            int partsCount = orbit.Circumference > partLength ? Mathf.FloorToInt(orbit.Circumference / partLength) : 1;
+            int partsCount = orbit.Circumference > partLength ? (int)MathF.Floor(orbit.Circumference / partLength) : 1;
             float[] angles = new float[partsCount];
             
             for (int i = 0; i < partsCount; i++)
