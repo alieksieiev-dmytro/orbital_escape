@@ -1,10 +1,12 @@
 using System;
+using OrbitalEscape.Difficulty;
 using OrbitalEscape.Factories;
 using OrbitalEscape.Input;
 using OrbitalEscape.Movement;
 using OrbitalEscape.Orbits;
 using OrbitalEscape.Orbits.Generators;
 using OrbitalEscape.Score;
+using OrbitalEscape.Visuals.Palettes;
 using UnityEngine;
 using Zenject;
 using static OrbitalEscape.Constants;
@@ -15,6 +17,8 @@ namespace OrbitalEscape.Injection
     {
         [SerializeField] private LevelManager _levelManager;
         [SerializeField] private Transform _player;
+        [SerializeField] private SpriteRenderer _backgroundRenderer;
+        [SerializeField] private SpriteRenderer _accentRenderer;
         
         [SerializeField] private Transform _orbitRoot;
         [SerializeField] private GameObject _orbitPrefab;
@@ -28,6 +32,7 @@ namespace OrbitalEscape.Injection
         {
             BindGenerators();
             BindFactories();
+            BindPalettes();
             InstallCommands();
             
             Container.Bind<Vector2>().WithId(INJECTION_ID_CENTRE).FromInstance(Center);
@@ -41,6 +46,8 @@ namespace OrbitalEscape.Injection
             Container.Bind(typeof(PlayerController), typeof(IDisposable)).To<PlayerController>().AsSingle().WithArguments(_player).NonLazy();
             Container.Bind(typeof(ImpulseTrapController), typeof(IDisposable)).To<ImpulseTrapController>().AsSingle().NonLazy();
             Container.Bind(typeof(IScoreService), typeof(IDisposable)).To<ScoreService>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<ScorePaletteService>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<PaletteSceneController>().AsSingle().NonLazy();
         }
         
         private void BindGenerators()
@@ -65,6 +72,13 @@ namespace OrbitalEscape.Injection
             Container.Bind<IOrbitObjectSpawner>().To<RiftObjectSpawner>().AsSingle();
             Container.Bind<IOrbitObjectSpawner>().To<SpikeObjectSpawner>().AsSingle();
             Container.Bind<IOrbitObjectSpawner>().To<ImpulseTrapObjectSpawner>().AsSingle();
+        }
+
+        private void BindPalettes()
+        {
+            Container.Bind<IDifficultyService>().To<BasicDifficultyService>().AsSingle();
+            Container.Bind<PaletteSceneReferences>().FromInstance(new PaletteSceneReferences(_player, _backgroundRenderer, _accentRenderer)).AsSingle();
+            Container.Bind<IPaletteObjectPainter>().To<PaletteObjectPainter>().AsSingle();
         }
 
         private void InstallCommands()

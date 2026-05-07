@@ -4,6 +4,7 @@ using OrbitalEscape.Data;
 using OrbitalEscape.Input;
 using OrbitalEscape.Orbits.Generators;
 using OrbitalEscape.UI;
+using OrbitalEscape.Visuals.Palettes;
 using UnityEngine;
 using Zenject;
 using static OrbitalEscape.Constants;
@@ -70,6 +71,7 @@ namespace OrbitalEscape.Injection
         {
             Container.Bind(typeof(OrbitConfig)).To<OrbitConfig>().FromScriptableObjectResource("Configs/OrbitConfig").AsSingle();
             Container.Bind(typeof(LevelGenerationConfig)).To<LevelGenerationConfig>().FromScriptableObjectResource("Configs/LevelGenerationConfig").AsSingle();
+            Container.Bind(typeof(GamePaletteConfig)).To<GamePaletteConfig>().FromScriptableObjectResource("Configs/GamePaletteConfig").AsSingle();
             Container.Bind(typeof(RiftConfig)).To<RiftConfig>().FromScriptableObjectResource("Configs/RiftConfig").AsSingle();
             Container.Bind(typeof(SpikeConfig)).To<SpikeConfig>().FromScriptableObjectResource("Configs/SpikeConfig").AsSingle();
             Container.Bind(typeof(ImpulseTrapConfig)).To<ImpulseTrapConfig>().FromScriptableObjectResource("Configs/ImpulseTrapConfig").AsSingle();
