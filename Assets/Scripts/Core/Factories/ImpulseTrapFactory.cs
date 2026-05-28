@@ -26,8 +26,8 @@ namespace OrbitalEscape.Factories
             trapObject.name = $"impulse_trap_{trapData.Type}";
 
             trapObject.transform.localScale =
-                new Vector3(trapData.Arc.Length() / root.localScale.x,
-                    ((ImpulseTrap)trapData.Object).Height / root.localScale.y,
+                new Vector3(trapData.Arc.Length() / root.lossyScale.x,
+                    ((ImpulseTrap)trapData.Object).Height / root.lossyScale.y,
                     1f);
 
             float radius = trapData.Type switch
@@ -37,22 +37,24 @@ namespace OrbitalEscape.Factories
                 _ => 0f
             };
 
-            Vector2 position = OrbitMath.GetPointOnCircle(
+            Vector2 worldPosition = OrbitMath.GetPointOnCircle(
                 Constants.Center,
                 radius,
-                trapData.Arc.MidAngleDegree()) / root.localScale.x;
+                trapData.Arc.MidAngleDegree());
 
             Vector2 dir = trapData.Type switch
             {
-                ArcType.Inner => Constants.Center - position,
-                ArcType.Outer => position - Constants.Center,
+                ArcType.Inner => Constants.Center - worldPosition,
+                ArcType.Outer => worldPosition - Constants.Center,
                 _ => Vector2.zero
             };
 
             float rotation = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+            Vector2 offsetWorldPosition = OrbitMath.AddWorldOffset(worldPosition, dir, Constants.OBSTACLE_Y_OFFSET);
+            Vector2 localPosition = OrbitMath.WorldToLocalPoint(root, offsetWorldPosition);
 
             trapObject.transform.rotation = Quaternion.Euler(0f, 0f, rotation + 90.0f);
-            trapObject.transform.localPosition = new Vector3(position.x, position.y, 0f);
+            trapObject.transform.localPosition = new Vector3(localPosition.x, localPosition.y, 0f);
             _trapObjects.Add(trapObject);
 
             return trapObject;

@@ -37,6 +37,22 @@ namespace OrbitalEscape.Utils
             float y = centre.y + radius * MathF.Sin(angleRadians);
             return new Vector2(x, y);
         }
+
+        public static Vector2 AddWorldOffset(Vector2 position, Vector2 direction, float distance)
+        {
+            if (Mathf.Approximately(distance, 0f) || direction.sqrMagnitude <= Mathf.Epsilon)
+            {
+                return position;
+            }
+
+            return position + direction.normalized * distance;
+        }
+
+        public static Vector2 WorldToLocalPoint(Transform parent, Vector2 worldPoint)
+        {
+            Vector3 localPoint = parent.InverseTransformPoint(new Vector3(worldPoint.x, worldPoint.y, 0f));
+            return new Vector2(localPoint.x, localPoint.y);
+        }
         
         public static float DeltaDegrees(float startAngleDegrees, float endAngleDegrees)
         {
