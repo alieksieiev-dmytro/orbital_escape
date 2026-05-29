@@ -22,5 +22,7 @@ namespace OrbitalEscape
         public const string SCENE_GAMEPLAY = "Gameplay";
         
         public const string PLAYER_DATA_SCORE_SECTION = "PLAYER_DATA_SCORE_SECTION";
+        
+        public const float OBSTACLE_Y_OFFSET = -0.09f;
     }
 }

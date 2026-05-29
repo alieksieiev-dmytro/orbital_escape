@@ -66,6 +66,14 @@ namespace OrbitalEscape.Visuals.Palettes
                 riftController.ApplyPalette(palette);
             }
 
+            foreach (MonoBehaviour behaviour in levelObject.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                if (behaviour is IPaletteTarget paletteTarget)
+                {
+                    paletteTarget.ApplyPalette(palette);
+                }
+            }
+
             foreach (SpriteRenderer renderer in levelObject.GetComponentsInChildren<SpriteRenderer>(true))
             {
                 if (renderer.GetComponent<ObstacleCollider>() == null)

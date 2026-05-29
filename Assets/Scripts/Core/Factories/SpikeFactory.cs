@@ -27,8 +27,8 @@ namespace OrbitalEscape.Factories
             spikeObj.name = $"spike_{spikeData.Type}";
 
             spikeObj.transform.localScale =
-                new Vector3(spikeData.Arc.Length() / root.localScale.x,
-                    ((SpikeObstacle)spikeData.Object).Height / root.localScale.y,
+                new Vector3(spikeData.Arc.Length() / root.lossyScale.x,
+                    ((SpikeObstacle)spikeData.Object).Height / root.lossyScale.y,
                     1f);
 
             var angleDelta = OrbitMath.DeltaDegrees(spikeData.Arc.StartAngleDegree, spikeData.Arc.EndAngleDegree) / 2f;
@@ -41,19 +41,21 @@ namespace OrbitalEscape.Factories
                 _ => 0f
             };
 
-            var position = OrbitMath.GetPointOnCircle(Constants.Center, radius, angle) / root.localScale.x;
+            Vector2 worldPosition = OrbitMath.GetPointOnCircle(Constants.Center, radius, angle);
 
             Vector2 dir = spikeData.Type switch
             {
-                ArcType.Inner => Constants.Center - position,
-                ArcType.Outer => position - Constants.Center,
+                ArcType.Inner => Constants.Center - worldPosition,
+                ArcType.Outer => worldPosition - Constants.Center,
                 _ => Vector2.zero
             };
 
             var rotation = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+            Vector2 offsetWorldPosition = OrbitMath.AddWorldOffset(worldPosition, dir, Constants.OBSTACLE_Y_OFFSET);
+            Vector2 localPosition = OrbitMath.WorldToLocalPoint(root, offsetWorldPosition);
 
             spikeObj.transform.rotation = Quaternion.Euler(0f, 0f, rotation + 90.0f);
-            spikeObj.transform.localPosition = new Vector3(position.x, position.y, 0f);
+            spikeObj.transform.localPosition = new Vector3(localPosition.x, localPosition.y, 0f);
             _spikeObjects.Add(spikeObj);
 
             return spikeObj;

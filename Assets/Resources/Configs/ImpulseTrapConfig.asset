@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: ImpulseTrapConfig
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.Generators.ImpulseTrapConfig
   <Density>k__BackingField: 0.02
-  <TrapArcLength>k__BackingField: 0.65
-  <Height>k__BackingField: 0.55
+  <TrapArcLength>k__BackingField: 0.7
+  <Height>k__BackingField: 1
