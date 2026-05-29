@@ -63,7 +63,7 @@ Shader "Custom/Aurora"
                 float2 uv : TEXCOORD0;
             };
 
-            struct Varyings
+            struct v2f
             {
                 float4 positionHCS : SV_POSITION;
                 float2 uv : TEXCOORD0;
@@ -136,15 +136,15 @@ Shader "Custom/Aurora"
                 return 1.0 - smoothstep(inner, outer, d);
             }
 
-            Varyings vert(Attributes input)
+            v2f vert(Attributes input)
             {
-                Varyings output;
+                v2f output;
                 output.positionHCS = TransformObjectToHClip(input.positionOS.xyz);
                 output.uv = input.uv;
                 return output;
             }
 
-            half4 frag(Varyings input) : SV_Target
+            half4 frag(v2f input) : SV_Target
             {
                 float2 p = input.uv * 2.0 - 1.0;
                 float r = length(p);

@@ -42,7 +42,7 @@ Shader "Custom/URP2D/CircleGradientPulse"
                 float4 color : COLOR;
             };
 
-            struct Varyings
+            struct v2f
             {
                 float4 positionHCS : SV_POSITION;
                 float2 uv : TEXCOORD0;
@@ -58,16 +58,16 @@ Shader "Custom/URP2D/CircleGradientPulse"
             float _PulseAmplitude;
             float _PulseSpeed;
 
-            Varyings Vert(Attributes input)
+            v2f Vert(Attributes input)
             {
-                Varyings output;
+                v2f output;
                 output.positionHCS = TransformObjectToHClip(input.positionOS);
                 output.uv = input.uv;
                 output.color = input.color;
                 return output;
             }
 
-            float4 Frag(Varyings input) : SV_Target
+            float4 Frag(v2f input) : SV_Target
             {
                 float4 tex = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
 
