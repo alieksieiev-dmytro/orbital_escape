@@ -30,6 +30,7 @@ Shader "Custom/Aurora"
         _AuroraHeightWidth("Aurora Height Width", Range(0.01, 1.0)) = 0.55
         _AuroraHeightSoftness("Aurora Height Softness", Range(0.001, 0.5)) = 0.12
         _AuroraMaskStrength("Aurora Mask Strength", Range(0.0, 1.0)) = 0.9
+        _AuroraRiftAlphaMultiplier("Aurora Rift Alpha Multiplier", Range(0.0, 1.0)) = 0.25
     }
 
     SubShader
@@ -97,7 +98,11 @@ Shader "Custom/Aurora"
                 float _AuroraHeightWidth;
                 float _AuroraHeightSoftness;
                 float _AuroraMaskStrength;
+                float _AuroraRiftAlphaMultiplier;
             CBUFFER_END
+
+            int _AuroraRiftCount;
+            float4 _AuroraRifts[32];
 
             float Hash21(float2 p)
             {
@@ -136,6 +141,67 @@ Shader "Custom/Aurora"
                 return 1.0 - smoothstep(inner, outer, d);
             }
 
+            float Angle01(float theta)
+            {
+                const float TwoPi = 6.2831853071795864769;
+                theta = fmod(theta, TwoPi);
+                theta = theta < 0.0 ? theta + TwoPi : theta;
+                return theta;
+            }
+
+            bool InAngleInterval(float theta, float start, float delta)
+            {
+                const float TwoPi = 6.2831853071795864769;
+
+                if (delta >= TwoPi)
+                {
+                    return true;
+                }
+
+                float end = start + delta;
+                if (end <= TwoPi)
+                {
+                    return (theta >= start) && (theta <= end);
+                }
+
+                float wrappedEnd = end - TwoPi;
+                return (theta >= start) || (theta <= wrappedEnd);
+            }
+
+            float GetAuroraRiftAlphaMultiplier(float theta)
+            {
+                if (_AuroraRiftCount <= 0)
+                {
+                    return 1.0;
+                }
+
+                [unroll]
+                for (int k = 0; k < 32; k++)
+                {
+                    if (k >= _AuroraRiftCount)
+                    {
+                        break;
+                    }
+
+                    float4 rift = _AuroraRifts[k];
+                    float start = Angle01(rift.x);
+                    float delta = rift.y;
+                    float enabled = rift.w;
+
+                    if (enabled <= 0.0 || delta <= 0.0)
+                    {
+                        continue;
+                    }
+
+                    if (InAngleInterval(theta, start, delta))
+                    {
+                        return saturate(_AuroraRiftAlphaMultiplier);
+                    }
+                }
+
+                return 1.0;
+            }
+
             v2f vert(Attributes input)
             {
                 v2f output;
@@ -148,6 +214,7 @@ Shader "Custom/Aurora"
             {
                 float2 p = input.uv * 2.0 - 1.0;
                 float r = length(p);
+                float theta = Angle01(atan2(p.y, p.x));
 
                 float edge0 = 1.0;
                 float edge1 = 1.0 - max(_Softness, 1e-5);
@@ -158,6 +225,7 @@ Shader "Custom/Aurora"
 
                 float3 baseRgb = lerp(_CenterColor.rgb, _EdgeColor.rgb, t);
                 float baseA = lerp(_CenterColor.a, _EdgeColor.a, t) * alpha;
+                baseA *= GetAuroraRiftAlphaMultiplier(theta);
 
                 float time = _Time.y;
 

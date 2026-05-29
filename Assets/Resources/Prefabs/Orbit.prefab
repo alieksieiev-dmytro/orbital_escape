@@ -116,6 +116,7 @@ GameObject:
   - component: {fileID: 6255532390150907499}
   - component: {fileID: 6663643942008027991}
   - component: {fileID: -1521081051928051204}
+  - component: {fileID: 1209482037461000004}
   m_Layer: 0
   m_Name: Orbit
   m_TagString: Untagged
@@ -225,6 +226,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.RiftController
   _riftColliderPrefab: {fileID: 435072072052540399, guid: 75bb67dae8d955b4a870d21545bad9b0, type: 3}
+--- !u!114 &1209482037461000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6294584048180769117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d655f891ddb4cb7b81f492b0ca05bb7, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Visuals.AuroraRiftClearanceController
+  _innerAurora: {fileID: 7686399735195124639}
+  _outerAurora: {fileID: 4043184018325771705}
 --- !u!1 &8911652982013164806
 GameObject:
   m_ObjectHideFlags: 0
