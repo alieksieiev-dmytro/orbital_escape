@@ -1,4 +1,5 @@
 using OrbitalEscape.UI;
+using OrbitalEscape.Visuals.Palettes;
 using Zenject;
 
 namespace OrbitalEscape.Injection
@@ -10,6 +11,7 @@ namespace OrbitalEscape.Injection
             InstallWindows();
             InstallHUDs();
             Container.Bind<IUIManager>().To<UIManager>().AsSingle();
+            Container.BindInterfacesAndSelfTo<PaletteUITextController>().AsSingle().NonLazy();
         }
 
         private void InstallWindows()

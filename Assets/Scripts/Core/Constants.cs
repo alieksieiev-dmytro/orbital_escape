@@ -17,7 +17,8 @@ namespace OrbitalEscape
         public const string INJECTION_ID_RIFT_GENERATOR = "RiftGenerator";
         public const string INJECTION_ID_SPIKE_GENERATOR = "SpikeGenerator";
         
-        public const string WINDOW_PREFAB_PATH = "Prefabs/UI/Windows/"; 
+        public const string WINDOW_PREFAB_PATH = "Prefabs/UI/Windows/";
+        public const float FONT_GLOW_ALPHA = 64.0f / 255.0f;
         
         public const string SCENE_GAMEPLAY = "Gameplay";
         

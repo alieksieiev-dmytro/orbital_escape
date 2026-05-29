@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using OrbitalEscape.Visuals.Palettes;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -34,8 +35,10 @@ namespace OrbitalEscape.Editor
                 {
                     foreach (var textComponent in root.GetComponentsInChildren<TMP_Text>(true))
                     {
+                        bool useGlow = ShouldUseGlow(textComponent);
                         textComponent.font = fontAsset;
-                        textComponent.fontSharedMaterial = ShouldUseGlow(textComponent) ? glowMaterial : fontAsset.material;
+                        textComponent.fontSharedMaterial = useGlow ? glowMaterial : fontAsset.material;
+                        SyncGlowTarget(textComponent, useGlow);
                         textComponent.SetAllDirty();
                         EditorUtility.SetDirty(textComponent);
                     }
@@ -61,6 +64,27 @@ namespace OrbitalEscape.Editor
                 || objectName.Contains("record")
                 || objectName.Contains("title")
                 || text.Contains("game over");
+        }
+
+        private static void SyncGlowTarget(TMP_Text textComponent, bool useGlow)
+        {
+            var glowTarget = textComponent.GetComponent<PaletteTextGlowTarget>();
+
+            if (useGlow)
+            {
+                if (glowTarget == null)
+                {
+                    glowTarget = textComponent.gameObject.AddComponent<PaletteTextGlowTarget>();
+                }
+
+                EditorUtility.SetDirty(glowTarget);
+                return;
+            }
+
+            if (glowTarget != null)
+            {
+                UnityEngine.Object.DestroyImmediate(glowTarget);
+            }
         }
     }
 }

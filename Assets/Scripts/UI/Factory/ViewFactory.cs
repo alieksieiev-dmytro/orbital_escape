@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -15,6 +16,8 @@ namespace OrbitalEscape.UI
             _prefabPath = prefabPath;
             _loadedViews = new List<IView>();
         }
+
+        public event Action<IView> ViewCreated;
         
         public TView Create<TView>(string key) where TView : class, IView => Create<TView>(key, _root);
         
@@ -29,7 +32,7 @@ namespace OrbitalEscape.UI
             if (prefab == null)
                 throw new System.Exception($"Prefab not found at path: {prefabPath}");
             
-            var instance = Object.Instantiate(prefab, root);
+            var instance = UnityEngine.Object.Instantiate(prefab, root);
             
             instance.transform.localScale = Vector3.one;
             instance.transform.localRotation = Quaternion.identity;
@@ -40,6 +43,7 @@ namespace OrbitalEscape.UI
                 throw new System.NullReferenceException($"View '{key}' with type '{typeof(TView)}' not found.");
             
             _loadedViews.Add(view);
+            ViewCreated?.Invoke(view);
             return view;
         }
         
