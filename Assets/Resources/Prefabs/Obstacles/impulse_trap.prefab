@@ -136,6 +136,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4797931300534776437}
   - component: {fileID: 9048487412046482870}
+  - component: {fileID: 7152164928364105581}
   m_Layer: 0
   m_Name: visual
   m_TagString: Untagged
@@ -216,6 +217,20 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &7152164928364105581
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6468754556817982301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d577893c0f404f349a227e669d6fe2d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Visuals.Palettes.PaletteMaterialColorTarget
+  _targetRenderer: {fileID: 9048487412046482870}
+  _colorProperty: _Color
 --- !u!1 &8039170672989968880
 GameObject:
   m_ObjectHideFlags: 0
@@ -227,6 +242,7 @@ GameObject:
   - component: {fileID: 4520159696112506709}
   - component: {fileID: 2293035220563092721}
   - component: {fileID: 4316686311494775554}
+  - component: {fileID: 7152164928364105582}
   m_Layer: 0
   m_Name: particles
   m_TagString: Untagged
@@ -5110,3 +5126,16 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!114 &7152164928364105582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8039170672989968880}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f183a36276f347cdab01cdde9c5e4e2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Visuals.Palettes.PaletteParticleColorOverLifetimeTarget
+  _targetParticles: {fileID: 2293035220563092721}
