@@ -7,29 +7,38 @@ namespace OrbitalEscape.UI
         [SerializeField] private Canvas _root;
         private CanvasGroup _canvasGroup;
 
+        public Canvas Root => _root != null ? _root : _root = GetComponent<Canvas>();
+
         protected CanvasGroup CanvasGroup
         {
             get
             {
                 if (_canvasGroup != null) 
                     return _canvasGroup;
-                
-                _canvasGroup ??= _root.GetComponent<CanvasGroup>();
+
+                if (Root == null)
+                    return null;
+
+                _canvasGroup ??= Root.GetComponent<CanvasGroup>();
                 return _canvasGroup;
             }
         }
-
-        public Canvas Root => _root;
         
         public virtual void Show()
         {
-            _root.enabled = true;
+            if (Root == null)
+                return;
+
+            Root.enabled = true;
             EnableInteraction(true);
         }
         
         public virtual void Hide()
         {
-            _root.enabled = false;
+            if (Root == null)
+                return;
+
+            Root.enabled = false;
             EnableInteraction(false);
         }
 

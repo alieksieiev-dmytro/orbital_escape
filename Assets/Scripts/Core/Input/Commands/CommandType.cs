@@ -7,5 +7,7 @@ namespace OrbitalEscape.Input
         MoveClockwise = 2,
         MoveCounterClockwise = 3,
         Restart = 4,
+        Play = 5,
+        Exit = 6,
     }
 }

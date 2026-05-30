@@ -381,6 +381,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d08841cecea964439ecfaa9c123589f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.GameFlowController
+  _config: {fileID: 11400000, guid: be1f68c120d3491aa63e0801672afd23, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -1,5 +1,7 @@
+using OrbitalEscape.Input;
 using OrbitalEscape.UI;
 using Zenject;
+using static OrbitalEscape.Constants;
 
 namespace OrbitalEscape.Injection
 {
@@ -8,12 +10,27 @@ namespace OrbitalEscape.Injection
         public override void InstallBindings()
         {
             InstallWindows();
+            InstallCommands();
+
             Container.Bind<IUIManager>().To<UIManager>().AsSingle();
+            Container.BindInterfacesAndSelfTo<MainMenuStartupController>().AsSingle().NonLazy();
         }
 
         private void InstallWindows()
         {
-            throw new System.NotImplementedException("Main menu windows not implemented yet");
+            Container.Bind<IController>().To<MainMenuWindowController>().AsSingle();
+        }
+
+        private void InstallCommands()
+        {
+            InstallCommand<PlayCommand>(nameof(CommandType.Play), SCENE_GAMEPLAY);
+            InstallCommand<ExitCommand>(nameof(CommandType.Exit));
+        }
+
+        private void InstallCommand<TCommand>(string id, params object[] args) where TCommand : Command
+        {
+            Container.BindInterfacesAndSelfTo<TCommand>().AsSingle().WithArguments(args).NonLazy();
+            Container.Bind<Command>().WithId(id).FromResolveGetter<TCommand>(x => x);
         }
     }
 }

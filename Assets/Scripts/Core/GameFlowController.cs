@@ -5,6 +5,8 @@ namespace OrbitalEscape
 {
     public class GameFlowController : MonoBehaviour
     {
+        [SerializeField] private GameFlowConfig _config;
+
         private void Start()
         {
             var scene = gameObject.scene;
@@ -26,7 +28,20 @@ namespace OrbitalEscape
             }
 
             DontDestroyOnLoad(gameObject);
-            SceneManager.LoadScene(Constants.SCENE_GAMEPLAY);
+            SceneManager.LoadScene(GetNextSceneName());
+        }
+
+        private string GetNextSceneName()
+        {
+            if (_config == null)
+            {
+                Debug.LogWarning($"{nameof(GameFlowController)} has no {nameof(GameFlowConfig)} assigned. Loading gameplay directly.");
+                return Constants.SCENE_GAMEPLAY;
+            }
+
+            return _config.SkipMainMenu
+                ? Constants.SCENE_GAMEPLAY
+                : Constants.SCENE_MAIN_MENU;
         }
     }
 }

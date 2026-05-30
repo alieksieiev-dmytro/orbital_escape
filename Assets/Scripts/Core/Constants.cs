@@ -21,6 +21,7 @@ namespace OrbitalEscape
         public const float FONT_GLOW_ALPHA = 64.0f / 255.0f;
         
         public const string SCENE_GAMEPLAY = "Gameplay";
+        public const string SCENE_MAIN_MENU = "MainMenu";
         
         public const string PLAYER_DATA_SCORE_SECTION = "PLAYER_DATA_SCORE_SECTION";
         
