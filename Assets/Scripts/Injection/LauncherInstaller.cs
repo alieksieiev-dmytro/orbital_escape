@@ -18,7 +18,7 @@ namespace OrbitalEscape.Injection
         public override void InstallBindings()
         {
             _windowsRoot = FindObjectsByType<WindowRoot>(FindObjectsSortMode.None)[0].transform;
-            DontDestroyOnLoad(_windowsRoot.gameObject);
+            DontDestroyOnLoad(_windowsRoot.root.gameObject);
 
             InstallConfigs();
             InstallData();
@@ -59,6 +59,10 @@ namespace OrbitalEscape.Injection
 
             Container.Bind<KeyBinding>()
                 .FromInstance(new KeyBinding(nameof(KeyCode.A).ToLowerInvariant(), nameof(CommandType.MoveCounterClockwise)))
+                .AsCached();
+
+            Container.Bind<KeyBinding>()
+                .FromInstance(new KeyBinding(nameof(KeyCode.Escape).ToLowerInvariant(), nameof(CommandType.Pause)))
                 .AsCached();
         }
         

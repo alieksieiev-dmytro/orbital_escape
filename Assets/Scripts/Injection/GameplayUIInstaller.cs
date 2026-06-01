@@ -17,6 +17,7 @@ namespace OrbitalEscape.Injection
         private void InstallWindows()
         {
             Container.Bind<IController>().To<RestartWindowController>().AsSingle();
+            Container.Bind<IController>().To<PauseWindowController>().AsSingle();
         }
         
         private void InstallHUDs()

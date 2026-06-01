@@ -5,6 +5,7 @@ using OrbitalEscape.Input;
 using OrbitalEscape.Movement;
 using OrbitalEscape.Orbits;
 using OrbitalEscape.Orbits.Generators;
+using OrbitalEscape.Pause;
 using OrbitalEscape.Score;
 using OrbitalEscape.Visuals.Palettes;
 using UnityEngine;
@@ -39,6 +40,7 @@ namespace OrbitalEscape.Injection
             
             Container.Bind<IMovementModel>().To<CircularOrbitModel>().FromInstance(new CircularOrbitModel(0.0f, 15f + CHARACTER_OFFSET_FROM_ORBIT)).AsSingle();
             Container.Bind<LevelState>().AsSingle();
+            Container.BindInterfacesAndSelfTo<GamePauseService>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<PlayerMovementController>().AsSingle().WithArguments(_player, 5.0f);
             Container.Bind<LevelManager>().FromComponentInHierarchy().AsSingle();
 
@@ -84,6 +86,9 @@ namespace OrbitalEscape.Injection
         private void InstallCommands()
         {
             InstallCommand<RestartCommand>(nameof(CommandType.Restart), Constants.SCENE_GAMEPLAY);
+            InstallCommand<PauseCommand>(nameof(CommandType.Pause));
+            InstallCommand<ResumeCommand>(nameof(CommandType.Resume));
+            InstallCommand<ExitToMainMenuCommand>(nameof(CommandType.ExitToMainMenu), Constants.SCENE_MAIN_MENU);
             InstallCommand<JumpCommand>(nameof(CommandType.Jump));
             InstallCommand<MoveClockwiseCommand>(nameof(CommandType.MoveClockwise));
             InstallCommand<MoveCounterClockwiseCommand>(nameof(CommandType.MoveCounterClockwise));

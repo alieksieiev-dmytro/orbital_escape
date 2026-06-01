@@ -9,5 +9,8 @@ namespace OrbitalEscape.Input
         Restart = 4,
         Play = 5,
         Exit = 6,
+        Pause = 7,
+        Resume = 8,
+        ExitToMainMenu = 9,
     }
 }

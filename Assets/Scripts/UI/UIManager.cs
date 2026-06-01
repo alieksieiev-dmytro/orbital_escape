@@ -7,26 +7,37 @@ namespace OrbitalEscape.UI
 {
     public class UIManager : IUIManager
     {
-        private readonly List<IController> _windowControllers;
+        private readonly DiContainer _diContainer;
+        private List<IController> _windowControllers;
         
         [Inject]
         public UIManager(DiContainer diContainer)
         {
-            _windowControllers = diContainer.ResolveAll<IController>().ToList();
+            _diContainer = diContainer;
         }
 
         public void OpenWindow(IConvertible windowKey, ScreenData screenData)
         {
             var controller = GetWindow(windowKey);
+            
+            if (controller == null)
+            {
+                throw new InvalidOperationException($"Window controller '{windowKey}' is not bound.");
+            }
+            
             controller.Initialize(screenData);
         }
         
         public void CloseWindow(IConvertible windowKey)
         {
-            throw new NotImplementedException();
+            var controller = GetWindow(windowKey);
+            controller?.Complete();
         }
 
-        private IController GetWindow(IConvertible windowKey) =>
-            _windowControllers.FirstOrDefault(controller => controller.Type.Equals(windowKey));
+        private IController GetWindow(IConvertible windowKey)
+        {
+            _windowControllers ??= _diContainer.ResolveAll<IController>().ToList();
+            return _windowControllers.FirstOrDefault(controller => controller.Type.Equals(windowKey));
+        }
     }
 }

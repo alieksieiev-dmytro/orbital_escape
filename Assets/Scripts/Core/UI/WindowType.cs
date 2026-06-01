@@ -5,5 +5,6 @@ namespace OrbitalEscape.UI
         None = 0,
         Restart = 1,
         MainMenu = 2,
+        Pause = 3,
     }
 }
