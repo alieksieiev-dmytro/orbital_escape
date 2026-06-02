@@ -41,7 +41,6 @@ namespace OrbitalEscape.Movement
             [SerializeField] private DifficultyType _difficulty;
             [SerializeField, Min(0.0f)] private float _baseLinearSpeed;
             [SerializeField, Min(0.0f)] private float _speedIncreasePerScore;
-            [SerializeField, Min(1.0f)] private float _growthModifier;
 
             public DifficultyType Difficulty => _difficulty;
 
@@ -49,13 +48,12 @@ namespace OrbitalEscape.Movement
             {
                 _difficulty = DifficultyType.Basic,
                 _baseLinearSpeed = 5.0f,
-                _speedIncreasePerScore = 0.03f,
-                _growthModifier = 1.02f
+                _speedIncreasePerScore = 0.03f
             };
 
             public float Evaluate(float score)
             {
-                return BaseLinearSpeed + SpeedIncreasePerScore * EvaluateGeometricProgression(score);
+                return BaseLinearSpeed + SpeedIncreasePerScore * Mathf.Max(0.0f, score);
             }
 
             private float BaseLinearSpeed => _baseLinearSpeed > 0.0f
@@ -65,21 +63,6 @@ namespace OrbitalEscape.Movement
             private float SpeedIncreasePerScore => _speedIncreasePerScore > 0.0f
                 ? _speedIncreasePerScore
                 : Default._speedIncreasePerScore;
-
-            private float GrowthModifier => _growthModifier >= 1.0f
-                ? _growthModifier
-                : Default._growthModifier;
-
-            private float EvaluateGeometricProgression(float score)
-            {
-                float scoreSteps = Mathf.Max(0.0f, score);
-                if (Mathf.Approximately(GrowthModifier, 1.0f))
-                {
-                    return scoreSteps;
-                }
-
-                return (Mathf.Pow(GrowthModifier, scoreSteps) - 1.0f) / (GrowthModifier - 1.0f);
-            }
         }
     }
 }

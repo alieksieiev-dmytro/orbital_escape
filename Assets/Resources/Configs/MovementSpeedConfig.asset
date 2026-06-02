@@ -16,4 +16,3 @@ MonoBehaviour:
   - _difficulty: 0
     _baseLinearSpeed: 6
     _speedIncreasePerScore: 0.1
-    _growthModifier: 1
