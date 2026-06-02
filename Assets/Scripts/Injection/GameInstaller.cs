@@ -48,6 +48,7 @@ namespace OrbitalEscape.Injection
             Container.Bind(typeof(PlayerController), typeof(IDisposable)).To<PlayerController>().AsSingle().WithArguments(_player).NonLazy();
             Container.Bind(typeof(ImpulseTrapController), typeof(IDisposable)).To<ImpulseTrapController>().AsSingle().NonLazy();
             Container.Bind(typeof(IScoreService), typeof(IDisposable)).To<ScoreService>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<ScoreMovementSpeedService>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<ScorePaletteService>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<PaletteSceneController>().AsSingle().NonLazy();
         }
