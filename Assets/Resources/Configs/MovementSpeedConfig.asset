@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Movement.MovementSpeedConfig
   _difficultyProfiles:
   - _difficulty: 0
-    _baseLinearSpeed: 5
-    _speedIncreasePerScore: 0.03
-    _growthModifier: 1.02
+    _baseLinearSpeed: 6
+    _speedIncreasePerScore: 0.1
+    _growthModifier: 1
