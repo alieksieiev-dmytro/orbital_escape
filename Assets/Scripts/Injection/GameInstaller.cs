@@ -41,13 +41,14 @@ namespace OrbitalEscape.Injection
             Container.Bind<IMovementModel>().To<CircularOrbitModel>().FromInstance(new CircularOrbitModel(0.0f, 15f + CHARACTER_OFFSET_FROM_ORBIT)).AsSingle();
             Container.Bind<LevelState>().AsSingle();
             Container.BindInterfacesAndSelfTo<GamePauseService>().AsSingle().NonLazy();
-            Container.BindInterfacesAndSelfTo<PlayerMovementController>().AsSingle().WithArguments(_player, 5.0f);
+            Container.BindInterfacesAndSelfTo<PlayerMovementController>().AsSingle().WithArguments(_player);
             Container.Bind<LevelManager>().FromComponentInHierarchy().AsSingle();
 
             Container.Bind(typeof(JumpBehaviour), typeof(IDisposable)).To<JumpBehaviour>().AsSingle().NonLazy();
             Container.Bind(typeof(PlayerController), typeof(IDisposable)).To<PlayerController>().AsSingle().WithArguments(_player).NonLazy();
             Container.Bind(typeof(ImpulseTrapController), typeof(IDisposable)).To<ImpulseTrapController>().AsSingle().NonLazy();
             Container.Bind(typeof(IScoreService), typeof(IDisposable)).To<ScoreService>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<ScoreMovementSpeedService>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<ScorePaletteService>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<PaletteSceneController>().AsSingle().NonLazy();
         }
