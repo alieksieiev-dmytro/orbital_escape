@@ -5,21 +5,25 @@ namespace OrbitalEscape.Movement
 {
     public class PlayerMovementController : ITickable
     {
-        private readonly float _linearSpeedPerSecond;
+        private readonly IMovementSpeedService _movementSpeedService;
         private readonly Transform _playerTransform;
-        
-        [Inject(Id = Constants.INJECTION_ID_CENTRE)] private Vector2 _center;
-        [Inject] private IMovementModel _movementModel;
+        private readonly Vector2 _center;
+        private readonly IMovementModel _movementModel;
         
         private MovementDirection _currentDirection;
         private bool _isMoving;
 
-        public PlayerMovementController(Transform playerTransform, float linearSpeedPerSecond,
-            IMovementModel movementModel)
+        [Inject]
+        public PlayerMovementController(
+            Transform playerTransform,
+            IMovementModel movementModel,
+            [Inject(Id = Constants.INJECTION_ID_CENTRE)] Vector2 center,
+            IMovementSpeedService movementSpeedService)
         {
             _playerTransform = playerTransform;
-            _linearSpeedPerSecond = linearSpeedPerSecond;
             _movementModel = movementModel;
+            _center = center;
+            _movementSpeedService = movementSpeedService;
             _isMoving = true;
             SetMovementDirection(MovementDirection.Clockwise);
         }
@@ -29,7 +33,7 @@ namespace OrbitalEscape.Movement
             if (!_isMoving)
                 return;
             
-            _movementModel.Step(_linearSpeedPerSecond, Time.deltaTime, _currentDirection);
+            _movementModel.Step(_movementSpeedService.CurrentLinearSpeed, Time.deltaTime, _currentDirection);
             var newPos = _movementModel.GetPosition(_center);
             _playerTransform.position = new Vector3(newPos.x, newPos.y, _playerTransform.position.z);
             
