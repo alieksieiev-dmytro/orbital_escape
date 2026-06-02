@@ -40,8 +40,8 @@ namespace OrbitalEscape.Movement
         {
             [SerializeField] private DifficultyType _difficulty;
             [SerializeField, Min(0.0f)] private float _baseLinearSpeed;
-            [SerializeField, Min(0.0f)] private float _scoreToProgressMultiplier;
-            [SerializeField] private AnimationCurve _speedMultiplierCurve;
+            [SerializeField, Min(0.0f)] private float _speedIncreasePerScore;
+            [SerializeField, Min(1.0f)] private float _growthModifier;
 
             public DifficultyType Difficulty => _difficulty;
 
@@ -49,26 +49,36 @@ namespace OrbitalEscape.Movement
             {
                 _difficulty = DifficultyType.Basic,
                 _baseLinearSpeed = 5.0f,
-                _scoreToProgressMultiplier = 0.02f,
-                _speedMultiplierCurve = DefaultMultiplierCurve()
+                _speedIncreasePerScore = 0.03f,
+                _growthModifier = 1.02f
             };
 
             public float Evaluate(float score)
             {
-                float progress = Mathf.Clamp01(Mathf.Max(0.0f, score) * _scoreToProgressMultiplier);
-                float multiplier = Mathf.Max(0.0f, SpeedMultiplierCurve.Evaluate(progress));
-                return BaseLinearSpeed * multiplier;
+                return BaseLinearSpeed + SpeedIncreasePerScore * EvaluateGeometricProgression(score);
             }
 
             private float BaseLinearSpeed => _baseLinearSpeed > 0.0f
                 ? _baseLinearSpeed
                 : Default._baseLinearSpeed;
 
-            private AnimationCurve SpeedMultiplierCurve => _speedMultiplierCurve ?? DefaultMultiplierCurve();
+            private float SpeedIncreasePerScore => _speedIncreasePerScore > 0.0f
+                ? _speedIncreasePerScore
+                : Default._speedIncreasePerScore;
 
-            private static AnimationCurve DefaultMultiplierCurve()
+            private float GrowthModifier => _growthModifier >= 1.0f
+                ? _growthModifier
+                : Default._growthModifier;
+
+            private float EvaluateGeometricProgression(float score)
             {
-                return AnimationCurve.Linear(0.0f, 1.0f, 1.0f, 1.4f);
+                float scoreSteps = Mathf.Max(0.0f, score);
+                if (Mathf.Approximately(GrowthModifier, 1.0f))
+                {
+                    return scoreSteps;
+                }
+
+                return (Mathf.Pow(GrowthModifier, scoreSteps) - 1.0f) / (GrowthModifier - 1.0f);
             }
         }
     }
