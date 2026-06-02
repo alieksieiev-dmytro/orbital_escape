@@ -2,6 +2,7 @@ using System;
 using DG.Tweening;
 using OrbitalEscape.Events;
 using OrbitalEscape.Orbits;
+using UnityEngine;
 using Zenject;
 
 namespace OrbitalEscape.Movement
@@ -20,6 +21,7 @@ namespace OrbitalEscape.Movement
         private Orbit _oppositeOrbit;
         private Sequence _jumpSequence;
         private bool _canGoThroughRift;
+        private float _jumpInputUnlockTime;
         
         private float Offset => _currentOrbit.Radius < _oppositeOrbit.Radius
             ? -Constants.CHARACTER_OFFSET_FROM_ORBIT
@@ -39,15 +41,39 @@ namespace OrbitalEscape.Movement
 
         public void Jump()
         {
-            if (!TryInitializeOrbits())
+            if (Time.time < _jumpInputUnlockTime)
             {
                 return;
+            }
+
+            JumpInternal();
+        }
+
+        public void JumpFromImpulseTrap(float inputLockDuration)
+        {
+            if (!JumpInternal())
+            {
+                return;
+            }
+
+            _jumpInputUnlockTime = Mathf.Max(
+                _jumpInputUnlockTime,
+                Time.time + Mathf.Max(0.0f, inputLockDuration));
+        }
+
+        private bool JumpInternal()
+        {
+            if (!TryInitializeOrbits())
+            {
+                return false;
             }
 
             if (_canGoThroughRift)
                 JumpThroughRift();
             else
                 JumpToOppositeOrbit();
+
+            return true;
         }
 
         private bool TryInitializeOrbits()

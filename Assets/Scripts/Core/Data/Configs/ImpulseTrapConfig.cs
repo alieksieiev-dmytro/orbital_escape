@@ -8,5 +8,6 @@ namespace OrbitalEscape.Orbits.Generators
         [field: SerializeField, Range(0.0f, 1.0f)] public float Density { get; private set; }
         [field: SerializeField] public float TrapArcLength { get; private set; }
         [field: SerializeField] public float Height { get; private set; }
+        [field: SerializeField, Min(0.0f)] public float JumpInputLockDuration { get; private set; }
     }
 }
