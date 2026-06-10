@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System;
+using System.Linq;
 using OrbitalEscape.Utils;
 
 namespace OrbitalEscape.Orbits.Generators
@@ -10,6 +11,7 @@ namespace OrbitalEscape.Orbits.Generators
         {
             RiftGenerationSettings config = context.Settings.Rift;
             List<ArcObject> result = new List<ArcObject>();
+            List<ArcObject> blockingObjects = GetBlockingObjects(context);
             int targetCount = Math.Max(0, (int)Math.Ceiling(config.RiftCount));
             int maxAttempts = Math.Max(config.MaxPlacementAttempts, targetCount);
             int attempts = 0;
@@ -23,6 +25,11 @@ namespace OrbitalEscape.Orbits.Generators
                 float endAngle = startAngle + deltaDegrees;
                 
                 Arc newRiftArc = new Arc(startAngle, endAngle, orbit.Radius);
+                if (OverlapsWithOtherArcs(newRiftArc, blockingObjects))
+                {
+                    continue;
+                }
+
                 bool arcConflict = false;
 
                 foreach (var arc in result)
@@ -50,6 +57,31 @@ namespace OrbitalEscape.Orbits.Generators
             }
             
             return result;
+        }
+
+        private static List<ArcObject> GetBlockingObjects(LevelBuildContext context)
+        {
+            if (!context.TryGetPreviousOrbit(out Orbit previousOrbit))
+            {
+                return new List<ArcObject>();
+            }
+
+            return previousOrbit.OrbitObjects
+                .Where(obj => obj.Object.Type == ArcObjectType.GravityWell && obj.Type == ArcType.Outer)
+                .ToList();
+        }
+
+        private static bool OverlapsWithOtherArcs(Arc arc, IReadOnlyList<ArcObject> arcObjects)
+        {
+            for (int i = 0; i < arcObjects.Count; i++)
+            {
+                if (arc.IsOverlapping(arcObjects[i].Arc))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

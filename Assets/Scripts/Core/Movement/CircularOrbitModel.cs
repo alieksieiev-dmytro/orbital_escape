@@ -15,6 +15,8 @@ namespace OrbitalEscape.Movement
             get => _radius;
             set => _radius = Mathf.Max(value, MIN_RADIUS);
         }
+
+        public float AngleRadians => _angleRadians;
         
         public CircularOrbitModel(float angleRadians, float radius)
         {

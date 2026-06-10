@@ -15,6 +15,7 @@ namespace OrbitalEscape.Orbits.Generators
         private readonly RiftConfig _riftConfig;
         private readonly SpikeConfig _spikeConfig;
         private readonly ImpulseTrapConfig _impulseTrapConfig;
+        private readonly GravityWellConfig _gravityWellConfig;
         private readonly List<IOrbitContentPass> _contentPasses;
 
         [Inject]
@@ -25,6 +26,7 @@ namespace OrbitalEscape.Orbits.Generators
             RiftConfig riftConfig,
             SpikeConfig spikeConfig,
             ImpulseTrapConfig impulseTrapConfig,
+            GravityWellConfig gravityWellConfig,
             List<IOrbitContentPass> contentPasses)
         {
             _orbitGenerator = orbitGenerator;
@@ -33,6 +35,7 @@ namespace OrbitalEscape.Orbits.Generators
             _riftConfig = riftConfig;
             _spikeConfig = spikeConfig;
             _impulseTrapConfig = impulseTrapConfig;
+            _gravityWellConfig = gravityWellConfig;
             _contentPasses = contentPasses
                 .OrderBy(pass => pass.Order)
                 .ToList();
@@ -71,7 +74,14 @@ namespace OrbitalEscape.Orbits.Generators
                 new ImpulseTrapGenerationSettings(
                     _impulseTrapConfig.Density,
                     _impulseTrapConfig.TrapArcLength,
-                    _impulseTrapConfig.Height));
+                    _impulseTrapConfig.Height),
+                new GravityWellGenerationSettings(
+                    _gravityWellConfig.Density,
+                    _gravityWellConfig.FieldArcLength,
+                    _gravityWellConfig.PartialJumpStep,
+                    _gravityWellConfig.PullSpeed,
+                    _gravityWellConfig.ReturnDuration,
+                    _gravityWellConfig.VisualAlpha));
 
             int seed = HashCode.Combine(Environment.TickCount, existingOrbits.Count, count);
             return new LevelBuildRequest(existingOrbits.ToList(), count, seed, settings);
@@ -86,6 +96,7 @@ namespace OrbitalEscape.Orbits.Generators
 
             LevelBuildContext context = new LevelBuildContext(
                 request.ExistingOrbits,
+                request.Count,
                 request.Settings,
                 new LevelRandom(request.Seed));
             List<Orbit> orbits = _orbitGenerator.GenerateOrbits(

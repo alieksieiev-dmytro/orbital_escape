@@ -26,6 +26,7 @@ namespace OrbitalEscape.Injection
         [SerializeField] private RiftObject _riftObject;
         [SerializeField] private GameObject _spikePrefab;
         [SerializeField] private GameObject _impulseTrapPrefab;
+        [SerializeField] private GameObject _gravityWellPrefab;
         
         private PlayerMovementController _movementController;
 
@@ -41,6 +42,9 @@ namespace OrbitalEscape.Injection
             Container.Bind<IMovementModel>().To<CircularOrbitModel>().FromInstance(new CircularOrbitModel(0.0f, 15f + CHARACTER_OFFSET_FROM_ORBIT)).AsSingle();
             Container.Bind<LevelState>().AsSingle();
             Container.BindInterfacesAndSelfTo<GamePauseService>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<PlayerOrbitState>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<OrbitJumpTransitionService>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<GravityWellInfluenceService>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<PlayerMovementController>().AsSingle().WithArguments(_player);
             Container.Bind<LevelManager>().FromComponentInHierarchy().AsSingle();
 
@@ -60,9 +64,11 @@ namespace OrbitalEscape.Injection
             Container.Bind<IOrbitContentPass>().To<RiftGenerationPass>().AsSingle();
             Container.Bind<IOrbitContentPass>().To<SpikeGenerationPass>().AsSingle();
             Container.Bind<IOrbitContentPass>().To<ImpulseTrapGenerationPass>().AsSingle();
+            Container.Bind<IOrbitContentPass>().To<GravityWellGenerationPass>().AsSingle();
             Container.Bind<IArcGenerator>().WithId(ArcObjectType.Rift).To<RiftGenerator>().AsSingle();
             Container.Bind<IArcGenerator>().WithId(ArcObjectType.Spike).To<SpikeGenerator>().AsSingle();
             Container.Bind<IArcGenerator>().WithId(ArcObjectType.ImpulseTrap).To<ImpulseTrapGenerator>().AsSingle();
+            Container.Bind<IArcGenerator>().WithId(ArcObjectType.GravityWell).To<GravityWellGenerator>().AsSingle();
         }
         
         private void BindFactories()
@@ -71,10 +77,13 @@ namespace OrbitalEscape.Injection
             Container.Bind(typeof(IObjectFactory<RiftObject>)).WithId(FactoryType.RiftFactory).To<RiftFactory>().AsSingle().WithArguments(_riftObject);
             Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.SpikeFactory).To<SpikeFactory>().AsSingle().WithArguments(_spikePrefab);
             Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.ImpulseTrapFactory).To<ImpulseTrapFactory>().AsSingle().WithArguments(_impulseTrapPrefab);
+            Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.GravityWellFactory).To<GravityWellFactory>().AsSingle().WithArguments(_gravityWellPrefab);
+            Container.Bind<IGravityWellZoneRegistry>().To<GravityWellZoneRegistry>().AsSingle();
             Container.Bind<ILevelObjectSpawner>().To<LevelObjectSpawner>().AsSingle();
             Container.Bind<IOrbitObjectSpawner>().To<RiftObjectSpawner>().AsSingle();
             Container.Bind<IOrbitObjectSpawner>().To<SpikeObjectSpawner>().AsSingle();
             Container.Bind<IOrbitObjectSpawner>().To<ImpulseTrapObjectSpawner>().AsSingle();
+            Container.Bind<IOrbitObjectSpawner>().To<GravityWellObjectSpawner>().AsSingle();
         }
 
         private void BindPalettes()

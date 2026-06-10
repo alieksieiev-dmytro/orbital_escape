@@ -13,30 +13,28 @@ namespace OrbitalEscape.Movement
         private const float JUMP_SPEED = 0.4f;
         
         private readonly IMovementModel _movementModel;
-        private readonly LevelState _levelState;
+        private readonly PlayerOrbitState _orbitState;
+        private readonly IGravityWellInfluenceService _gravityWellInfluenceService;
+        private readonly IOrbitJumpTransitionService _jumpTransitionService;
         private readonly EventBinding<ObstacleCollidedEvent> _onObstacleCollidedEvent;
-        private readonly EventBinding<OrbitsSetEvent> _onOrbitsSetEvent;
 
-        private Orbit _currentOrbit;
-        private Orbit _oppositeOrbit;
-        private Sequence _jumpSequence;
         private bool _canGoThroughRift;
         private float _jumpInputUnlockTime;
-        
-        private float Offset => _currentOrbit.Radius < _oppositeOrbit.Radius
-            ? -Constants.CHARACTER_OFFSET_FROM_ORBIT
-            : Constants.CHARACTER_OFFSET_FROM_ORBIT;
 
         [Inject]
-        public JumpBehaviour(IMovementModel movementModel, LevelState levelState)
+        public JumpBehaviour(
+            IMovementModel movementModel,
+            PlayerOrbitState orbitState,
+            IGravityWellInfluenceService gravityWellInfluenceService,
+            IOrbitJumpTransitionService jumpTransitionService)
         {
             _movementModel = movementModel;
-            _levelState = levelState;
+            _orbitState = orbitState;
+            _gravityWellInfluenceService = gravityWellInfluenceService;
+            _jumpTransitionService = jumpTransitionService;
             
             _onObstacleCollidedEvent = new EventBinding<ObstacleCollidedEvent>(OnObstacleCollided);
-            _onOrbitsSetEvent = new EventBinding<OrbitsSetEvent>(OnOrbitsSet);
             EventBus<ObstacleCollidedEvent>.Register(_onObstacleCollidedEvent);
-            EventBus<OrbitsSetEvent>.Register(_onOrbitsSetEvent);
         }
 
         public void Jump()
@@ -63,68 +61,62 @@ namespace OrbitalEscape.Movement
 
         private bool JumpInternal()
         {
-            if (!TryInitializeOrbits())
+            if (!_orbitState.TryInitialize())
             {
                 return false;
             }
 
             if (_canGoThroughRift)
-                JumpThroughRift();
-            else
-                JumpToOppositeOrbit();
-
-            return true;
-        }
-
-        private bool TryInitializeOrbits()
-        {
-            if (_currentOrbit != null && _oppositeOrbit != null)
             {
+                _gravityWellInfluenceService.SuppressActiveUntilExit();
+                JumpThroughRift();
                 return true;
             }
 
-            if (_levelState.Count < 2)
+            if (_gravityWellInfluenceService.TryGetActiveZone(out GravityWellZone zone))
             {
-                return false;
+                JumpPartiallyFromGravityWell(zone);
+                return true;
             }
 
-            _currentOrbit = _levelState.GetOrbit(0);
-            _oppositeOrbit = _levelState.GetOrbit(1);
+            JumpToOppositeOrbit();
             return true;
         }
 
         private void JumpThroughRift()
         {
-            bool isJumpingOut = _currentOrbit.Index > _oppositeOrbit.Index;
+            Orbit currentOrbit = _orbitState.CurrentOrbit;
+            bool isJumpingOut = currentOrbit.Index > _orbitState.OppositeOrbit.Index;
             float jumpHeight = isJumpingOut ? JUMP_THROUGH_RIFT_HEIGHT : -JUMP_THROUGH_RIFT_HEIGHT;
-            
-            _jumpSequence?.Kill();
-            _jumpSequence = DOTween.Sequence();
-            _jumpSequence.Append(DOTween.To(
-                () => _movementModel.Radius, 
-                x => _movementModel.Radius = x,
-                _currentOrbit.Radius + jumpHeight, 0.2f)
-                .SetEase(Ease.Linear));
-            
-            _jumpSequence.Append(DOTween.To(
-                () => _movementModel.Radius, 
-                x => _movementModel.Radius = x,
-                _currentOrbit.Radius + Offset, 0.2f)
-                .SetEase(Ease.Linear));
-            
-            _jumpSequence.Play();
-            
-            EventBus<PassedThroughOrbitEvent>.Raise(new PassedThroughOrbitEvent(_currentOrbit, isJumpingOut));
+
+            _jumpTransitionService.Play(new[]
+            {
+                new OrbitJumpStep(currentOrbit.Radius + jumpHeight, 0.2f, Ease.Linear),
+                new OrbitJumpStep(_orbitState.GetRiftExitRadius(), 0.2f, Ease.Linear)
+            });
+
+            EventBus<PassedThroughOrbitEvent>.Raise(new PassedThroughOrbitEvent(currentOrbit, isJumpingOut));
         }
         
         private void JumpToOppositeOrbit()
         {
-            _jumpSequence?.Kill();
-            _jumpSequence = DOTween.Sequence();
-            _jumpSequence.Append(DOTween.To(() => _movementModel.Radius, x => _movementModel.Radius = x, 
-                _oppositeOrbit.Radius + Offset, JUMP_SPEED).SetEase(Ease.OutQuad));
-            (_currentOrbit, _oppositeOrbit) = (_oppositeOrbit, _currentOrbit);
-            _jumpSequence.Play();
+            float targetRadius = _orbitState.GetMovementRadius(_orbitState.OppositeOrbit, _orbitState.CurrentOrbit);
+
+            _jumpTransitionService.Play(new OrbitJumpStep(targetRadius, JUMP_SPEED, Ease.OutQuad));
+            _orbitState.Swap();
+        }
+
+        private void JumpPartiallyFromGravityWell(GravityWellZone zone)
+        {
+            float sourceRadius = _orbitState.GetMovementRadius(zone.SourceOrbit, zone.TargetOrbit);
+            float targetRadius = _orbitState.GetMovementRadius(zone.TargetOrbit, zone.SourceOrbit);
+            float fullGap = Mathf.Max(0.01f, Mathf.Abs(targetRadius - sourceRadius));
+            float step = fullGap * Mathf.Clamp01(zone.PartialJumpStep);
+            float partialTargetRadius = Mathf.MoveTowards(_movementModel.Radius, targetRadius, step);
+            float distance = Mathf.Abs(_movementModel.Radius - partialTargetRadius);
+            float duration = Mathf.Max(0.01f, JUMP_SPEED * (distance / fullGap));
+
+            _jumpTransitionService.Play(new OrbitJumpStep(partialTargetRadius, duration, Ease.OutQuad));
         }
         
         private void OnObstacleCollided(ObstacleCollidedEvent @event)
@@ -134,17 +126,8 @@ namespace OrbitalEscape.Movement
                 _canGoThroughRift = @event.Entered;
             }
         }
-        
-        private void OnOrbitsSet(OrbitsSetEvent @event)
-        {
-            _currentOrbit = @event.CurrentOrbit;
-            _oppositeOrbit = @event.OppositeOrbit;
-        }
-
         public void Dispose()
         {
-            _jumpSequence?.Kill();
-            EventBus<OrbitsSetEvent>.Deregister(_onOrbitsSetEvent);
             EventBus<ObstacleCollidedEvent>.Deregister(_onObstacleCollidedEvent);
         }
     }

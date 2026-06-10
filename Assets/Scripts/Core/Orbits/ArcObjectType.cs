@@ -6,5 +6,6 @@ namespace OrbitalEscape.Orbits
         Rift = 0,
         Spike = 1,
         ImpulseTrap = 2,
+        GravityWell = 3,
     }
 }

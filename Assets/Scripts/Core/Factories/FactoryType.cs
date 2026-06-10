@@ -7,5 +7,6 @@ namespace OrbitalEscape.Factories
         SpikeFactory = 2,
         RiftFactory = 3,
         ImpulseTrapFactory = 4,
+        GravityWellFactory = 5,
     }
 }
