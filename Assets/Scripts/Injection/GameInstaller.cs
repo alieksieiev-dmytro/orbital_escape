@@ -1,4 +1,5 @@
 using System;
+using OrbitalEscape.Audio;
 using OrbitalEscape.Difficulty;
 using OrbitalEscape.Factories;
 using OrbitalEscape.Input;
@@ -55,6 +56,7 @@ namespace OrbitalEscape.Injection
             Container.BindInterfacesAndSelfTo<ScoreMovementSpeedService>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<ScorePaletteService>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<PaletteSceneController>().AsSingle().NonLazy();
+            Container.BindInterfacesTo<GameplayAudioController>().AsSingle().NonLazy();
         }
         
         private void BindGenerators()

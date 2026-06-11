@@ -32,7 +32,8 @@ namespace OrbitalEscape.Movement
         {
             if (@event.ObstacleType != ArcObjectType.Spike || !@event.Entered)
                 return;
-            
+
+            EventBus<PlayerDiedEvent>.Raise(new PlayerDiedEvent());
             _playerTransform.gameObject.SetActive(false);
             _playerMovementController.StopMovement();
             _uiManager.OpenWindow(WindowType.Restart, null);

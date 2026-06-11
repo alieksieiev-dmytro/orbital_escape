@@ -1,4 +1,5 @@
 using System;
+using OrbitalEscape.Audio;
 using OrbitalEscape.Input;
 using Zenject;
 
@@ -10,6 +11,7 @@ namespace OrbitalEscape.UI
         private readonly Command _resumeCommand;
         private readonly Command _restartCommand;
         private readonly Command _exitToMainMenuCommand;
+        private readonly IAudioService _audioService;
 
         public override IConvertible Type => WindowType.Pause;
 
@@ -17,16 +19,19 @@ namespace OrbitalEscape.UI
         public PauseWindowController(IViewFactory viewFactory,
             [Inject(Id = nameof(CommandType.Resume))] Command resumeCommand,
             [Inject(Id = nameof(CommandType.Restart))] Command restartCommand,
-            [Inject(Id = nameof(CommandType.ExitToMainMenu))] Command exitToMainMenuCommand)
+            [Inject(Id = nameof(CommandType.ExitToMainMenu))] Command exitToMainMenuCommand,
+            IAudioService audioService)
         {
             _viewFactory = viewFactory;
             _resumeCommand = resumeCommand;
             _restartCommand = restartCommand;
             _exitToMainMenuCommand = exitToMainMenuCommand;
+            _audioService = audioService;
         }
 
         public override void Initialize(ScreenData screenData)
         {
+            _audioService.SetMusicObscured(true);
             View.ResumeClicked += OnResumeClicked;
             View.RestartClicked += OnRestartClicked;
             View.ExitClicked += OnExitClicked;
@@ -39,6 +44,7 @@ namespace OrbitalEscape.UI
             View.RestartClicked -= OnRestartClicked;
             View.ExitClicked -= OnExitClicked;
             View.Hide();
+            _audioService.SetMusicObscured(false);
         }
 
         protected override PauseWindowView CreateView() => _viewFactory.Create<PauseWindowView>(nameof(WindowType.Pause));

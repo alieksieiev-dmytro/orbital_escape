@@ -1,4 +1,5 @@
 using System;
+using OrbitalEscape.Events;
 using OrbitalEscape.Pause;
 using Zenject;
 
@@ -27,6 +28,7 @@ namespace OrbitalEscape.Input
                 return;
             }
 
+            EventBus<RestartRequestedEvent>.Raise(new RestartRequestedEvent());
             _zenjectSceneLoader.LoadScene(_sceneName);
         }
     }

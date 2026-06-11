@@ -70,16 +70,19 @@ namespace OrbitalEscape.Movement
             {
                 _gravityWellInfluenceService.SuppressActiveUntilExit();
                 JumpThroughRift();
+                EventBus<PlayerJumpedEvent>.Raise(new PlayerJumpedEvent());
                 return true;
             }
 
             if (_gravityWellInfluenceService.TryGetActiveZone(out GravityWellZone zone))
             {
                 JumpPartiallyFromGravityWell(zone);
+                EventBus<PlayerJumpedEvent>.Raise(new PlayerJumpedEvent());
                 return true;
             }
 
             JumpToOppositeOrbit();
+            EventBus<PlayerJumpedEvent>.Raise(new PlayerJumpedEvent());
             return true;
         }
 

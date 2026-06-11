@@ -1,3 +1,4 @@
+using OrbitalEscape.Audio;
 using OrbitalEscape.Input;
 using OrbitalEscape.UI;
 using Zenject;
@@ -14,6 +15,7 @@ namespace OrbitalEscape.Injection
 
             Container.Bind<IUIManager>().To<UIManager>().AsSingle();
             Container.BindInterfacesAndSelfTo<MainMenuStartupController>().AsSingle().NonLazy();
+            Container.BindInterfacesTo<MainMenuAudioController>().AsSingle().NonLazy();
         }
 
         private void InstallWindows()

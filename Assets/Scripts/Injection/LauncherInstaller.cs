@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using OrbitalEscape.Audio;
 using OrbitalEscape.Data;
 using OrbitalEscape.Input;
 using OrbitalEscape.Movement;
@@ -24,6 +25,7 @@ namespace OrbitalEscape.Injection
             InstallConfigs();
             InstallData();
             InstallFactory();
+            InstallAudio();
             InstallKeyBindings();
             InstallInputController();
         }
@@ -42,6 +44,11 @@ namespace OrbitalEscape.Injection
         private void InstallFactory()
         {
             Container.Bind(typeof(IViewFactory)).To<ViewFactory>().AsSingle().WithArguments(_windowsRoot, WINDOW_PREFAB_PATH);
+        }
+
+        private void InstallAudio()
+        {
+            Container.BindInterfacesAndSelfTo<AudioService>().AsSingle().NonLazy();
         }
         
         private void InstallKeyBindings()
@@ -82,6 +89,7 @@ namespace OrbitalEscape.Injection
             Container.Bind(typeof(SpikeConfig)).To<SpikeConfig>().FromScriptableObjectResource("Configs/SpikeConfig").AsSingle();
             Container.Bind(typeof(ImpulseTrapConfig)).To<ImpulseTrapConfig>().FromScriptableObjectResource("Configs/ImpulseTrapConfig").AsSingle();
             Container.Bind(typeof(GravityWellConfig)).To<GravityWellConfig>().FromScriptableObjectResource("Configs/GravityWellConfig").AsSingle();
+            Container.Bind(typeof(GameAudioConfig)).To<GameAudioConfig>().FromScriptableObjectResource("Configs/GameAudioConfig").AsSingle();
         }
     }
 }
