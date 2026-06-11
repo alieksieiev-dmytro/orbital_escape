@@ -30,7 +30,7 @@ namespace OrbitalEscape.Visuals.Palettes
                 return;
             }
 
-            Color glowColor = palette.OutlineColor;
+            Color glowColor = palette.AccentColor;
             glowColor.a = Constants.FONT_GLOW_ALPHA;
             _runtimeMaterial.SetColor(GlowColorId, glowColor);
             _text.SetMaterialDirty();

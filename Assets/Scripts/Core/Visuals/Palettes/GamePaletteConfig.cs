@@ -1,6 +1,7 @@
 using System;
 using OrbitalEscape.Difficulty;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace OrbitalEscape.Visuals.Palettes
 {
@@ -14,8 +15,9 @@ namespace OrbitalEscape.Visuals.Palettes
             DifficultyPalette palette = GetPalette(difficulty);
             float progress = palette.EvaluateProgress(score);
             return new PaletteSnapshot(
-                palette.MainGradient.Evaluate(progress),
-                palette.OutlineGradient.Evaluate(progress),
+                palette.BackgroundGradient.Evaluate(progress),
+                palette.EnvironmentGradient.Evaluate(progress),
+                palette.AccentGradient.Evaluate(progress),
                 progress);
         }
 
@@ -46,20 +48,23 @@ namespace OrbitalEscape.Visuals.Palettes
             [SerializeField] private DifficultyType _difficulty;
             [SerializeField, Min(0.0f)] private float _scoreToGradientMultiplier;
             [SerializeField] private bool _loop;
-            [SerializeField] private Gradient _mainGradient;
-            [SerializeField] private Gradient _outlineGradient;
+            [SerializeField, FormerlySerializedAs("_mainGradient")] private Gradient _backgroundGradient;
+            [SerializeField] private Gradient _environmentGradient;
+            [SerializeField, FormerlySerializedAs("_outlineGradient")] private Gradient _accentGradient;
 
             public DifficultyType Difficulty => _difficulty;
-            public Gradient MainGradient => _mainGradient ?? DefaultGradient(Color.white);
-            public Gradient OutlineGradient => _outlineGradient ?? DefaultGradient(Color.white);
+            public Gradient BackgroundGradient => _backgroundGradient ?? DefaultGradient(Color.black);
+            public Gradient EnvironmentGradient => _environmentGradient ?? DefaultGradient(new Color(0.05f, 0.9f, 1.0f, 1.0f));
+            public Gradient AccentGradient => _accentGradient ?? DefaultGradient(Color.white);
 
             public static DifficultyPalette Default => new DifficultyPalette
             {
                 _difficulty = DifficultyType.Basic,
                 _scoreToGradientMultiplier = 0.05f,
                 _loop = true,
-                _mainGradient = DefaultGradient(new Color(0.65f, 0.15f, 0.95f, 1.0f)),
-                _outlineGradient = DefaultGradient(new Color(0.0f, 1.0f, 0.75f, 1.0f))
+                _backgroundGradient = DefaultGradient(new Color(0.02f, 0.0f, 0.08f, 1.0f)),
+                _environmentGradient = DefaultGradient(new Color(0.05f, 0.9f, 1.0f, 1.0f)),
+                _accentGradient = DefaultGradient(new Color(0.0f, 1.0f, 0.75f, 1.0f))
             };
 
             public float EvaluateProgress(float score)

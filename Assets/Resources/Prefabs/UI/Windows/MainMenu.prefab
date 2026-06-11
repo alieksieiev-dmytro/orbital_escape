@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 463080584}
   - component: {fileID: 463080586}
   - component: {fileID: 463080585}
+  - component: {fileID: 910420000000000031}
   m_Layer: 5
   m_Name: txt-settings
   m_TagString: Untagged
@@ -277,6 +278,7 @@ GameObject:
   - component: {fileID: 858805109}
   - component: {fileID: 858805111}
   - component: {fileID: 858805110}
+  - component: {fileID: 910420000000000032}
   m_Layer: 5
   m_Name: txt-play
   m_TagString: Untagged
@@ -583,6 +585,7 @@ GameObject:
   - component: {fileID: 1203158421}
   - component: {fileID: 1203158423}
   - component: {fileID: 1203158422}
+  - component: {fileID: 910420000000000033}
   m_Layer: 5
   m_Name: txt-exit
   m_TagString: Untagged
@@ -810,6 +813,7 @@ GameObject:
   - component: {fileID: 1830198275}
   - component: {fileID: 1830198274}
   - component: {fileID: 1830198276}
+  - component: {fileID: 910420000000000034}
   m_Layer: 5
   m_Name: txt-title
   m_TagString: Untagged
@@ -1041,3 +1045,55 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &910420000000000031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 463080583}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84b8f3db78d546749a4c1c7d2e6c1f5d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Visuals.Palettes.PaletteTextColorTarget
+  _targetText: {fileID: 463080585}
+--- !u!114 &910420000000000032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 858805108}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84b8f3db78d546749a4c1c7d2e6c1f5d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Visuals.Palettes.PaletteTextColorTarget
+  _targetText: {fileID: 858805110}
+--- !u!114 &910420000000000033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1203158420}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84b8f3db78d546749a4c1c7d2e6c1f5d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Visuals.Palettes.PaletteTextColorTarget
+  _targetText: {fileID: 1203158422}
+--- !u!114 &910420000000000034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1830198272}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84b8f3db78d546749a4c1c7d2e6c1f5d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Visuals.Palettes.PaletteTextColorTarget
+  _targetText: {fileID: 1830198274}

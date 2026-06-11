@@ -30,7 +30,7 @@ namespace OrbitalEscape.Orbits
 
         public void ApplyPalette(PaletteSnapshot palette)
         {
-            _paletteColor = palette.OutlineColor;
+            _paletteColor = palette.EnvironmentColor;
             _hasPaletteColor = true;
             Apply();
         }

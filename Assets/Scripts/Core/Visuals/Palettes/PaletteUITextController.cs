@@ -42,19 +42,24 @@ namespace OrbitalEscape.Visuals.Palettes
 
         private void ApplyPalette(PaletteSnapshot palette)
         {
-            var targets = UnityEngine.Object.FindObjectsByType<PaletteTextGlowTarget>(
+            ApplyTargets(UnityEngine.Object.FindObjectsByType<PaletteTextColorTarget>(
                 FindObjectsInactive.Include,
-                FindObjectsSortMode.None);
-
-            foreach (var target in targets)
-            {
-                target.ApplyPalette(palette);
-            }
+                FindObjectsSortMode.None), palette);
+            ApplyTargets(UnityEngine.Object.FindObjectsByType<PaletteTextGlowTarget>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None), palette);
         }
 
         private void ApplyPalette(Transform root, PaletteSnapshot palette)
         {
-            foreach (var target in root.GetComponentsInChildren<PaletteTextGlowTarget>(true))
+            ApplyTargets(root.GetComponentsInChildren<PaletteTextColorTarget>(true), palette);
+            ApplyTargets(root.GetComponentsInChildren<PaletteTextGlowTarget>(true), palette);
+        }
+
+        private void ApplyTargets<TTarget>(TTarget[] targets, PaletteSnapshot palette)
+            where TTarget : IPaletteTarget
+        {
+            foreach (var target in targets)
             {
                 target.ApplyPalette(palette);
             }

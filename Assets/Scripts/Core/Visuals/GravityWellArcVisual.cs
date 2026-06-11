@@ -77,7 +77,7 @@ namespace OrbitalEscape.Visuals
 
         public void ApplyPalette(PaletteSnapshot palette)
         {
-            _color = palette.OutlineColor;
+            _color = palette.AccentColor;
             _color.a = 1.0f;
             Apply();
         }

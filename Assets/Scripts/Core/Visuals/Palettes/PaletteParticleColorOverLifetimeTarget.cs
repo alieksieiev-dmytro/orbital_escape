@@ -34,7 +34,7 @@ namespace OrbitalEscape.Visuals.Palettes
 
             ParticleSystem.ColorOverLifetimeModule colorOverLifetime = _targetParticles.colorOverLifetime;
             colorOverLifetime.enabled = true;
-            colorOverLifetime.color = new ParticleSystem.MinMaxGradient(BuildGradient(palette.OutlineColor));
+            colorOverLifetime.color = new ParticleSystem.MinMaxGradient(BuildGradient(palette.AccentColor));
         }
 
         private void CacheAlphaKeys()

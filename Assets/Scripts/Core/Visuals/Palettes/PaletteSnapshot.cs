@@ -4,14 +4,16 @@ namespace OrbitalEscape.Visuals.Palettes
 {
     public readonly struct PaletteSnapshot
     {
-        public Color MainColor { get; }
-        public Color OutlineColor { get; }
+        public Color BackgroundColor { get; }
+        public Color EnvironmentColor { get; }
+        public Color AccentColor { get; }
         public float Progress { get; }
 
-        public PaletteSnapshot(Color mainColor, Color outlineColor, float progress)
+        public PaletteSnapshot(Color backgroundColor, Color environmentColor, Color accentColor, float progress)
         {
-            MainColor = mainColor;
-            OutlineColor = outlineColor;
+            BackgroundColor = backgroundColor;
+            EnvironmentColor = environmentColor;
+            AccentColor = accentColor;
             Progress = progress;
         }
     }

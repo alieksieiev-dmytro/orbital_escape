@@ -46,8 +46,8 @@ namespace OrbitalEscape.Visuals
 
         public void ApplyPalette(PaletteSnapshot palette)
         {
-            SetMaterialColor(_innerAurora, AuroraInnerColour, palette.OutlineColor);
-            SetMaterialColor(_outerAurora, AuroraOuterColour, palette.OutlineColor);
+            SetMaterialColor(_innerAurora, AuroraInnerColour, palette.EnvironmentColor);
+            SetMaterialColor(_outerAurora, AuroraOuterColour, palette.EnvironmentColor);
         }
         
         private void PlayFadeIn(float duration, bool playInner, bool playOuter)

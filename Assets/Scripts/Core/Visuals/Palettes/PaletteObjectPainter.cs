@@ -15,12 +15,12 @@ namespace OrbitalEscape.Visuals.Palettes
         {
             if (background != null)
             {
-                background.color = WithAlpha(Color.Lerp(Color.black, palette.MainColor, 0.18f), background.color.a);
+                background.color = WithAlpha(Color.Lerp(Color.black, palette.BackgroundColor, 0.18f), background.color.a);
             }
 
             if (accent != null)
             {
-                accent.color = WithAlpha(Color.Lerp(Color.black, palette.MainColor, 0.35f), accent.color.a);
+                accent.color = WithAlpha(Color.Lerp(Color.black, palette.EnvironmentColor, 0.35f), accent.color.a);
             }
         }
 
@@ -34,18 +34,18 @@ namespace OrbitalEscape.Visuals.Palettes
             foreach (SpriteRenderer renderer in player.GetComponentsInChildren<SpriteRenderer>(true))
             {
                 renderer.color = WithAlpha(Color.white, renderer.color.a);
-                ApplyExistingOutlineProperties(renderer, palette.OutlineColor);
+                ApplyExistingOutlineProperties(renderer, palette.AccentColor);
             }
 
             foreach (TrailRenderer trail in player.GetComponentsInChildren<TrailRenderer>(true))
             {
-                trail.colorGradient = BuildFadeGradient(palette.OutlineColor);
+                trail.colorGradient = BuildFadeGradient(palette.AccentColor);
             }
 
             foreach (ParticleSystem particles in player.GetComponentsInChildren<ParticleSystem>(true))
             {
                 ParticleSystem.MainModule main = particles.main;
-                main.startColor = palette.OutlineColor;
+                main.startColor = palette.AccentColor;
             }
         }
 
@@ -82,7 +82,7 @@ namespace OrbitalEscape.Visuals.Palettes
                 }
 
                 renderer.color = WithAlpha(Color.white, renderer.color.a);
-                ApplyExistingOutlineProperties(renderer, palette.OutlineColor);
+                ApplyExistingOutlineProperties(renderer, palette.AccentColor);
             }
         }
 

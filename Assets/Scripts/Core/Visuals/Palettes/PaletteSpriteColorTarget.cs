@@ -46,7 +46,7 @@ namespace OrbitalEscape.Visuals.Palettes
                 return;
             }
 
-            Color color = palette.OutlineColor;
+            Color color = palette.AccentColor;
             _targetRenderer.color = color;
         }
 

@@ -38,6 +38,7 @@ namespace OrbitalEscape.Editor
                         bool useGlow = ShouldUseGlow(textComponent);
                         textComponent.font = fontAsset;
                         textComponent.fontSharedMaterial = useGlow ? glowMaterial : fontAsset.material;
+                        SyncTextColorTarget(textComponent);
                         SyncGlowTarget(textComponent, useGlow);
                         textComponent.SetAllDirty();
                         EditorUtility.SetDirty(textComponent);
@@ -64,6 +65,17 @@ namespace OrbitalEscape.Editor
                 || objectName.Contains("record")
                 || objectName.Contains("title")
                 || text.Contains("game over");
+        }
+
+        private static void SyncTextColorTarget(TMP_Text textComponent)
+        {
+            var colorTarget = textComponent.GetComponent<PaletteTextColorTarget>();
+            if (colorTarget == null)
+            {
+                colorTarget = textComponent.gameObject.AddComponent<PaletteTextColorTarget>();
+            }
+
+            EditorUtility.SetDirty(colorTarget);
         }
 
         private static void SyncGlowTarget(TMP_Text textComponent, bool useGlow)

@@ -50,7 +50,7 @@ namespace OrbitalEscape.Visuals.Palettes
             _propertyBlock.Clear();
             _targetRenderer.GetPropertyBlock(_propertyBlock);
 
-            Color color = palette.OutlineColor;
+            Color color = palette.AccentColor;
             color.a = material.GetColor(_colorPropertyId).a;
             _propertyBlock.SetColor(_colorPropertyId, color);
             _targetRenderer.SetPropertyBlock(_propertyBlock);
