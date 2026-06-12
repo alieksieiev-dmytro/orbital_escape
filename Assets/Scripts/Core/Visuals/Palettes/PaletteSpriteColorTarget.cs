@@ -2,11 +2,19 @@ using UnityEngine;
 
 namespace OrbitalEscape.Visuals.Palettes
 {
+    public enum PaletteSpriteColorType
+    {
+        Accent = 0,
+        Background = 1,
+        Environment = 2
+    }
+
     [DisallowMultipleComponent]
     [RequireComponent(typeof(SpriteRenderer))]
     public sealed class PaletteSpriteColorTarget : MonoBehaviour, IPaletteTarget
     {
         [SerializeField] private SpriteRenderer _targetRenderer;
+        [SerializeField] private PaletteSpriteColorType _colorType = PaletteSpriteColorType.Accent;
 
         private void Reset()
         {
@@ -31,6 +39,7 @@ namespace OrbitalEscape.Visuals.Palettes
             }
 
             Color color = _targetRenderer.color;
+            color.a = alpha;
             _targetRenderer.color = color;
         }
 
@@ -46,8 +55,19 @@ namespace OrbitalEscape.Visuals.Palettes
                 return;
             }
 
-            Color color = palette.AccentColor;
+            Color color = GetPaletteColor(palette);
+            color.a = _targetRenderer.color.a;
             _targetRenderer.color = color;
+        }
+
+        private Color GetPaletteColor(PaletteSnapshot palette)
+        {
+            return _colorType switch
+            {
+                PaletteSpriteColorType.Background => palette.BackgroundColor,
+                PaletteSpriteColorType.Environment => palette.EnvironmentColor,
+                _ => palette.AccentColor
+            };
         }
 
         private void ResolveRenderer()

@@ -13,12 +13,12 @@ namespace OrbitalEscape.Visuals.Palettes
 
         public void ApplyEnvironment(SpriteRenderer background, SpriteRenderer accent, PaletteSnapshot palette)
         {
-            if (background != null)
+            if (background != null && !TryApplyPaletteTarget(background, palette))
             {
                 background.color = WithAlpha(Color.Lerp(Color.black, palette.BackgroundColor, 0.18f), background.color.a);
             }
 
-            if (accent != null)
+            if (accent != null && !TryApplyPaletteTarget(accent, palette))
             {
                 accent.color = WithAlpha(Color.Lerp(Color.black, palette.EnvironmentColor, 0.35f), accent.color.a);
             }
@@ -135,6 +135,22 @@ namespace OrbitalEscape.Visuals.Palettes
         {
             color.a = alpha;
             return color;
+        }
+
+        private bool TryApplyPaletteTarget(SpriteRenderer renderer, PaletteSnapshot palette)
+        {
+            bool applied = false;
+
+            foreach (MonoBehaviour behaviour in renderer.GetComponents<MonoBehaviour>())
+            {
+                if (behaviour is IPaletteTarget paletteTarget)
+                {
+                    paletteTarget.ApplyPalette(palette);
+                    applied = true;
+                }
+            }
+
+            return applied;
         }
     }
 }
