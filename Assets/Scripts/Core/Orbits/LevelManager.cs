@@ -4,6 +4,8 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using OrbitalEscape.Events;
 using OrbitalEscape.Orbits.Generators;
+using OrbitalEscape.Orbits.Generators.Patterns;
+using OrbitalEscape.Utils;
 using OrbitalEscape.Visuals;
 using UnityEngine;
 using Zenject;
@@ -18,8 +20,10 @@ namespace OrbitalEscape.Orbits
         private LevelState _levelState;
         private EventBinding<PassedThroughOrbitEvent> _passedThroughOrbitBinding;
         private CancellationToken _destroyCancellationToken;
+        private readonly List<PatternDebugEntry> _patternDebugEntries = new List<PatternDebugEntry>();
         private bool _isBuildingLevel;
         private bool _isExtendingLevel;
+        private bool _showPatternDebugGizmos;
 
         [Inject]
         public void Construct(
@@ -101,6 +105,8 @@ namespace OrbitalEscape.Orbits
         private void ClearLevel()
         {
             _levelObjectSpawner.Clear();
+            _patternDebugEntries.Clear();
+            _showPatternDebugGizmos = false;
         }
         
         private void OnEnable()
@@ -182,6 +188,8 @@ namespace OrbitalEscape.Orbits
         {
             LevelBuildResult result = await _levelBuilder.BuildAsync(_levelState.Orbits, count, cancellationToken);
             LogWarnings(result.Warnings);
+            _showPatternDebugGizmos = result.PatternDebugGizmosEnabled;
+            _patternDebugEntries.AddRange(result.PatternDebugEntries);
 
             List<Orbit> newOrbits = new List<Orbit>(result.Orbits);
             _levelState.AddRange(newOrbits);
@@ -212,6 +220,53 @@ namespace OrbitalEscape.Orbits
             {
                 Debug.LogWarning(warnings[i]);
             }
+        }
+
+        private void OnDrawGizmos()
+        {
+            if (!_showPatternDebugGizmos || _patternDebugEntries == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < _patternDebugEntries.Count; i++)
+            {
+                DrawPatternDebugEntry(_patternDebugEntries[i]);
+            }
+        }
+
+        private static void DrawPatternDebugEntry(PatternDebugEntry entry)
+        {
+            Gizmos.color = entry.IsFallback
+                ? new Color(0.2f, 0.8f, 1.0f, 0.25f)
+                : new Color(1.0f, 0.85f, 0.15f, 0.5f);
+
+            DrawArc(entry.LowerRadius, entry.StartAngleDegree, entry.EndAngleDegree);
+            DrawArc(entry.UpperRadius, entry.StartAngleDegree, entry.EndAngleDegree);
+            DrawRadial(entry.LowerRadius, entry.UpperRadius, entry.StartAngleDegree);
+            DrawRadial(entry.LowerRadius, entry.UpperRadius, entry.EndAngleDegree);
+        }
+
+        private static void DrawArc(float radius, float startAngle, float endAngle)
+        {
+            float delta = OrbitMath.DeltaDegrees(startAngle, endAngle);
+            int steps = Mathf.Max(4, Mathf.CeilToInt(delta / 8.0f));
+            Vector3 previous = OrbitMath.GetPointOnCircle(Constants.Center, radius, startAngle);
+
+            for (int i = 1; i <= steps; i++)
+            {
+                float angle = startAngle + delta * i / steps;
+                Vector3 next = OrbitMath.GetPointOnCircle(Constants.Center, radius, angle);
+                Gizmos.DrawLine(previous, next);
+                previous = next;
+            }
+        }
+
+        private static void DrawRadial(float lowerRadius, float upperRadius, float angle)
+        {
+            Vector3 lower = OrbitMath.GetPointOnCircle(Constants.Center, lowerRadius, angle);
+            Vector3 upper = OrbitMath.GetPointOnCircle(Constants.Center, upperRadius, angle);
+            Gizmos.DrawLine(lower, upper);
         }
     }
 }

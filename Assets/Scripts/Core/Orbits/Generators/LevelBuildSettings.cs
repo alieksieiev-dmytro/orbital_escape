@@ -2,6 +2,8 @@ using System;
 
 namespace OrbitalEscape.Orbits.Generators
 {
+    using Patterns;
+
     public readonly struct LevelBuildSettings
     {
         public OrbitGenerationSettings Orbit { get; }
@@ -10,6 +12,7 @@ namespace OrbitalEscape.Orbits.Generators
         public SpikeGenerationSettings Spike { get; }
         public ImpulseTrapGenerationSettings ImpulseTrap { get; }
         public GravityWellGenerationSettings GravityWell { get; }
+        public PatternGenerationSettings Patterns { get; }
 
         public LevelBuildSettings(
             OrbitGenerationSettings orbit,
@@ -17,7 +20,8 @@ namespace OrbitalEscape.Orbits.Generators
             RiftGenerationSettings rift,
             SpikeGenerationSettings spike,
             ImpulseTrapGenerationSettings impulseTrap,
-            GravityWellGenerationSettings gravityWell)
+            GravityWellGenerationSettings gravityWell,
+            PatternGenerationSettings patterns)
         {
             Orbit = orbit;
             Content = content;
@@ -25,6 +29,7 @@ namespace OrbitalEscape.Orbits.Generators
             Spike = spike;
             ImpulseTrap = impulseTrap;
             GravityWell = gravityWell;
+            Patterns = patterns;
         }
 
         public bool ShouldGenerateContent(Orbit orbit)
