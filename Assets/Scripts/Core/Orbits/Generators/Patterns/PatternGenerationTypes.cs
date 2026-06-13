@@ -54,7 +54,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
     public sealed class ObstaclePatternSnapshot
     {
         public string Id { get; }
-        public string DisplayName { get; }
         public bool Enabled { get; }
         public IReadOnlyList<PatternSlotSnapshot> Orbit1Slots { get; }
         public IReadOnlyList<PatternSlotSnapshot> Orbit2Slots { get; }
@@ -73,7 +72,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
 
         public ObstaclePatternSnapshot(
             string id,
-            string displayName,
             bool enabled,
             IReadOnlyList<PatternSlotSnapshot> orbit1Slots,
             IReadOnlyList<PatternSlotSnapshot> orbit2Slots,
@@ -87,8 +85,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             float difficultyWeightMultiplier,
             bool allowFlip)
         {
-            Id = string.IsNullOrWhiteSpace(id) ? displayName : id;
-            DisplayName = string.IsNullOrWhiteSpace(displayName) ? Id : displayName;
+            Id = string.IsNullOrWhiteSpace(id) ? "pattern" : id;
             Enabled = enabled;
             Orbit1Slots = orbit1Slots ?? Array.Empty<PatternSlotSnapshot>();
             Orbit2Slots = orbit2Slots ?? Array.Empty<PatternSlotSnapshot>();

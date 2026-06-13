@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: Pattern_GravityWellOrbit2
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.Generators.Patterns.ObstaclePatternDefinition
   _id: gravity_well_orbit2
-  _displayName: Gravity Well Orbit 2
   _enabled: 1
   _orbit1Slots: []
   _orbit2Slots:

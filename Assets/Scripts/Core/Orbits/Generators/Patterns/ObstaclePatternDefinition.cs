@@ -11,7 +11,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
     public sealed class ObstaclePatternDefinition : ScriptableObject
     {
         [SerializeField] private string _id;
-        [SerializeField] private string _displayName;
         [SerializeField] private bool _enabled = true;
         [SerializeField] private PatternSlot[] _orbit1Slots;
         [SerializeField] private PatternSlot[] _orbit2Slots;
@@ -33,7 +32,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         {
             return new ObstaclePatternSnapshot(
                 Id,
-                string.IsNullOrWhiteSpace(_displayName) ? Id : _displayName,
                 _enabled,
                 CreateSlotSnapshots(_orbit1Slots, lengthProvider),
                 CreateSlotSnapshots(_orbit2Slots, lengthProvider),

@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: Pattern_RiftOrbit2
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.Generators.Patterns.ObstaclePatternDefinition
   _id: rift_orbit2
-  _displayName: Rift Orbit 2
   _enabled: 1
   _orbit1Slots: []
   _orbit2Slots:

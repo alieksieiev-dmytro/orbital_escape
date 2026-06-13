@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: Pattern_SpikeTrapCombo
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.Generators.Patterns.ObstaclePatternDefinition
   _id: spike_trap_combo
-  _displayName: Spike Trap Combo
   _enabled: 1
   _orbit1Slots:
   - _type: 1

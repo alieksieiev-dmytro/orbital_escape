@@ -50,7 +50,6 @@ namespace OrbitalEscape.Tests.Editor
         {
             ObstaclePatternSnapshot pattern = new ObstaclePatternSnapshot(
                 "gravity",
-                "Gravity",
                 enabled: true,
                 new[] { new PatternSlotSnapshot(PatternSlotType.GravityWell, 3.0f) },
                 new[] { new PatternSlotSnapshot(PatternSlotType.Space, 1.0f) },
@@ -158,7 +157,6 @@ namespace OrbitalEscape.Tests.Editor
         private static ObstaclePatternSnapshot CreatePattern(string id)
         {
             return new ObstaclePatternSnapshot(
-                id,
                 id,
                 enabled: true,
                 new[] { new PatternSlotSnapshot(PatternSlotType.Space, 1.0f) },
