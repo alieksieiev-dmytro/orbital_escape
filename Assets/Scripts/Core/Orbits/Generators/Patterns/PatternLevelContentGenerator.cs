@@ -438,7 +438,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             if (context.Settings.Patterns.DebugGizmosEnabled)
             {
                 context.AddDebugEntry(new PatternDebugEntry(
-                    placement.Pattern.Id,
                     placement.LowerOrbit.Index,
                     placement.UpperOrbit.Index,
                     placement.LowerOrbit.Radius,
@@ -530,7 +529,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             int samePatternStreak = 0;
             for (int i = history.Count - 1; i >= 0; i--)
             {
-                if (history[i].Id != pattern.Id)
+                if (!ReferenceEquals(history[i], pattern))
                 {
                     break;
                 }
@@ -549,7 +548,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
 
             if (history.Count > 0 &&
                 (history[^1].Tags & pattern.Tags) != PatternTag.None &&
-                history[^1].Id != pattern.Id)
+                !ReferenceEquals(history[^1], pattern))
             {
                 repetitionModifier *= stage.SameTagWeightMultiplier;
             }

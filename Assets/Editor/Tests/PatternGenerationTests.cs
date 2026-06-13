@@ -29,8 +29,8 @@ namespace OrbitalEscape.Tests.Editor
         public void WeightedSelector_IgnoresZeroWeightCandidates()
         {
             WeightedPatternSelector selector = new WeightedPatternSelector();
-            PatternPlacement zeroWeightPlacement = CreatePlacement("zero");
-            PatternPlacement selectedPlacement = CreatePlacement("selected");
+            PatternPlacement zeroWeightPlacement = CreatePlacement();
+            PatternPlacement selectedPlacement = CreatePlacement();
 
             bool selected = selector.TrySelect(
                 new[]
@@ -49,7 +49,6 @@ namespace OrbitalEscape.Tests.Editor
         public void PatternSnapshot_DetectsLockedSlotTypes()
         {
             ObstaclePatternSnapshot pattern = new ObstaclePatternSnapshot(
-                "gravity",
                 enabled: true,
                 new[] { new PatternSlotSnapshot(PatternSlotType.GravityWell, 3.0f) },
                 new[] { new PatternSlotSnapshot(PatternSlotType.Space, 1.0f) },
@@ -71,7 +70,7 @@ namespace OrbitalEscape.Tests.Editor
             Orbit lowerOrbit = new Orbit(5.0f, 0);
             Orbit upperOrbit = new Orbit(7.0f, 1);
             PatternPlacement placement = new PatternPlacement(
-                CreatePattern("gravity_rift"),
+                CreatePattern(),
                 flipped: false,
                 isFallback: false,
                 lowerOrbit,
@@ -110,7 +109,7 @@ namespace OrbitalEscape.Tests.Editor
             Orbit lowerOrbit = new Orbit(5.0f, 0);
             Orbit upperOrbit = new Orbit(7.0f, 1);
             PatternPlacement placement = new PatternPlacement(
-                CreatePattern("parallel_rifts"),
+                CreatePattern(),
                 flipped: false,
                 isFallback: false,
                 lowerOrbit,
@@ -136,12 +135,12 @@ namespace OrbitalEscape.Tests.Editor
             Assert.That(valid, Is.True, reason);
         }
 
-        private static PatternPlacement CreatePlacement(string patternId)
+        private static PatternPlacement CreatePlacement()
         {
             Orbit lowerOrbit = new Orbit(5.0f, 0);
             Orbit upperOrbit = new Orbit(7.0f, 1);
             return new PatternPlacement(
-                CreatePattern(patternId),
+                CreatePattern(),
                 flipped: false,
                 isFallback: false,
                 lowerOrbit,
@@ -152,10 +151,9 @@ namespace OrbitalEscape.Tests.Editor
                 new List<PatternPlacedObject>());
         }
 
-        private static ObstaclePatternSnapshot CreatePattern(string id)
+        private static ObstaclePatternSnapshot CreatePattern()
         {
             return new ObstaclePatternSnapshot(
-                id,
                 enabled: true,
                 new[] { new PatternSlotSnapshot(PatternSlotType.Space, 1.0f) },
                 new[] { new PatternSlotSnapshot(PatternSlotType.Space, 1.0f) },
