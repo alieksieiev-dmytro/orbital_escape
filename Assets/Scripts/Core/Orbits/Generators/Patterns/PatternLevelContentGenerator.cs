@@ -58,12 +58,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             LevelBuildRequest request)
         {
             PatternDifficultyStageSnapshot stage = context.Settings.Patterns.GetStage(request.Score);
-            float remainingBudget = stage.BudgetPerOrbitBand;
-            if (remainingBudget <= 0.0f)
-            {
-                return;
-            }
-
             bool lowerMutable = lowerOrbit.Index >= context.StartIndex &&
                                 context.Settings.ShouldGenerateContent(lowerOrbit);
             bool upperMutable = upperOrbit.Index >= context.StartIndex &&
@@ -74,10 +68,9 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             }
 
             float cursorWorld = 0.0f;
-            float initialBudget = remainingBudget;
             List<ObstaclePatternSnapshot> history = new List<ObstaclePatternSnapshot>();
 
-            for (int step = 0; step < MaxCursorStepsPerBand && cursorWorld < lowerOrbit.Circumference && remainingBudget > 0.0f; step++)
+            for (int step = 0; step < MaxCursorStepsPerBand && cursorWorld < lowerOrbit.Circumference; step++)
             {
                 PatternRejectionLog rejectionLog = new PatternRejectionLog();
                 List<WeightedPatternCandidate> candidates = BuildCandidates(
@@ -86,7 +79,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     lowerMutable,
                     upperMutable,
                     cursorWorld,
-                    remainingBudget,
                     stage,
                     history,
                     context,
@@ -114,15 +106,10 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                         randomizeSpikeHeight: true);
                 }
 
-                float budgetSpent = Math.Max(0.0f, placement.Pattern.Cost);
-                remainingBudget = Math.Max(0.0f, remainingBudget - budgetSpent);
                 ApplyPlacement(
                     placement,
                     context,
                     request,
-                    budgetSpent,
-                    remainingBudget,
-                    initialBudget,
                     rejectionLog.Summary);
                 cursorWorld = placement.StartWorld + Math.Max(placement.Pattern.Length, 0.01f);
 
@@ -143,7 +130,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             bool lowerMutable,
             bool upperMutable,
             float cursorWorld,
-            float remainingBudget,
             PatternDifficultyStageSnapshot stage,
             IReadOnlyList<ObstaclePatternSnapshot> history,
             LevelBuildContext context,
@@ -156,7 +142,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             for (int i = 0; i < settings.Patterns.Count && candidates.Count < settings.MaxSelectionAttempts; i++)
             {
                 ObstaclePatternSnapshot pattern = settings.Patterns[i];
-                if (!IsEligibleByContext(pattern, remainingBudget, stage, request.Score, out string contextReason))
+                if (!IsEligibleByContext(pattern, stage, request.Score, out string contextReason))
                 {
                     rejectionLog.Add(contextReason);
                     continue;
@@ -341,9 +327,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             PatternPlacement placement,
             LevelBuildContext context,
             LevelBuildRequest request,
-            float budgetSpent,
-            float remainingBudget,
-            float initialBudget,
             string rejectionSummary)
         {
             for (int i = 0; i < placement.Objects.Count; i++)
@@ -365,15 +348,12 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     request.Seed,
                     request.Score,
                     request.MovementSpeed,
-                    budgetSpent,
-                    Math.Min(remainingBudget, initialBudget),
                     rejectionSummary));
             }
         }
 
         private static bool IsEligibleByContext(
             ObstaclePatternSnapshot pattern,
-            float remainingBudget,
             PatternDifficultyStageSnapshot stage,
             float score,
             out string reason)
@@ -399,18 +379,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             if (score < pattern.MinScore || score > pattern.MaxScore)
             {
                 reason = "score outside pattern range";
-                return false;
-            }
-
-            if (pattern.Cost > remainingBudget)
-            {
-                reason = "insufficient remaining budget";
-                return false;
-            }
-
-            if (pattern.Cost > stage.MaxPatternCost)
-            {
-                reason = "pattern exceeds stage max cost";
                 return false;
             }
 
@@ -453,13 +421,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 samePatternStreak++;
             }
 
-            if (samePatternStreak >= stage.MaxRepeatedPatternCount)
-            {
-                return 0.0f;
-            }
-
             float repetitionModifier = samePatternStreak > 0
-                ? stage.SamePatternWeightMultiplier
+                ? (float)Math.Pow(stage.SamePatternWeightMultiplier, samePatternStreak)
                 : 1.0f;
 
             if (history.Count > 0 &&

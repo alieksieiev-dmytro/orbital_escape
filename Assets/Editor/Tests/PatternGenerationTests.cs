@@ -53,7 +53,6 @@ namespace OrbitalEscape.Tests.Editor
                 new[] { new PatternSlotSnapshot(PatternSlotType.GravityWell, 3.0f) },
                 new[] { new PatternSlotSnapshot(PatternSlotType.Space, 1.0f) },
                 PatternTag.Gravity,
-                cost: 1.0f,
                 baseWeight: 1.0f,
                 minScore: 0.0f,
                 maxScore: 0.0f,
@@ -155,7 +154,6 @@ namespace OrbitalEscape.Tests.Editor
                 new[] { new PatternSlotSnapshot(PatternSlotType.Space, 1.0f) },
                 new[] { new PatternSlotSnapshot(PatternSlotType.Space, 1.0f) },
                 PatternTag.Recovery,
-                cost: 1.0f,
                 baseWeight: 1.0f,
                 minScore: 0.0f,
                 maxScore: 0.0f,
@@ -188,9 +186,6 @@ namespace OrbitalEscape.Tests.Editor
                         new PatternDifficultyStageSnapshot(
                             minScore: 0.0f,
                             maxScore: 0.0f,
-                            budgetPerOrbitBand: 6.0f,
-                            maxPatternCost: 6.0f,
-                            maxRepeatedPatternCount: 2,
                             samePatternWeightMultiplier: 0.35f,
                             sameTagWeightMultiplier: 0.75f,
                             unlockedSlots: PatternSlotTypeFlags.All)

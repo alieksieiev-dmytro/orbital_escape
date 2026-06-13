@@ -113,18 +113,12 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
     {
         [SerializeField, Min(0.0f)] private float _minScore;
         [SerializeField, Min(0.0f)] private float _maxScore;
-        [SerializeField, Min(0.0f)] private float _budgetPerOrbitBand;
-        [SerializeField, Min(0.0f)] private float _maxPatternCost;
-        [SerializeField, Min(1)] private int _maxRepeatedPatternCount;
         [SerializeField, Range(0.0f, 1.0f)] private float _samePatternWeightMultiplier;
         [SerializeField, Range(0.0f, 1.0f)] private float _sameTagWeightMultiplier;
         [SerializeField] private PatternSlotTypeFlags _unlockedSlots;
 
         public static PatternDifficultyStage Default => new PatternDifficultyStage
         {
-            _budgetPerOrbitBand = 5.0f,
-            _maxPatternCost = 5.0f,
-            _maxRepeatedPatternCount = 2,
             _samePatternWeightMultiplier = 0.35f,
             _sameTagWeightMultiplier = 0.75f,
             _unlockedSlots = PatternSlotTypeFlags.All
@@ -135,9 +129,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             return new PatternDifficultyStageSnapshot(
                 _minScore,
                 _maxScore,
-                _budgetPerOrbitBand,
-                _maxPatternCost,
-                _maxRepeatedPatternCount <= 0 ? 2 : _maxRepeatedPatternCount,
                 _samePatternWeightMultiplier <= 0.0f ? 0.35f : _samePatternWeightMultiplier,
                 _sameTagWeightMultiplier <= 0.0f ? 0.75f : _sameTagWeightMultiplier,
                 _unlockedSlots == PatternSlotTypeFlags.None ? PatternSlotTypeFlags.All : _unlockedSlots);

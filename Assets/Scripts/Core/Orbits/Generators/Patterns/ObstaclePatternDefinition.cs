@@ -14,7 +14,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         [SerializeField] private PatternSlot[] _orbit1Slots;
         [SerializeField] private PatternSlot[] _orbit2Slots;
         [SerializeField] private PatternTag _tags;
-        [SerializeField, Min(0.0f)] private float _cost = 1.0f;
         [SerializeField, Min(0.0f)] private float _baseWeight = 1.0f;
         [SerializeField, Min(0.0f)] private float _minScore;
         [SerializeField, Min(0.0f)] private float _maxScore;
@@ -30,7 +29,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 CreateSlotSnapshots(_orbit1Slots, lengthProvider),
                 CreateSlotSnapshots(_orbit2Slots, lengthProvider),
                 _tags,
-                _cost,
                 _baseWeight,
                 _minScore,
                 _maxScore,

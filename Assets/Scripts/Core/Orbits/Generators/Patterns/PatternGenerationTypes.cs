@@ -57,7 +57,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         public IReadOnlyList<PatternSlotSnapshot> Orbit1Slots { get; }
         public IReadOnlyList<PatternSlotSnapshot> Orbit2Slots { get; }
         public PatternTag Tags { get; }
-        public float Cost { get; }
         public float BaseWeight { get; }
         public float MinScore { get; }
         public float MaxScore { get; }
@@ -72,7 +71,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             IReadOnlyList<PatternSlotSnapshot> orbit1Slots,
             IReadOnlyList<PatternSlotSnapshot> orbit2Slots,
             PatternTag tags,
-            float cost,
             float baseWeight,
             float minScore,
             float maxScore,
@@ -83,7 +81,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             Orbit1Slots = orbit1Slots ?? Array.Empty<PatternSlotSnapshot>();
             Orbit2Slots = orbit2Slots ?? Array.Empty<PatternSlotSnapshot>();
             Tags = tags;
-            Cost = Math.Max(0.0f, cost);
             BaseWeight = Math.Max(0.0f, baseWeight);
             MinScore = Math.Max(0.0f, minScore);
             MaxScore = maxScore <= 0.0f ? float.PositiveInfinity : Math.Max(minScore, maxScore);
@@ -152,9 +149,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
     {
         public float MinScore { get; }
         public float MaxScore { get; }
-        public float BudgetPerOrbitBand { get; }
-        public float MaxPatternCost { get; }
-        public int MaxRepeatedPatternCount { get; }
         public float SamePatternWeightMultiplier { get; }
         public float SameTagWeightMultiplier { get; }
         public PatternSlotTypeFlags UnlockedSlots { get; }
@@ -162,18 +156,12 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         public PatternDifficultyStageSnapshot(
             float minScore,
             float maxScore,
-            float budgetPerOrbitBand,
-            float maxPatternCost,
-            int maxRepeatedPatternCount,
             float samePatternWeightMultiplier,
             float sameTagWeightMultiplier,
             PatternSlotTypeFlags unlockedSlots)
         {
             MinScore = Math.Max(0.0f, minScore);
             MaxScore = maxScore <= 0.0f ? float.PositiveInfinity : Math.Max(minScore, maxScore);
-            BudgetPerOrbitBand = Math.Max(0.0f, budgetPerOrbitBand);
-            MaxPatternCost = maxPatternCost <= 0.0f ? float.PositiveInfinity : maxPatternCost;
-            MaxRepeatedPatternCount = Math.Max(1, maxRepeatedPatternCount);
             SamePatternWeightMultiplier = Math.Min(Math.Max(samePatternWeightMultiplier, 0.0f), 1.0f);
             SameTagWeightMultiplier = Math.Min(Math.Max(sameTagWeightMultiplier, 0.0f), 1.0f);
             UnlockedSlots = unlockedSlots == PatternSlotTypeFlags.None
@@ -227,9 +215,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 : new PatternDifficultyStageSnapshot(
                     0.0f,
                     0.0f,
-                    6.0f,
-                    6.0f,
-                    2,
                     0.35f,
                     0.75f,
                     PatternSlotTypeFlags.All);
@@ -248,8 +233,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         public int Seed { get; }
         public float Score { get; }
         public float MovementSpeed { get; }
-        public float BudgetSpent { get; }
-        public float RemainingBudget { get; }
         public string RejectionSummary { get; }
 
         public PatternDebugEntry(
@@ -263,8 +246,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             int seed,
             float score,
             float movementSpeed,
-            float budgetSpent,
-            float remainingBudget,
             string rejectionSummary)
         {
             LowerOrbitIndex = lowerOrbitIndex;
@@ -277,8 +258,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             Seed = seed;
             Score = score;
             MovementSpeed = movementSpeed;
-            BudgetSpent = budgetSpent;
-            RemainingBudget = remainingBudget;
             RejectionSummary = rejectionSummary ?? string.Empty;
         }
     }
