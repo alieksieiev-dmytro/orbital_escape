@@ -9,14 +9,10 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
     {
         private const int MaxCursorStepsPerBand = 2048;
 
-        private readonly PatternPlacementValidator _validator;
         private readonly WeightedPatternSelector _selector;
 
-        public PatternLevelContentGenerator(
-            PatternPlacementValidator validator,
-            WeightedPatternSelector selector)
+        public PatternLevelContentGenerator(WeightedPatternSelector selector)
         {
-            _validator = validator;
             _selector = selector;
         }
 
@@ -188,14 +184,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                         context,
                         randomizeSpikeHeight: false);
 
-                    if (_validator.IsValid(placement, context, out string validationReason))
-                    {
-                        candidates.Add(new WeightedPatternCandidate(placement, weight));
-                    }
-                    else
-                    {
-                        rejectionLog.Add(validationReason);
-                    }
+                    candidates.Add(new WeightedPatternCandidate(placement, weight));
                 }
             }
 

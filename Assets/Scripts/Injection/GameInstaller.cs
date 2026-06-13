@@ -64,7 +64,6 @@ namespace OrbitalEscape.Injection
         {
             Container.Bind<OrbitGenerator>().AsSingle();
             Container.Bind<ILevelBuilder>().To<LevelBuilder>().AsSingle();
-            Container.Bind<PatternPlacementValidator>().AsSingle();
             Container.Bind<WeightedPatternSelector>().AsSingle();
             Container.Bind<ILevelContentGenerator>().To<PatternLevelContentGenerator>().AsSingle();
         }

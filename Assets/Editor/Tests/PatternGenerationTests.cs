@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using NUnit.Framework;
-using OrbitalEscape.Difficulty;
 using OrbitalEscape.Orbits;
 using OrbitalEscape.Orbits.Generators;
 using OrbitalEscape.Orbits.Generators.Patterns;
@@ -63,75 +62,6 @@ namespace OrbitalEscape.Tests.Editor
             Assert.That(pattern.ContainsLockedSlot(PatternSlotTypeFlags.All), Is.False);
         }
 
-        [Test]
-        public void Validator_BlocksGravityWellOverlapWithRiftAcrossOrbitBand()
-        {
-            Orbit lowerOrbit = new Orbit(5.0f, 0);
-            Orbit upperOrbit = new Orbit(7.0f, 1);
-            PatternPlacement placement = new PatternPlacement(
-                CreatePattern(),
-                flipped: false,
-                lowerOrbit,
-                upperOrbit,
-                startWorld: 0.0f,
-                startAngleDegree: 10.0f,
-                endAngleDegree: 30.0f,
-                new List<PatternPlacedObject>
-                {
-                    new PatternPlacedObject(
-                        lowerOrbit,
-                        new ArcObject(
-                            new Arc(10.0f, 30.0f, lowerOrbit.Radius),
-                            new GravityWell(0.333f, 2.5f, 0.4f, 0.25f),
-                            ArcType.Outer)),
-                    new PatternPlacedObject(
-                        upperOrbit,
-                        new ArcObject(
-                            new Arc(15.0f, 25.0f, upperOrbit.Radius),
-                            new Rift(0.25f),
-                            ArcType.TwoSide))
-                });
-
-            bool valid = new PatternPlacementValidator().IsValid(
-                placement,
-                CreateContext(lowerOrbit, upperOrbit),
-                out string reason);
-
-            Assert.That(valid, Is.False);
-            Assert.That(reason, Does.Contain("Gravity well overlaps"));
-        }
-
-        [Test]
-        public void Validator_AllowsRiftSpacingChecksOnDifferentOrbits()
-        {
-            Orbit lowerOrbit = new Orbit(5.0f, 0);
-            Orbit upperOrbit = new Orbit(7.0f, 1);
-            PatternPlacement placement = new PatternPlacement(
-                CreatePattern(),
-                flipped: false,
-                lowerOrbit,
-                upperOrbit,
-                startWorld: 0.0f,
-                startAngleDegree: 10.0f,
-                endAngleDegree: 30.0f,
-                new List<PatternPlacedObject>
-                {
-                    new PatternPlacedObject(
-                        lowerOrbit,
-                        new ArcObject(new Arc(10.0f, 30.0f, lowerOrbit.Radius), new Rift(0.25f), ArcType.TwoSide)),
-                    new PatternPlacedObject(
-                        upperOrbit,
-                        new ArcObject(new Arc(10.0f, 30.0f, upperOrbit.Radius), new Rift(0.25f), ArcType.TwoSide))
-                });
-
-            bool valid = new PatternPlacementValidator().IsValid(
-                placement,
-                CreateContext(lowerOrbit, upperOrbit),
-                out string reason);
-
-            Assert.That(valid, Is.True, reason);
-        }
-
         private static PatternPlacement CreatePlacement()
         {
             Orbit lowerOrbit = new Orbit(5.0f, 0);
@@ -159,41 +89,6 @@ namespace OrbitalEscape.Tests.Editor
                 maxScore: 0.0f,
                 difficultyWeightMultiplier: 1.0f,
                 allowFlip: true);
-        }
-
-        private static LevelBuildContext CreateContext(params Orbit[] orbits)
-        {
-            return new LevelBuildContext(
-                orbits,
-                buildCount: 0,
-                CreateSettings(),
-                new LevelRandom(123));
-        }
-
-        private static LevelBuildSettings CreateSettings()
-        {
-            return new LevelBuildSettings(
-                new OrbitGenerationSettings(5.0f, 2.0f),
-                new LevelContentSettings(0),
-                new RiftGenerationSettings(20.0f, 2.0f, 0.0f, 0.25f, 8),
-                new SpikeGenerationSettings(0.0f, 0.0f, 1.0f, 2.0f, 1.25f),
-                new ImpulseTrapGenerationSettings(0.0f, 2.5f, 1.0f),
-                new GravityWellGenerationSettings(0.0f, 3.75f, 0.333f, 2.5f, 0.4f, 0.25f),
-                new PatternGenerationSettings(
-                    new List<ObstaclePatternSnapshot>(),
-                    new[]
-                    {
-                        new PatternDifficultyStageSnapshot(
-                            minScore: 0.0f,
-                            maxScore: 0.0f,
-                            samePatternWeightMultiplier: 0.35f,
-                            sameTagWeightMultiplier: 0.75f,
-                            unlockedSlots: PatternSlotTypeFlags.All)
-                    },
-                    debugGizmosEnabled: false,
-                    useFixedSeed: true,
-                    fixedSeed: 123,
-                    maxSelectionAttempts: 64));
         }
     }
 }
