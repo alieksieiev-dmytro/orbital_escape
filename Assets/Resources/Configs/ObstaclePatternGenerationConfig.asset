@@ -31,9 +31,7 @@ MonoBehaviour:
     - _minScore: 0
       _maxScore: 10
       _budgetPerOrbitBand: 3
-      _patternDensity: 1
       _maxPatternCost: 2
-      _minimumSpacing: 0.75
       _maxRepeatedPatternCount: 2
       _samePatternWeightMultiplier: 0.35
       _sameTagWeightMultiplier: 0.75
@@ -41,9 +39,7 @@ MonoBehaviour:
     - _minScore: 10
       _maxScore: 25
       _budgetPerOrbitBand: 5
-      _patternDensity: 1
       _maxPatternCost: 4
-      _minimumSpacing: 0.65
       _maxRepeatedPatternCount: 2
       _samePatternWeightMultiplier: 0.35
       _sameTagWeightMultiplier: 0.75
@@ -51,9 +47,7 @@ MonoBehaviour:
     - _minScore: 25
       _maxScore: 0
       _budgetPerOrbitBand: 7
-      _patternDensity: 1
       _maxPatternCost: 6
-      _minimumSpacing: 0.5
       _maxRepeatedPatternCount: 2
       _samePatternWeightMultiplier: 0.35
       _sameTagWeightMultiplier: 0.75

@@ -153,9 +153,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         public float MinScore { get; }
         public float MaxScore { get; }
         public float BudgetPerOrbitBand { get; }
-        public float PatternDensity { get; }
         public float MaxPatternCost { get; }
-        public float MinimumSpacing { get; }
         public int MaxRepeatedPatternCount { get; }
         public float SamePatternWeightMultiplier { get; }
         public float SameTagWeightMultiplier { get; }
@@ -165,9 +163,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             float minScore,
             float maxScore,
             float budgetPerOrbitBand,
-            float patternDensity,
             float maxPatternCost,
-            float minimumSpacing,
             int maxRepeatedPatternCount,
             float samePatternWeightMultiplier,
             float sameTagWeightMultiplier,
@@ -176,9 +172,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             MinScore = Math.Max(0.0f, minScore);
             MaxScore = maxScore <= 0.0f ? float.PositiveInfinity : Math.Max(minScore, maxScore);
             BudgetPerOrbitBand = Math.Max(0.0f, budgetPerOrbitBand);
-            PatternDensity = Math.Min(Math.Max(patternDensity, 0.0f), 1.0f);
             MaxPatternCost = maxPatternCost <= 0.0f ? float.PositiveInfinity : maxPatternCost;
-            MinimumSpacing = Math.Max(0.0f, minimumSpacing);
             MaxRepeatedPatternCount = Math.Max(1, maxRepeatedPatternCount);
             SamePatternWeightMultiplier = Math.Min(Math.Max(samePatternWeightMultiplier, 0.0f), 1.0f);
             SameTagWeightMultiplier = Math.Min(Math.Max(sameTagWeightMultiplier, 0.0f), 1.0f);
@@ -237,9 +231,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     0.0f,
                     0.0f,
                     6.0f,
-                    1.0f,
                     6.0f,
-                    0.5f,
                     2,
                     0.35f,
                     0.75f,

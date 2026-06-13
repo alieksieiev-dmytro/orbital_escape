@@ -58,7 +58,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             LevelBuildRequest request)
         {
             PatternDifficultyStageSnapshot stage = context.Settings.Patterns.GetStage(request.Score);
-            float remainingBudget = stage.BudgetPerOrbitBand * Math.Max(0.0f, stage.PatternDensity);
+            float remainingBudget = stage.BudgetPerOrbitBand;
             if (remainingBudget <= 0.0f)
             {
                 return;
@@ -196,7 +196,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                         return;
                     }
 
-                    float startWorld = cursorWorld + stage.MinimumSpacing;
+                    float startWorld = cursorWorld;
                     if (startWorld >= lowerOrbit.Circumference || pattern.Length > lowerOrbit.Circumference)
                     {
                         rejectionLog.Add("pattern exceeds orbit circumference");
@@ -255,7 +255,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 return false;
             }
 
-            float startWorld = cursorWorld + stage.MinimumSpacing;
+            float startWorld = cursorWorld;
             if (startWorld >= lowerOrbit.Circumference)
             {
                 placement = null;
