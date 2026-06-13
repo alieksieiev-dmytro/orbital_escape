@@ -190,7 +190,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
     public sealed class PatternGenerationSettings
     {
         public IReadOnlyList<ObstaclePatternSnapshot> Patterns { get; }
-        public ObstaclePatternSnapshot FallbackPattern { get; }
         public IReadOnlyList<PatternDifficultyStageSnapshot> Stages { get; }
         public bool DebugGizmosEnabled { get; }
         public bool UseFixedSeed { get; }
@@ -199,7 +198,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
 
         public PatternGenerationSettings(
             IReadOnlyList<ObstaclePatternSnapshot> patterns,
-            ObstaclePatternSnapshot fallbackPattern,
             IReadOnlyList<PatternDifficultyStageSnapshot> stages,
             bool debugGizmosEnabled,
             bool useFixedSeed,
@@ -207,7 +205,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             int maxSelectionAttempts)
         {
             Patterns = patterns ?? Array.Empty<ObstaclePatternSnapshot>();
-            FallbackPattern = fallbackPattern;
             Stages = stages ?? Array.Empty<PatternDifficultyStageSnapshot>();
             DebugGizmosEnabled = debugGizmosEnabled;
             UseFixedSeed = useFixedSeed;
@@ -247,7 +244,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         public float UpperRadius { get; }
         public float StartAngleDegree { get; }
         public float EndAngleDegree { get; }
-        public bool IsFallback { get; }
         public DifficultyType Difficulty { get; }
         public int Seed { get; }
         public float Score { get; }
@@ -263,7 +259,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             float upperRadius,
             float startAngleDegree,
             float endAngleDegree,
-            bool isFallback,
             DifficultyType difficulty,
             int seed,
             float score,
@@ -278,7 +273,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             UpperRadius = upperRadius;
             StartAngleDegree = startAngleDegree;
             EndAngleDegree = endAngleDegree;
-            IsFallback = isFallback;
             Difficulty = difficulty;
             Seed = seed;
             Score = score;

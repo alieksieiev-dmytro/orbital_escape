@@ -96,34 +96,15 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 PatternPlacement placement;
                 if (!_selector.TrySelect(candidates, context.Random, out placement))
                 {
-                    if (!TryCreateFallbackPlacement(
-                            lowerOrbit,
-                            upperOrbit,
-                            lowerMutable,
-                            upperMutable,
-                            cursorWorld,
-                            stage,
-                            context,
-                            out placement,
-                            out string fallbackFailureReason))
-                    {
-                        context.AddWarning(
-                            $"Pattern generation stopped for orbit band {lowerOrbit.Index}-{upperOrbit.Index}: no valid pattern or fallback at {cursorWorld:F2} world units. Rejections: {rejectionLog.Summary}. Fallback: {fallbackFailureReason}");
-                        break;
-                    }
-
-                    if (context.Settings.Patterns.DebugGizmosEnabled)
-                    {
-                        context.AddWarning(
-                            $"Pattern fallback used for orbit band {lowerOrbit.Index}-{upperOrbit.Index} at {placement.StartWorld:F2} world units. Rejections: {rejectionLog.Summary}");
-                    }
+                    context.AddWarning(
+                        $"Pattern generation stopped for orbit band {lowerOrbit.Index}-{upperOrbit.Index}: no valid pattern at {cursorWorld:F2} world units. Rejections: {rejectionLog.Summary}.");
+                    break;
                 }
                 else
                 {
                     placement = CreatePlacement(
                         placement.Pattern,
                         placement.Flipped,
-                        false,
                         lowerOrbit,
                         upperOrbit,
                         placement.StartWorld,
@@ -145,7 +126,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     rejectionLog.Summary);
                 cursorWorld = placement.StartWorld + Math.Max(placement.Pattern.Length, 0.01f);
 
-                if (!placement.IsFallback)
+                if (placement.Pattern != null)
                 {
                     history.Add(placement.Pattern);
                     if (history.Count > 8)
@@ -213,7 +194,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     PatternPlacement placement = CreatePlacement(
                         pattern,
                         flipped,
-                        false,
                         lowerOrbit,
                         upperOrbit,
                         startWorld,
@@ -236,71 +216,9 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             return candidates;
         }
 
-        private bool TryCreateFallbackPlacement(
-            Orbit lowerOrbit,
-            Orbit upperOrbit,
-            bool lowerMutable,
-            bool upperMutable,
-            float cursorWorld,
-            PatternDifficultyStageSnapshot stage,
-            LevelBuildContext context,
-            out PatternPlacement placement,
-            out string failureReason)
-        {
-            ObstaclePatternSnapshot fallback = context.Settings.Patterns.FallbackPattern;
-            if (fallback == null)
-            {
-                placement = null;
-                failureReason = "fallback pattern is not configured";
-                return false;
-            }
-
-            float startWorld = cursorWorld;
-            if (startWorld >= lowerOrbit.Circumference)
-            {
-                placement = null;
-                failureReason = "fallback exceeds orbit circumference";
-                return false;
-            }
-
-            bool flipped = fallback.AllowFlip && context.Random.Range(0, 2) == 1;
-            if (!CanPlaceOnMutableOrbits(fallback, flipped, lowerMutable, upperMutable))
-            {
-                flipped = false;
-            }
-
-            if (!CanPlaceOnMutableOrbits(fallback, flipped, lowerMutable, upperMutable))
-            {
-                placement = null;
-                failureReason = "fallback lane is immutable";
-                return false;
-            }
-
-            placement = CreatePlacement(
-                fallback,
-                flipped,
-                true,
-                lowerOrbit,
-                upperOrbit,
-                startWorld,
-                lowerMutable,
-                upperMutable,
-                context,
-                randomizeSpikeHeight: false);
-
-            bool valid = _validator.IsValid(placement, context, out failureReason);
-            if (valid)
-            {
-                failureReason = string.Empty;
-            }
-
-            return valid;
-        }
-
         private PatternPlacement CreatePlacement(
             ObstaclePatternSnapshot pattern,
             bool flipped,
-            bool isFallback,
             Orbit lowerOrbit,
             Orbit upperOrbit,
             float startWorld,
@@ -349,7 +267,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             return new PatternPlacement(
                 pattern,
                 flipped,
-                isFallback,
                 lowerOrbit,
                 upperOrbit,
                 startWorld,
@@ -444,7 +361,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     placement.UpperOrbit.Radius,
                     placement.StartAngleDegree,
                     placement.EndAngleDegree,
-                    placement.IsFallback,
                     request.Difficulty,
                     request.Seed,
                     request.Score,

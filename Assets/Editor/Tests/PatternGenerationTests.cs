@@ -72,7 +72,6 @@ namespace OrbitalEscape.Tests.Editor
             PatternPlacement placement = new PatternPlacement(
                 CreatePattern(),
                 flipped: false,
-                isFallback: false,
                 lowerOrbit,
                 upperOrbit,
                 startWorld: 0.0f,
@@ -111,7 +110,6 @@ namespace OrbitalEscape.Tests.Editor
             PatternPlacement placement = new PatternPlacement(
                 CreatePattern(),
                 flipped: false,
-                isFallback: false,
                 lowerOrbit,
                 upperOrbit,
                 startWorld: 0.0f,
@@ -142,7 +140,6 @@ namespace OrbitalEscape.Tests.Editor
             return new PatternPlacement(
                 CreatePattern(),
                 flipped: false,
-                isFallback: false,
                 lowerOrbit,
                 upperOrbit,
                 startWorld: 0.0f,
@@ -186,7 +183,6 @@ namespace OrbitalEscape.Tests.Editor
                 new GravityWellGenerationSettings(0.0f, 3.75f, 0.333f, 2.5f, 0.4f, 0.25f),
                 new PatternGenerationSettings(
                     new List<ObstaclePatternSnapshot>(),
-                    fallbackPattern: null,
                     new[]
                     {
                         new PatternDifficultyStageSnapshot(

@@ -237,9 +237,7 @@ namespace OrbitalEscape.Orbits
 
         private static void DrawPatternDebugEntry(PatternDebugEntry entry)
         {
-            Gizmos.color = entry.IsFallback
-                ? new Color(0.2f, 0.8f, 1.0f, 0.25f)
-                : new Color(1.0f, 0.85f, 0.15f, 0.5f);
+            Gizmos.color = new Color(1.0f, 0.85f, 0.15f, 0.5f);
 
             DrawArc(entry.LowerRadius, entry.StartAngleDegree, entry.EndAngleDegree);
             DrawArc(entry.UpperRadius, entry.StartAngleDegree, entry.EndAngleDegree);

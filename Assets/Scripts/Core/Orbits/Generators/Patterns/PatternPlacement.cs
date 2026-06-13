@@ -8,7 +8,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
 
         public ObstaclePatternSnapshot Pattern { get; }
         public bool Flipped { get; }
-        public bool IsFallback { get; }
         public Orbit LowerOrbit { get; }
         public Orbit UpperOrbit { get; }
         public float StartWorld { get; }
@@ -19,7 +18,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         public PatternPlacement(
             ObstaclePatternSnapshot pattern,
             bool flipped,
-            bool isFallback,
             Orbit lowerOrbit,
             Orbit upperOrbit,
             float startWorld,
@@ -29,7 +27,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         {
             Pattern = pattern;
             Flipped = flipped;
-            IsFallback = isFallback;
             LowerOrbit = lowerOrbit;
             UpperOrbit = upperOrbit;
             StartWorld = startWorld;

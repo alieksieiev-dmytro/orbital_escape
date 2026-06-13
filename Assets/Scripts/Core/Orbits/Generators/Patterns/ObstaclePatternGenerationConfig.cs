@@ -11,7 +11,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
     public sealed class ObstaclePatternGenerationConfig : ScriptableObject
     {
         [SerializeField] private ObstaclePatternDefinition[] _patterns;
-        [SerializeField] private ObstaclePatternDefinition _fallbackPattern;
         [SerializeField] private PatternDifficultyProfile[] _difficultyProfiles;
         [SerializeField] private bool _useFixedSeed;
         [SerializeField] private int _fixedSeed = 1337;
@@ -27,7 +26,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         {
             return new PatternGenerationSettings(
                 CreatePatternSnapshots(difficulty, lengthProvider),
-                _fallbackPattern != null ? _fallbackPattern.CreateSnapshot(difficulty, lengthProvider) : null,
                 GetProfile(difficulty).CreateStageSnapshots(),
                 _debugGizmosEnabled,
                 _useFixedSeed,
