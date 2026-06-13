@@ -33,7 +33,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 return;
             }
 
-            int firstBandIndex = Math.Max(0, context.StartIndex - 1);
+            int firstBandIndex = Math.Max(context.StartIndex, context.Settings.Content.FirstOrbitIndexWithContent);
             for (int lowerOrbitIndex = firstBandIndex; lowerOrbitIndex < context.LastPlannedOrbitIndex; lowerOrbitIndex++)
             {
                 Orbit lowerOrbit = FindOrbit(context, lowerOrbitIndex);
@@ -54,11 +54,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             LevelBuildRequest request)
         {
             PatternDifficultyStageSnapshot stage = context.Settings.Patterns.GetStage(request.Score);
-            bool lowerMutable = lowerOrbit.Index >= context.StartIndex &&
-                                context.Settings.ShouldGenerateContent(lowerOrbit);
-            bool upperMutable = upperOrbit.Index >= context.StartIndex &&
-                                context.Settings.ShouldGenerateContent(upperOrbit);
-            if (!lowerMutable && !upperMutable)
+            if (!context.Settings.ShouldGenerateContent(lowerOrbit) ||
+                !context.Settings.ShouldGenerateContent(upperOrbit))
             {
                 return;
             }
@@ -72,8 +69,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 List<WeightedPatternCandidate> candidates = BuildCandidates(
                     lowerOrbit,
                     upperOrbit,
-                    lowerMutable,
-                    upperMutable,
                     cursorWorld,
                     stage,
                     history,
@@ -96,8 +91,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                         lowerOrbit,
                         upperOrbit,
                         placement.StartWorld,
-                        lowerMutable,
-                        upperMutable,
                         context,
                         randomizeSpikeHeight: true);
                 }
@@ -123,8 +116,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         private List<WeightedPatternCandidate> BuildCandidates(
             Orbit lowerOrbit,
             Orbit upperOrbit,
-            bool lowerMutable,
-            bool upperMutable,
             float cursorWorld,
             PatternDifficultyStageSnapshot stage,
             IReadOnlyList<ObstaclePatternSnapshot> history,
@@ -153,12 +144,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
 
                 void TryAddCandidate(bool flipped)
                 {
-                    if (!CanPlaceOnMutableOrbits(pattern, flipped, lowerMutable, upperMutable))
-                    {
-                        rejectionLog.Add("boundary lane is immutable");
-                        return;
-                    }
-
                     float startWorld = cursorWorld;
                     if (startWorld >= lowerOrbit.Circumference || pattern.Length > lowerOrbit.Circumference)
                     {
@@ -179,8 +164,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                         lowerOrbit,
                         upperOrbit,
                         startWorld,
-                        lowerMutable,
-                        upperMutable,
                         context,
                         randomizeSpikeHeight: false);
 
@@ -197,8 +180,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             Orbit lowerOrbit,
             Orbit upperOrbit,
             float startWorld,
-            bool lowerMutable,
-            bool upperMutable,
             LevelBuildContext context,
             bool randomizeSpikeHeight)
         {
@@ -209,33 +190,27 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             float lowerLaneLength = GetLaneLength(pattern, flipped, lowerLane: true);
             float upperLaneLength = GetLaneLength(pattern, flipped, lowerLane: false);
 
-            if (lowerMutable)
-            {
-                AddLaneObjects(
-                    lowerSlots,
-                    pattern.Length,
-                    lowerLaneLength,
-                    lowerOrbit,
-                    ArcType.Outer,
-                    startWorld,
-                    context,
-                    randomizeSpikeHeight,
-                    objects);
-            }
+            AddLaneObjects(
+                lowerSlots,
+                pattern.Length,
+                lowerLaneLength,
+                lowerOrbit,
+                ArcType.Outer,
+                startWorld,
+                context,
+                randomizeSpikeHeight,
+                objects);
 
-            if (upperMutable)
-            {
-                AddLaneObjects(
-                    upperSlots,
-                    pattern.Length,
-                    upperLaneLength,
-                    upperOrbit,
-                    ArcType.Inner,
-                    startWorld,
-                    context,
-                    randomizeSpikeHeight,
-                    objects);
-            }
+            AddLaneObjects(
+                upperSlots,
+                pattern.Length,
+                upperLaneLength,
+                upperOrbit,
+                ArcType.Inner,
+                startWorld,
+                context,
+                randomizeSpikeHeight,
+                objects);
 
             float startAngle = WorldToDegrees(startWorld, lowerOrbit.Radius);
             float endAngle = WorldToDegrees(startWorld + Math.Max(pattern.Length, 0.01f), lowerOrbit.Radius);
@@ -381,19 +356,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             return true;
         }
 
-        private static bool CanPlaceOnMutableOrbits(
-            ObstaclePatternSnapshot pattern,
-            bool flipped,
-            bool lowerMutable,
-            bool upperMutable)
-        {
-            bool lowerHasObstacle = flipped ? pattern.HasObstacleOnOrbit2() : pattern.HasObstacleOnOrbit1();
-            bool upperHasObstacle = flipped ? pattern.HasObstacleOnOrbit1() : pattern.HasObstacleOnOrbit2();
-
-            return (lowerMutable || !lowerHasObstacle) &&
-                   (upperMutable || !upperHasObstacle);
-        }
-
         private static float GetEffectiveWeight(
             ObstaclePatternSnapshot pattern,
             PatternDifficultyStageSnapshot stage,
@@ -435,7 +397,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 ? (flipped ? pattern.Orbit2Slots : pattern.Orbit1Slots)
                 : (flipped ? pattern.Orbit1Slots : pattern.Orbit2Slots);
 
-            return flipped ? source.Reverse().ToArray() : source;
+            return source;
         }
 
         private static float GetLaneLength(
