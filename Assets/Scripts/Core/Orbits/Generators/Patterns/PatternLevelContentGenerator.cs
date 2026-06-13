@@ -74,7 +74,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             }
 
             float cursorWorld = 0.0f;
-            float previousExitSpacing = 0.0f;
             float initialBudget = remainingBudget;
             List<ObstaclePatternSnapshot> history = new List<ObstaclePatternSnapshot>();
 
@@ -87,7 +86,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     lowerMutable,
                     upperMutable,
                     cursorWorld,
-                    previousExitSpacing,
                     remainingBudget,
                     stage,
                     history,
@@ -104,7 +102,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                             lowerMutable,
                             upperMutable,
                             cursorWorld,
-                            previousExitSpacing,
                             stage,
                             context,
                             out placement,
@@ -147,7 +144,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     initialBudget,
                     rejectionLog.Summary);
                 cursorWorld = placement.StartWorld + Math.Max(placement.Pattern.Length, 0.01f);
-                previousExitSpacing = placement.Pattern.ExitSpacing;
 
                 if (!placement.IsFallback)
                 {
@@ -166,7 +162,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             bool lowerMutable,
             bool upperMutable,
             float cursorWorld,
-            float previousExitSpacing,
             float remainingBudget,
             PatternDifficultyStageSnapshot stage,
             IReadOnlyList<ObstaclePatternSnapshot> history,
@@ -201,9 +196,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                         return;
                     }
 
-                    float startWorld = cursorWorld + Math.Max(
-                        stage.MinimumSpacing,
-                        Math.Max(previousExitSpacing, pattern.EntrySpacing));
+                    float startWorld = cursorWorld + stage.MinimumSpacing;
                     if (startWorld >= lowerOrbit.Circumference || pattern.Length > lowerOrbit.Circumference)
                     {
                         rejectionLog.Add("pattern exceeds orbit circumference");
@@ -249,7 +242,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             bool lowerMutable,
             bool upperMutable,
             float cursorWorld,
-            float previousExitSpacing,
             PatternDifficultyStageSnapshot stage,
             LevelBuildContext context,
             out PatternPlacement placement,
@@ -263,9 +255,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 return false;
             }
 
-            float startWorld = cursorWorld + Math.Max(
-                stage.MinimumSpacing,
-                Math.Max(previousExitSpacing, fallback.EntrySpacing));
+            float startWorld = cursorWorld + stage.MinimumSpacing;
             if (startWorld >= lowerOrbit.Circumference)
             {
                 placement = null;

@@ -19,8 +19,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         [SerializeField, Min(0.0f)] private float _baseWeight = 1.0f;
         [SerializeField, Min(0.0f)] private float _minScore;
         [SerializeField, Min(0.0f)] private float _maxScore;
-        [SerializeField, Min(0.0f)] private float _entrySpacing;
-        [SerializeField, Min(0.0f)] private float _exitSpacing;
         [SerializeField] private PatternDifficultyWeight[] _difficultyWeightModifiers;
         [SerializeField] private bool _allowFlip = true;
 
@@ -40,8 +38,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 _baseWeight,
                 _minScore,
                 _maxScore,
-                _entrySpacing,
-                _exitSpacing,
                 GetDifficultyWeight(difficulty),
                 _allowFlip);
         }

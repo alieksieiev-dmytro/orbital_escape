@@ -22,8 +22,6 @@ MonoBehaviour:
   _baseWeight: 3
   _minScore: 0
   _maxScore: 0
-  _entrySpacing: 1
-  _exitSpacing: 1
   _difficultyWeightModifiers:
   - _difficulty: 0
     _weightMultiplier: 1

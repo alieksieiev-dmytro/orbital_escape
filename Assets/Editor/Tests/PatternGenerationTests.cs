@@ -58,8 +58,6 @@ namespace OrbitalEscape.Tests.Editor
                 baseWeight: 1.0f,
                 minScore: 0.0f,
                 maxScore: 0.0f,
-                entrySpacing: 0.0f,
-                exitSpacing: 0.0f,
                 difficultyWeightMultiplier: 1.0f,
                 allowFlip: true);
 
@@ -166,8 +164,6 @@ namespace OrbitalEscape.Tests.Editor
                 baseWeight: 1.0f,
                 minScore: 0.0f,
                 maxScore: 0.0f,
-                entrySpacing: 0.0f,
-                exitSpacing: 0.0f,
                 difficultyWeightMultiplier: 1.0f,
                 allowFlip: true);
         }

@@ -62,8 +62,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         public float BaseWeight { get; }
         public float MinScore { get; }
         public float MaxScore { get; }
-        public float EntrySpacing { get; }
-        public float ExitSpacing { get; }
         public float DifficultyWeightMultiplier { get; }
         public bool AllowFlip { get; }
         public float Orbit1Length { get; }
@@ -80,8 +78,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             float baseWeight,
             float minScore,
             float maxScore,
-            float entrySpacing,
-            float exitSpacing,
             float difficultyWeightMultiplier,
             bool allowFlip)
         {
@@ -94,8 +90,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             BaseWeight = Math.Max(0.0f, baseWeight);
             MinScore = Math.Max(0.0f, minScore);
             MaxScore = maxScore <= 0.0f ? float.PositiveInfinity : Math.Max(minScore, maxScore);
-            EntrySpacing = Math.Max(0.0f, entrySpacing);
-            ExitSpacing = Math.Max(0.0f, exitSpacing);
             DifficultyWeightMultiplier = Math.Max(0.0f, difficultyWeightMultiplier);
             AllowFlip = allowFlip;
             Orbit1Length = SumLength(Orbit1Slots);
