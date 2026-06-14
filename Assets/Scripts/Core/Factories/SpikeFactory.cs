@@ -36,8 +36,8 @@ namespace OrbitalEscape.Factories
 
             float radius = spikeData.Type switch
             {
-                ArcType.Inner => orbitData.Radius - 0.1f,
-                ArcType.Outer => orbitData.Radius,
+                ArcType.Outer => orbitData.Radius - 0.1f,
+                ArcType.Inner => orbitData.Radius,
                 _ => 0f
             };
 
@@ -45,8 +45,8 @@ namespace OrbitalEscape.Factories
 
             Vector2 dir = spikeData.Type switch
             {
-                ArcType.Inner => Constants.Center - worldPosition,
-                ArcType.Outer => worldPosition - Constants.Center,
+                ArcType.Outer => Constants.Center - worldPosition,
+                ArcType.Inner => worldPosition - Constants.Center,
                 _ => Vector2.zero
             };
 
