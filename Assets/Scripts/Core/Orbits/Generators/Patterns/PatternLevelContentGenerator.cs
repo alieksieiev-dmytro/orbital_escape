@@ -189,6 +189,14 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             IReadOnlyList<PatternSlotSnapshot> upperSlots = GetLane(pattern, flipped, lowerLane: false);
             float lowerLaneLength = GetLaneLength(pattern, flipped, lowerLane: true);
             float upperLaneLength = GetLaneLength(pattern, flipped, lowerLane: false);
+            float patternAngle = pattern.Length / Math.Max(0.01f, lowerOrbit.Radius);
+            float upperPatternLength = patternAngle * upperOrbit.Radius;
+            float upperStartWorld = startWorld / Math.Max(0.01f, lowerOrbit.Radius) * upperOrbit.Radius;
+            IReadOnlyList<PatternSlotSnapshot> adjustedUpperSlots = CreateUpperLaneSlots(
+                upperSlots,
+                upperLaneLength,
+                upperPatternLength);
+            float adjustedUpperLaneLength = SumLaneLength(adjustedUpperSlots);
 
             AddLaneObjects(
                 lowerSlots,
@@ -202,12 +210,12 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 objects);
 
             AddLaneObjects(
-                upperSlots,
-                pattern.Length,
-                upperLaneLength,
+                adjustedUpperSlots,
+                upperPatternLength,
+                adjustedUpperLaneLength,
                 upperOrbit,
                 ArcType.Inner,
-                startWorld,
+                upperStartWorld,
                 context,
                 randomizeSpikeHeight,
                 objects);
@@ -255,6 +263,67 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
 
                 localWorld += slot.Length;
             }
+        }
+
+        private static IReadOnlyList<PatternSlotSnapshot> CreateUpperLaneSlots(
+            IReadOnlyList<PatternSlotSnapshot> slots,
+            float laneLength,
+            float targetLength)
+        {
+            float extraLength = targetLength - laneLength;
+            if (extraLength <= 0.0f || slots.Count == 0)
+            {
+                return slots;
+            }
+
+            int spaceCount = 0;
+            float totalSpaceLength = 0.0f;
+            for (int i = 0; i < slots.Count; i++)
+            {
+                if (slots[i].Type != PatternSlotType.Space)
+                {
+                    continue;
+                }
+
+                spaceCount++;
+                totalSpaceLength += slots[i].Length;
+            }
+
+            if (spaceCount == 0)
+            {
+                return slots;
+            }
+
+            PatternSlotSnapshot[] adjustedSlots = new PatternSlotSnapshot[slots.Count];
+            for (int i = 0; i < slots.Count; i++)
+            {
+                PatternSlotSnapshot slot = slots[i];
+                if (slot.Type != PatternSlotType.Space)
+                {
+                    adjustedSlots[i] = slot;
+                    continue;
+                }
+
+                float share = totalSpaceLength > 0.0f
+                    ? slot.Length / totalSpaceLength
+                    : 1.0f / spaceCount;
+                adjustedSlots[i] = new PatternSlotSnapshot(
+                    PatternSlotType.Space,
+                    slot.Length + extraLength * share);
+            }
+
+            return adjustedSlots;
+        }
+
+        private static float SumLaneLength(IReadOnlyList<PatternSlotSnapshot> slots)
+        {
+            float length = 0.0f;
+            for (int i = 0; i < slots.Count; i++)
+            {
+                length += slots[i].Length;
+            }
+
+            return length;
         }
 
         private static IOrbitObject CreateOrbitObject(
