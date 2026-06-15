@@ -239,25 +239,8 @@ namespace OrbitalEscape.Orbits
         {
             Gizmos.color = new Color(1.0f, 0.85f, 0.15f, 0.5f);
 
-            DrawArc(entry.LowerRadius, entry.StartAngleDegree, entry.EndAngleDegree);
-            DrawArc(entry.UpperRadius, entry.StartAngleDegree, entry.EndAngleDegree);
             DrawRadial(entry.LowerRadius, entry.UpperRadius, entry.StartAngleDegree);
             DrawRadial(entry.LowerRadius, entry.UpperRadius, entry.EndAngleDegree);
-        }
-
-        private static void DrawArc(float radius, float startAngle, float endAngle)
-        {
-            float delta = OrbitMath.DeltaDegrees(startAngle, endAngle);
-            int steps = Mathf.Max(4, Mathf.CeilToInt(delta / 8.0f));
-            Vector3 previous = OrbitMath.GetPointOnCircle(Constants.Center, radius, startAngle);
-
-            for (int i = 1; i <= steps; i++)
-            {
-                float angle = startAngle + delta * i / steps;
-                Vector3 next = OrbitMath.GetPointOnCircle(Constants.Center, radius, angle);
-                Gizmos.DrawLine(previous, next);
-                previous = next;
-            }
         }
 
         private static void DrawRadial(float lowerRadius, float upperRadius, float angle)
