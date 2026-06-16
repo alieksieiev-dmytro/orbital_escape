@@ -282,17 +282,20 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
 
     public readonly struct PatternSlotLengthProvider
     {
+        private readonly float _spaceLength;
         private readonly float _spikeLength;
         private readonly float _impulseTrapLength;
         private readonly float _gravityWellLength;
         private readonly float _riftLength;
 
         public PatternSlotLengthProvider(
+            float spaceLength,
             float spikeLength,
             float impulseTrapLength,
             float gravityWellLength,
             float riftLength)
         {
+            _spaceLength = Math.Max(0.01f, spaceLength);
             _spikeLength = Math.Max(0.01f, spikeLength);
             _impulseTrapLength = Math.Max(0.01f, impulseTrapLength);
             _gravityWellLength = Math.Max(0.01f, gravityWellLength);
@@ -303,10 +306,12 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         {
             return type switch
             {
+                PatternSlotType.Space => _spaceLength,
+                PatternSlotType.Spike => _spikeLength,
                 PatternSlotType.ImpulseTrap => _impulseTrapLength,
                 PatternSlotType.GravityWell => _gravityWellLength,
                 PatternSlotType.Rift => _riftLength,
-                _ => _spikeLength
+                _ => _spaceLength
             };
         }
     }

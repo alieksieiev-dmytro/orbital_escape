@@ -74,6 +74,7 @@ namespace OrbitalEscape.Orbits.Generators
             float movementSpeed = _movementSpeedService.CurrentLinearSpeed;
 
             PatternSlotLengthProvider patternSlotLengthProvider = new PatternSlotLengthProvider(
+                _patternGenerationConfig.SpaceSlotLength,
                 _spikeConfig.SpikeArcLength,
                 _impulseTrapConfig.TrapArcLength,
                 _gravityWellConfig.FieldArcLength,

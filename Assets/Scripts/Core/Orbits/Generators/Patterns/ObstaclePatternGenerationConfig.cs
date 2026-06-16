@@ -10,6 +10,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         menuName = "Scriptable Objects/Configs/Obstacle Pattern Generation Config")]
     public sealed class ObstaclePatternGenerationConfig : ScriptableObject
     {
+        [SerializeField, Min(0.01f)] private float _spaceSlotLength = 0.5f;
         [SerializeField] private ObstaclePatternDefinition[] _patterns;
         [SerializeField] private PatternDifficultyProfile[] _difficultyProfiles;
         [SerializeField] private bool _useFixedSeed;
@@ -17,6 +18,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         [SerializeField, Min(1)] private int _maxSelectionAttempts = 64;
         [SerializeField] private bool _debugGizmosEnabled = true;
 
+        public float SpaceSlotLength => Mathf.Max(0.01f, _spaceSlotLength);
         public bool UseFixedSeed => _useFixedSeed;
         public int FixedSeed => _fixedSeed;
 

@@ -15,6 +15,20 @@ public sealed class PatternGenerationTests
     private const float Tolerance = 0.001f;
 
     [Test]
+    public void PatternSlotLengthProviderUsesConfiguredSpaceLength()
+    {
+        PatternSlotLengthProvider provider = new PatternSlotLengthProvider(
+            1.25f,
+            0.5f,
+            2.0f,
+            3.0f,
+            4.0f);
+
+        Assert.That(provider.GetLength(PatternSlotType.Space), Is.EqualTo(1.25f).Within(Tolerance));
+        Assert.That(provider.GetLength(PatternSlotType.Spike), Is.EqualTo(0.5f).Within(Tolerance));
+    }
+
+    [Test]
     public void UpperLaneSpaceExpandsToMatchLowerPatternEndAngle()
     {
         PatternPlacement placement = CreatePlacement(
