@@ -64,6 +64,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         public bool AllowFlip { get; }
         public float Orbit1Length { get; }
         public float Orbit2Length { get; }
+        public int Orbit1RiftCount { get; }
+        public int Orbit2RiftCount { get; }
         public float Length { get; }
 
         public ObstaclePatternSnapshot(
@@ -88,6 +90,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             AllowFlip = allowFlip;
             Orbit1Length = SumLength(Orbit1Slots);
             Orbit2Length = SumLength(Orbit2Slots);
+            Orbit1RiftCount = CountRifts(Orbit1Slots);
+            Orbit2RiftCount = CountRifts(Orbit2Slots);
             Length = Math.Max(Orbit1Length, Orbit2Length);
         }
 
@@ -107,6 +111,16 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             return HasObstacle(Orbit2Slots);
         }
 
+        public int GetLowerLaneRiftCount(bool flipped)
+        {
+            return flipped ? Orbit2RiftCount : Orbit1RiftCount;
+        }
+
+        public int GetUpperLaneRiftCount(bool flipped)
+        {
+            return flipped ? Orbit1RiftCount : Orbit2RiftCount;
+        }
+
         private static float SumLength(IReadOnlyList<PatternSlotSnapshot> slots)
         {
             float length = 0.0f;
@@ -116,6 +130,20 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             }
 
             return length;
+        }
+
+        private static int CountRifts(IReadOnlyList<PatternSlotSnapshot> slots)
+        {
+            int count = 0;
+            for (int i = 0; i < slots.Count; i++)
+            {
+                if (slots[i].Type == PatternSlotType.Rift)
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
 
         private static bool ContainsLockedSlot(IReadOnlyList<PatternSlotSnapshot> slots, PatternSlotTypeFlags unlockedSlots)

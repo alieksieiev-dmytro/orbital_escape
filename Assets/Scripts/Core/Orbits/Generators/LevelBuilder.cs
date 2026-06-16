@@ -87,6 +87,8 @@ namespace OrbitalEscape.Orbits.Generators
                     _riftConfig.MinDistanceBetweenRifts,
                     _riftConfig.RiftLength,
                     _riftConfig.RiftCount,
+                    _riftConfig.BaseRiftCountRadius,
+                    _riftConfig.AdditionalRiftRadiusStep,
                     _riftConfig.RiftPaddings,
                     _riftConfig.MaxPlacementAttempts),
                 new SpikeGenerationSettings(

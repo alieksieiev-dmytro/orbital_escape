@@ -33,6 +33,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 return;
             }
 
+            RiftQuotaTracker riftQuotas = new RiftQuotaTracker(context.Orbits, context.Settings.Rift);
             int firstBandIndex = Math.Max(context.StartIndex, context.Settings.Content.FirstOrbitIndexWithContent);
             for (int lowerOrbitIndex = firstBandIndex; lowerOrbitIndex < context.LastPlannedOrbitIndex; lowerOrbitIndex++)
             {
@@ -43,15 +44,18 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     continue;
                 }
 
-                GenerateBand(lowerOrbit, upperOrbit, context, request);
+                GenerateBand(lowerOrbit, upperOrbit, context, request, riftQuotas);
             }
+
+            WarnForUnmetRiftQuotas(generatedOrbits, context, riftQuotas);
         }
 
         private void GenerateBand(
             Orbit lowerOrbit,
             Orbit upperOrbit,
             LevelBuildContext context,
-            LevelBuildRequest request)
+            LevelBuildRequest request,
+            RiftQuotaTracker riftQuotas)
         {
             PatternDifficultyStageSnapshot stage = context.Settings.Patterns.GetStage(request.Score);
             if (!context.Settings.ShouldGenerateContent(lowerOrbit) ||
@@ -74,7 +78,30 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     history,
                     context,
                     request,
-                    rejectionLog);
+                    rejectionLog,
+                    riftQuotas,
+                    enforceDueRifts: true,
+                    out bool rejectedByDueRift,
+                    out List<RiftQuotaDemand> dueRiftDemands);
+
+                if (candidates.Count == 0 && rejectedByDueRift)
+                {
+                    riftQuotas.WarnMissingDuePatterns(context, dueRiftDemands);
+                    rejectionLog.Add("relaxed due rift quota");
+                    candidates = BuildCandidates(
+                        lowerOrbit,
+                        upperOrbit,
+                        cursorWorld,
+                        stage,
+                        history,
+                        context,
+                        request,
+                        rejectionLog,
+                        riftQuotas,
+                        enforceDueRifts: false,
+                        out _,
+                        out _);
+                }
 
                 PatternPlacement placement;
                 if (!_selector.TrySelect(candidates, context.Random, out placement))
@@ -100,6 +127,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     context,
                     request,
                     rejectionLog.Summary);
+                riftQuotas.Record(placement);
                 cursorWorld = placement.StartWorld + Math.Max(placement.Pattern.Length, 0.01f);
 
                 if (placement.Pattern != null)
@@ -121,10 +149,16 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             IReadOnlyList<ObstaclePatternSnapshot> history,
             LevelBuildContext context,
             LevelBuildRequest request,
-            PatternRejectionLog rejectionLog)
+            PatternRejectionLog rejectionLog,
+            RiftQuotaTracker riftQuotas,
+            bool enforceDueRifts,
+            out bool rejectedByDueRift,
+            out List<RiftQuotaDemand> dueRiftDemands)
         {
             PatternGenerationSettings settings = context.Settings.Patterns;
             List<WeightedPatternCandidate> candidates = new List<WeightedPatternCandidate>();
+            bool hasDueRiftRejection = false;
+            List<RiftQuotaDemand> dueDemandLog = new List<RiftQuotaDemand>();
 
             for (int i = 0; i < settings.Patterns.Count && candidates.Count < settings.MaxSelectionAttempts; i++)
             {
@@ -167,10 +201,29 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                         context,
                         randomizeSpikeHeight: false);
 
+                    if (riftQuotas.WouldExceed(placement, out string quotaReason))
+                    {
+                        rejectionLog.Add(quotaReason);
+                        return;
+                    }
+
+                    if (enforceDueRifts &&
+                        !riftQuotas.SatisfiesDueRiftRequirement(
+                            placement,
+                            out string dueReason,
+                            dueDemandLog))
+                    {
+                        hasDueRiftRejection = true;
+                        rejectionLog.Add(dueReason);
+                        return;
+                    }
+
                     candidates.Add(new WeightedPatternCandidate(placement, weight));
                 }
             }
 
+            rejectedByDueRift = hasDueRiftRejection;
+            dueRiftDemands = dueDemandLog;
             return candidates;
         }
 
@@ -492,9 +545,228 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             return null;
         }
 
+        private static void WarnForUnmetRiftQuotas(
+            IReadOnlyList<Orbit> generatedOrbits,
+            LevelBuildContext context,
+            RiftQuotaTracker riftQuotas)
+        {
+            for (int i = 0; i < generatedOrbits.Count; i++)
+            {
+                Orbit orbit = generatedOrbits[i];
+                if (!context.Settings.ShouldGenerateContent(orbit))
+                {
+                    continue;
+                }
+
+                int target = riftQuotas.GetTarget(orbit);
+                int count = riftQuotas.GetCount(orbit);
+                if (count == target)
+                {
+                    continue;
+                }
+
+                context.AddWarning(
+                    $"Rift quota mismatch for orbit {orbit.Index}: generated {count}/{target} rifts " +
+                    $"at radius {orbit.Radius:F2}. Add or adjust authored rift patterns to hit the exact quota.");
+            }
+        }
+
         private static float WorldToDegrees(float worldDistance, float radius)
         {
             return worldDistance / Math.Max(0.01f, radius) * OrbitMath.RADIANS_TO_DEGREES;
+        }
+
+        private readonly struct RiftQuotaDemand
+        {
+            public Orbit Orbit { get; }
+            public string Lane { get; }
+            public int Target { get; }
+            public int Count { get; }
+
+            public RiftQuotaDemand(Orbit orbit, string lane, int target, int count)
+            {
+                Orbit = orbit;
+                Lane = lane;
+                Target = target;
+                Count = count;
+            }
+        }
+
+        private sealed class RiftQuotaTracker
+        {
+            private readonly RiftGenerationSettings _settings;
+            private readonly Dictionary<int, Orbit> _orbits = new Dictionary<int, Orbit>();
+            private readonly Dictionary<int, int> _targets = new Dictionary<int, int>();
+            private readonly Dictionary<int, int> _counts = new Dictionary<int, int>();
+            private readonly HashSet<string> _missingDueWarnings = new HashSet<string>();
+
+            public RiftQuotaTracker(IReadOnlyList<Orbit> orbits, RiftGenerationSettings settings)
+            {
+                _settings = settings;
+                for (int i = 0; i < orbits.Count; i++)
+                {
+                    Orbit orbit = orbits[i];
+                    _orbits[orbit.Index] = orbit;
+                    _targets[orbit.Index] = settings.GetTargetCount(orbit);
+                    _counts[orbit.Index] = orbit.GetOrbitObjectsByType(ArcObjectType.Rift).Count;
+                }
+            }
+
+            public int GetTarget(Orbit orbit)
+            {
+                EnsureOrbit(orbit);
+                return _targets[orbit.Index];
+            }
+
+            public int GetCount(Orbit orbit)
+            {
+                EnsureOrbit(orbit);
+                return _counts[orbit.Index];
+            }
+
+            public bool WouldExceed(PatternPlacement placement, out string reason)
+            {
+                int lowerRifts = placement.Pattern.GetLowerLaneRiftCount(placement.Flipped);
+                int upperRifts = placement.Pattern.GetUpperLaneRiftCount(placement.Flipped);
+
+                if (WouldExceed(placement.LowerOrbit, lowerRifts, out reason) ||
+                    WouldExceed(placement.UpperOrbit, upperRifts, out reason))
+                {
+                    return true;
+                }
+
+                reason = string.Empty;
+                return false;
+            }
+
+            public bool SatisfiesDueRiftRequirement(
+                PatternPlacement placement,
+                out string reason,
+                List<RiftQuotaDemand> dueDemandLog)
+            {
+                List<RiftQuotaDemand> dueDemands = GetDueDemands(placement);
+                if (dueDemands.Count == 0)
+                {
+                    reason = string.Empty;
+                    return true;
+                }
+
+                int lowerRifts = placement.Pattern.GetLowerLaneRiftCount(placement.Flipped);
+                int upperRifts = placement.Pattern.GetUpperLaneRiftCount(placement.Flipped);
+                for (int i = 0; i < dueDemands.Count; i++)
+                {
+                    RiftQuotaDemand demand = dueDemands[i];
+                    if ((ReferenceEquals(demand.Orbit, placement.LowerOrbit) && lowerRifts > 0) ||
+                        (ReferenceEquals(demand.Orbit, placement.UpperOrbit) && upperRifts > 0))
+                    {
+                        reason = string.Empty;
+                        return true;
+                    }
+                }
+
+                dueDemandLog.AddRange(dueDemands);
+                reason = "rift quota due";
+                return false;
+            }
+
+            public void Record(PatternPlacement placement)
+            {
+                AddCount(placement.LowerOrbit, placement.Pattern.GetLowerLaneRiftCount(placement.Flipped));
+                AddCount(placement.UpperOrbit, placement.Pattern.GetUpperLaneRiftCount(placement.Flipped));
+            }
+
+            public void WarnMissingDuePatterns(
+                LevelBuildContext context,
+                IReadOnlyList<RiftQuotaDemand> demands)
+            {
+                for (int i = 0; i < demands.Count; i++)
+                {
+                    RiftQuotaDemand demand = demands[i];
+                    string key = $"{demand.Orbit.Index}:{demand.Lane}";
+                    if (!_missingDueWarnings.Add(key))
+                    {
+                        continue;
+                    }
+
+                    context.AddWarning(
+                        $"No authored rift pattern could satisfy due rift quota for orbit {demand.Orbit.Index} " +
+                        $"on the {demand.Lane} lane. Generated {demand.Count}/{demand.Target}; continuing without exceeding quota.");
+                }
+            }
+
+            private bool WouldExceed(Orbit orbit, int addedRifts, out string reason)
+            {
+                if (addedRifts <= 0)
+                {
+                    reason = string.Empty;
+                    return false;
+                }
+
+                int target = GetTarget(orbit);
+                int count = GetCount(orbit);
+                if (count + addedRifts > target)
+                {
+                    reason = $"rift quota exceeded for orbit {orbit.Index}";
+                    return true;
+                }
+
+                reason = string.Empty;
+                return false;
+            }
+
+            private List<RiftQuotaDemand> GetDueDemands(PatternPlacement placement)
+            {
+                float progressAfter = Math.Min(
+                    1.0f,
+                    (placement.StartWorld + Math.Max(placement.Pattern.Length, 0.01f)) /
+                    Math.Max(0.01f, placement.LowerOrbit.Circumference));
+
+                List<RiftQuotaDemand> demands = new List<RiftQuotaDemand>();
+                AddDueDemand(placement.LowerOrbit, "lower", progressAfter, demands);
+                AddDueDemand(placement.UpperOrbit, "upper", progressAfter, demands);
+                return demands;
+            }
+
+            private void AddDueDemand(
+                Orbit orbit,
+                string lane,
+                float progressAfter,
+                List<RiftQuotaDemand> demands)
+            {
+                int target = GetTarget(orbit);
+                int count = GetCount(orbit);
+                int expectedCount = Math.Min(
+                    target,
+                    (int)Math.Floor(target * progressAfter + 0.0001f));
+
+                if (count < expectedCount)
+                {
+                    demands.Add(new RiftQuotaDemand(orbit, lane, target, count));
+                }
+            }
+
+            private void AddCount(Orbit orbit, int addedRifts)
+            {
+                if (addedRifts <= 0)
+                {
+                    return;
+                }
+
+                EnsureOrbit(orbit);
+                _counts[orbit.Index] += addedRifts;
+            }
+
+            private void EnsureOrbit(Orbit orbit)
+            {
+                if (_orbits.ContainsKey(orbit.Index))
+                {
+                    return;
+                }
+
+                _orbits[orbit.Index] = orbit;
+                _targets[orbit.Index] = _settings.GetTargetCount(orbit);
+                _counts[orbit.Index] = orbit.GetOrbitObjectsByType(ArcObjectType.Rift).Count;
+            }
         }
 
         private sealed class PatternRejectionLog

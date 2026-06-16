@@ -15,6 +15,8 @@ MonoBehaviour:
   <MinDistanceBetweenRifts>k__BackingField: 75
   <RiftLength>k__BackingField: 5
   <RiftCount>k__BackingField: 3
+  <BaseRiftCountRadius>k__BackingField: 20
+  <AdditionalRiftRadiusStep>k__BackingField: 15
   <RiftPaddings>k__BackingField: 1.5
   <AuroraRiftAlphaMultiplier>k__BackingField: 0.25
   <MaxPlacementAttempts>k__BackingField: 128

@@ -12,7 +12,7 @@ namespace OrbitalEscape.Orbits.Generators
             RiftGenerationSettings config = context.Settings.Rift;
             List<ArcObject> result = new List<ArcObject>();
             List<ArcObject> blockingObjects = GetBlockingObjects(context);
-            int targetCount = Math.Max(0, (int)Math.Ceiling(config.RiftCount));
+            int targetCount = config.GetTargetCount(orbit);
             int maxAttempts = Math.Max(config.MaxPlacementAttempts, targetCount);
             int attempts = 0;
 

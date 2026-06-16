@@ -65,6 +65,8 @@ namespace OrbitalEscape.Orbits.Generators
         public float MinDistanceBetweenRifts { get; }
         public float RiftLength { get; }
         public float RiftCount { get; }
+        public float BaseRiftCountRadius { get; }
+        public float AdditionalRiftRadiusStep { get; }
         public float RiftPadding { get; }
         public int MaxPlacementAttempts { get; }
 
@@ -72,14 +74,31 @@ namespace OrbitalEscape.Orbits.Generators
             float minDistanceBetweenRifts,
             float riftLength,
             float riftCount,
+            float baseRiftCountRadius,
+            float additionalRiftRadiusStep,
             float riftPadding,
             int maxPlacementAttempts)
         {
             MinDistanceBetweenRifts = minDistanceBetweenRifts;
             RiftLength = riftLength;
             RiftCount = riftCount;
+            BaseRiftCountRadius = Math.Max(0.01f, baseRiftCountRadius);
+            AdditionalRiftRadiusStep = Math.Max(0.01f, additionalRiftRadiusStep);
             RiftPadding = riftPadding;
             MaxPlacementAttempts = Math.Max(1, maxPlacementAttempts);
+        }
+
+        public int GetTargetCount(Orbit orbit)
+        {
+            int baseCount = Math.Max(0, (int)Math.Ceiling(RiftCount));
+            if (orbit == null)
+            {
+                return baseCount;
+            }
+
+            float radiusDelta = Math.Max(0.0f, orbit.Radius - BaseRiftCountRadius);
+            int additionalCount = (int)Math.Floor(radiusDelta / AdditionalRiftRadiusStep);
+            return baseCount + additionalCount;
         }
     }
 
