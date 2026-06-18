@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using OrbitalEscape.Factories;
 using UnityEngine;
 using Zenject;
@@ -24,10 +25,16 @@ namespace OrbitalEscape.Orbits
             _zoneRegistry = zoneRegistry;
         }
 
-        public void Spawn(GameObject orbitObject, Orbit orbit)
+        public void Spawn(GameObject orbitObject, Orbit orbit, IReadOnlyList<ArcObject> objects)
         {
-            foreach (ArcObject gravityWellData in orbit.GetOrbitObjectsByType(ArcObjectType.GravityWell))
+            for (int i = 0; i < objects.Count; i++)
             {
+                ArcObject gravityWellData = objects[i];
+                if (gravityWellData.Object.Type != ArcObjectType.GravityWell)
+                {
+                    continue;
+                }
+
                 if (!TryGetTargetOrbit(orbit, gravityWellData.Type, out Orbit targetOrbit))
                 {
                     continue;

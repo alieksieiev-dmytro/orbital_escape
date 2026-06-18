@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using OrbitalEscape.Orbits.Generators.Patterns;
@@ -9,6 +10,7 @@ namespace OrbitalEscape.Orbits.Generators
         private readonly List<Orbit> _orbits;
         private readonly List<string> _warnings;
         private readonly List<PatternDebugEntry> _patternDebugEntries;
+        private readonly Dictionary<int, List<ArcObject>> _stagedExistingOrbitObjects;
 
         public IReadOnlyList<Orbit> Orbits => _orbits;
         public IReadOnlyList<string> Warnings => _warnings;
@@ -27,6 +29,7 @@ namespace OrbitalEscape.Orbits.Generators
             _orbits = existingOrbits.ToList();
             _warnings = new List<string>();
             _patternDebugEntries = new List<PatternDebugEntry>();
+            _stagedExistingOrbitObjects = new Dictionary<int, List<ArcObject>>();
             StartIndex = _orbits.Count;
             LastPlannedOrbitIndex = StartIndex + buildCount - 1;
             Settings = settings;
@@ -58,6 +61,44 @@ namespace OrbitalEscape.Orbits.Generators
         public void AddDebugEntry(PatternDebugEntry entry)
         {
             _patternDebugEntries.Add(entry);
+        }
+
+        public void StageExistingOrbitObject(Orbit orbit, ArcObject arcObject)
+        {
+            if (orbit == null || orbit.Index >= StartIndex)
+            {
+                return;
+            }
+
+            if (!_stagedExistingOrbitObjects.TryGetValue(orbit.Index, out List<ArcObject> objects))
+            {
+                objects = new List<ArcObject>();
+                _stagedExistingOrbitObjects.Add(orbit.Index, objects);
+            }
+
+            objects.Add(arcObject);
+        }
+
+        public IReadOnlyList<ArcObject> GetStagedExistingOrbitObjects(Orbit orbit)
+        {
+            if (orbit != null &&
+                _stagedExistingOrbitObjects.TryGetValue(orbit.Index, out List<ArcObject> objects))
+            {
+                return objects;
+            }
+
+            return Array.Empty<ArcObject>();
+        }
+
+        public IReadOnlyList<OrbitContentDelta> CreateContentDeltas()
+        {
+            List<OrbitContentDelta> deltas = new List<OrbitContentDelta>(_stagedExistingOrbitObjects.Count);
+            foreach (KeyValuePair<int, List<ArcObject>> pair in _stagedExistingOrbitObjects.OrderBy(pair => pair.Key))
+            {
+                deltas.Add(new OrbitContentDelta(pair.Key, new List<ArcObject>(pair.Value)));
+            }
+
+            return deltas;
         }
     }
 }

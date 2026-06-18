@@ -155,7 +155,8 @@ namespace OrbitalEscape.Orbits.Generators
                 orbits,
                 context.Warnings,
                 context.PatternDebugEntries,
-                request.Settings.Patterns.DebugGizmosEnabled);
+                request.Settings.Patterns.DebugGizmosEnabled,
+                context.CreateContentDeltas());
         }
     }
 }

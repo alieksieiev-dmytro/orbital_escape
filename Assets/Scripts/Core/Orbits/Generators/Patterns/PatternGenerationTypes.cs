@@ -10,7 +10,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         Spike = 1,
         ImpulseTrap = 2,
         GravityWell = 3,
-        Rift = 4
+        Rift = 4,
+        HalfSpace = 5
     }
 
     [Flags]
@@ -34,7 +35,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         Trap = 1 << 2,
         Gravity = 1 << 3,
         Rift = 1 << 4,
-        Compound = 1 << 5
+        Compound = 1 << 5,
+        Zigzag = 1 << 6,
     }
 
     public readonly struct PatternSlotSnapshot
@@ -48,7 +50,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             Length = Math.Max(0.0f, length);
         }
 
-        public bool IsObstacle => Type != PatternSlotType.Space;
+        public bool IsObstacle => Type != PatternSlotType.Space &&
+                                  Type != PatternSlotType.HalfSpace;
     }
 
     public sealed class ObstaclePatternSnapshot
@@ -297,6 +300,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             PatternSlotTypeFlags target = type switch
             {
                 PatternSlotType.Space => PatternSlotTypeFlags.Space,
+                PatternSlotType.HalfSpace => PatternSlotTypeFlags.Space,
                 PatternSlotType.Spike => PatternSlotTypeFlags.Spike,
                 PatternSlotType.ImpulseTrap => PatternSlotTypeFlags.ImpulseTrap,
                 PatternSlotType.GravityWell => PatternSlotTypeFlags.GravityWell,
@@ -310,6 +314,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
 
     public readonly struct PatternSlotLengthProvider
     {
+        public const float HalfSpaceLength = 0.5f;
+
         private readonly float _spaceLength;
         private readonly float _spikeLength;
         private readonly float _impulseTrapLength;
@@ -335,6 +341,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             return type switch
             {
                 PatternSlotType.Space => _spaceLength,
+                PatternSlotType.HalfSpace => HalfSpaceLength,
                 PatternSlotType.Spike => _spikeLength,
                 PatternSlotType.ImpulseTrap => _impulseTrapLength,
                 PatternSlotType.GravityWell => _gravityWellLength,

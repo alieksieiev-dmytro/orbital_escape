@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using OrbitalEscape.Factories;
 using UnityEngine;
 using Zenject;
@@ -16,10 +17,16 @@ namespace OrbitalEscape.Orbits
             _impulseTrapFactory = impulseTrapFactory;
         }
 
-        public void Spawn(GameObject orbitObject, Orbit orbit)
+        public void Spawn(GameObject orbitObject, Orbit orbit, IReadOnlyList<ArcObject> objects)
         {
-            foreach (ArcObject impulseTrap in orbit.GetOrbitObjectsByType(ArcObjectType.ImpulseTrap))
+            for (int i = 0; i < objects.Count; i++)
             {
+                ArcObject impulseTrap = objects[i];
+                if (impulseTrap.Object.Type != ArcObjectType.ImpulseTrap)
+                {
+                    continue;
+                }
+
                 _impulseTrapFactory.Create(orbitObject.transform, orbit, impulseTrap);
             }
         }

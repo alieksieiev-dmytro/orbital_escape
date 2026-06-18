@@ -193,7 +193,30 @@ namespace OrbitalEscape.Orbits
 
             List<Orbit> newOrbits = new List<Orbit>(result.Orbits);
             _levelState.AddRange(newOrbits);
+            ApplyContentDeltas(result.ContentDeltas);
             return newOrbits;
+        }
+
+        private void ApplyContentDeltas(IReadOnlyList<OrbitContentDelta> contentDeltas)
+        {
+            for (int i = 0; i < contentDeltas.Count; i++)
+            {
+                OrbitContentDelta delta = contentDeltas[i];
+                if (delta.OrbitIndex < 0 || delta.OrbitIndex >= _levelState.Count)
+                {
+                    Debug.LogWarning($"Skipped content delta for missing orbit {delta.OrbitIndex}.");
+                    continue;
+                }
+
+                if (delta.AddedObjects.Count == 0)
+                {
+                    continue;
+                }
+
+                Orbit orbit = _levelState.GetOrbit(delta.OrbitIndex);
+                orbit.OrbitObjects.AddRange(delta.AddedObjects);
+                _levelObjectSpawner.AppendOrbitContent(orbit, delta.AddedObjects);
+            }
         }
 
         private void CreateOrbitObjects(IEnumerable<Orbit> orbits)
