@@ -12,17 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27e192da77ba4eb1b3d339d03d35485d, type: 3}
   m_Name: ObstaclePatternGenerationConfig
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.Generators.Patterns.ObstaclePatternGenerationConfig
+  _spaceSlotLength: 1
   _patterns:
-  - {fileID: 11400000, guid: 633426bdd1344fe79c354768f50fcb7e, type: 2}
-  - {fileID: 11400000, guid: 8e6f9fdb8d71b1745ade04d8721d2c27, type: 2}
-  - {fileID: 11400000, guid: c7ecaec036274b74d84c23af273cb900, type: 2}
+  - {fileID: 11400000, guid: 1b32cc3162404eac90b2cf757dbf0797, type: 2}
+  - {fileID: 11400000, guid: e726ceab884e17a40bdf60297f500ba9, type: 2}
+  - {fileID: 11400000, guid: 9b734166da3d8d746a4d1c5f9b827222, type: 2}
+  - {fileID: 11400000, guid: 9902966d2fee5f7498604e56bf1543aa, type: 2}
   _difficultyProfiles:
   - _difficulty: 0
     _stages:
     - _minScore: 0
       _maxScore: 10
-      _samePatternWeightMultiplier: 0.35
-      _sameTagWeightMultiplier: 0.75
+      _samePatternWeightMultiplier: 0.8
+      _sameTagWeightMultiplier: 0.9
       _unlockedSlots: 19
     - _minScore: 10
       _maxScore: 25
