@@ -8,6 +8,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
     public sealed class PatternLevelContentGenerator : ILevelContentGenerator
     {
         private const int MaxCursorStepsPerBand = 2048;
+        private const float OrbitBoundaryTolerance = 0.0001f;
 
         private readonly WeightedPatternSelector _selector;
 
@@ -87,6 +88,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     enforceDueRifts: true,
                     out bool rejectedByDueRift,
                     out List<RiftQuotaDemand> dueRiftDemands,
+                    out bool reachedOrbitEnd,
                     out float nextCursorWorld);
 
                 if (candidates.Count == 0 && rejectedByDueRift)
@@ -107,7 +109,9 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                         enforceDueRifts: false,
                         out _,
                         out _,
+                        out bool relaxedReachedOrbitEnd,
                         out float relaxedNextCursorWorld);
+                    reachedOrbitEnd |= relaxedReachedOrbitEnd;
                     nextCursorWorld = Math.Min(nextCursorWorld, relaxedNextCursorWorld);
                 }
 
@@ -121,6 +125,11 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                             nextCursorWorld,
                             cursorWorld + PatternSlot.MinimumSpaceLength);
                         continue;
+                    }
+
+                    if (reachedOrbitEnd)
+                    {
+                        break;
                     }
 
                     context.AddWarning(
@@ -171,11 +180,13 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             bool enforceDueRifts,
             out bool rejectedByDueRift,
             out List<RiftQuotaDemand> dueRiftDemands,
+            out bool reachedOrbitEnd,
             out float nextCursorWorld)
         {
             PatternGenerationSettings settings = context.Settings.Patterns;
             List<WeightedPatternCandidate> candidates = new List<WeightedPatternCandidate>();
             bool hasDueRiftRejection = false;
+            bool hasOrbitEndRejection = false;
             List<RiftQuotaDemand> dueDemandLog = new List<RiftQuotaDemand>();
             float nearestNextCursorWorld = float.PositiveInfinity;
 
@@ -198,9 +209,11 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 void TryAddCandidate(bool flipped)
                 {
                     float startWorld = cursorWorld;
-                    if (startWorld >= lowerOrbit.Circumference || pattern.Length > lowerOrbit.Circumference)
+                    if (startWorld >= lowerOrbit.Circumference ||
+                        startWorld + pattern.Length > lowerOrbit.Circumference + OrbitBoundaryTolerance)
                     {
-                        rejectionLog.Add("pattern exceeds orbit circumference");
+                        hasOrbitEndRejection = true;
+                        rejectionLog.Add("pattern exceeds remaining orbit span");
                         return;
                     }
 
@@ -256,6 +269,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
 
             rejectedByDueRift = hasDueRiftRejection;
             dueRiftDemands = dueDemandLog;
+            reachedOrbitEnd = hasOrbitEndRejection;
             nextCursorWorld = nearestNextCursorWorld;
             return candidates;
         }
