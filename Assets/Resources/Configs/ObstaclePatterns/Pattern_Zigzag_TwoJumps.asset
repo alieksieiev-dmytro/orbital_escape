@@ -16,11 +16,14 @@ MonoBehaviour:
   _orbit1Slots:
   - _type: 1
   - _type: 0
+    _length: 1
   - _type: 1
   _orbit2Slots:
   - _type: 0
+    _length: 1
   - _type: 1
   - _type: 0
+    _length: 1
   _tags: 66
   _baseWeight: 5
   _minScore: 0

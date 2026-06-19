@@ -9,8 +9,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         Spike = 1,
         ImpulseTrap = 2,
         GravityWell = 3,
-        Rift = 4,
-        HalfSpace = 5
+        Rift = 4
     }
 
     [Flags]
@@ -49,8 +48,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             Length = Math.Max(0.0f, length);
         }
 
-        public bool IsObstacle => Type != PatternSlotType.Space &&
-                                  Type != PatternSlotType.HalfSpace;
+        public bool IsObstacle => Type != PatternSlotType.Space;
     }
 
     public sealed class ObstaclePatternSnapshot
@@ -255,7 +253,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             PatternSlotTypeFlags target = type switch
             {
                 PatternSlotType.Space => PatternSlotTypeFlags.Space,
-                PatternSlotType.HalfSpace => PatternSlotTypeFlags.Space,
                 PatternSlotType.Spike => PatternSlotTypeFlags.Spike,
                 PatternSlotType.ImpulseTrap => PatternSlotTypeFlags.ImpulseTrap,
                 PatternSlotType.GravityWell => PatternSlotTypeFlags.GravityWell,
@@ -269,39 +266,35 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
 
     public readonly struct PatternSlotLengthProvider
     {
-        public const float HalfSpaceLength = 0.5f;
-
-        private readonly float _spaceLength;
         private readonly float _spikeLength;
         private readonly float _impulseTrapLength;
         private readonly float _gravityWellLength;
         private readonly float _riftLength;
 
         public PatternSlotLengthProvider(
-            float spaceLength,
             float spikeLength,
             float impulseTrapLength,
             float gravityWellLength,
             float riftLength)
         {
-            _spaceLength = Math.Max(0.01f, spaceLength);
             _spikeLength = Math.Max(0.01f, spikeLength);
             _impulseTrapLength = Math.Max(0.01f, impulseTrapLength);
             _gravityWellLength = Math.Max(0.01f, gravityWellLength);
             _riftLength = Math.Max(0.01f, riftLength);
         }
 
-        public float GetLength(PatternSlotType type)
+        public float GetObstacleLength(PatternSlotType type)
         {
             return type switch
             {
-                PatternSlotType.Space => _spaceLength,
-                PatternSlotType.HalfSpace => HalfSpaceLength,
                 PatternSlotType.Spike => _spikeLength,
                 PatternSlotType.ImpulseTrap => _impulseTrapLength,
                 PatternSlotType.GravityWell => _gravityWellLength,
                 PatternSlotType.Rift => _riftLength,
-                _ => _spaceLength
+                _ => throw new ArgumentOutOfRangeException(
+                    nameof(type),
+                    type,
+                    "Only obstacle slot lengths are provided by gameplay configs.")
             };
         }
     }

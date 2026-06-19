@@ -37,14 +37,11 @@ Candidate probability = Candidate effective weight / Sum of all valid candidate 
 
 Invalid candidates have no probability, regardless of their configured weight.
 
-## Space Slot Types
+## Space Slots
 
-Patterns have two empty slot types:
+`Space` is an empty layout slot that never spawns an orbit object. Each Space has its own `Length`, authored directly in its `ObstaclePatternDefinition`, with a minimum value of `0.01` world units.
 
-- `Space` uses the configurable `Space Slot Length` from `ObstaclePatternGenerationConfig`.
-- `Half Space` always uses a fixed length of `0.5` world units.
-
-Both types are empty layout slots and never spawn an orbit object. `Half Space` uses the regular `Space` unlock flag, so it is available in every stage where `Space` is unlocked. Only regular `Space` slots are expanded by upper-lane angular compensation; `Half Space` remains exactly `0.5` units.
+Authored lengths are the base layout values. When a lane is placed on the physical upper orbit, angular compensation can expand its Space slots proportionally so both pattern lanes end at the same angle. Obstacle slot lengths remain unchanged.
 
 ## Effective Weight Formula
 
@@ -249,8 +246,8 @@ For the current Basic profile, the effective ranges are:
 
 | Actual score range | Unlocked slots | Same Pattern | Same Tag |
 |---|---|---:|---:|
-| `0 <= score <= 10` | Space/Half Space, Spike, Rift | `0.8` | `0.9` |
-| `10 < score <= 25` | Space/Half Space, Spike, Impulse Trap, Rift | `0.35` | `0.75` |
+| `0 <= score <= 10` | Space, Spike, Rift | `0.8` | `0.9` |
+| `10 < score <= 25` | Space, Spike, Impulse Trap, Rift | `0.35` | `0.75` |
 | `score > 25` | All slots, including Gravity Well | `0.35` | `0.75` |
 
 At exactly score `10`, the first stage is used. At exactly score `25`, the second stage is used.

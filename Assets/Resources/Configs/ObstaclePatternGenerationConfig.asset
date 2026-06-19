@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27e192da77ba4eb1b3d339d03d35485d, type: 3}
   m_Name: ObstaclePatternGenerationConfig
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.Generators.Patterns.ObstaclePatternGenerationConfig
-  _spaceSlotLength: 1
   _patterns:
   - {fileID: 11400000, guid: 1b32cc3162404eac90b2cf757dbf0797, type: 2}
   - {fileID: 11400000, guid: e726ceab884e17a40bdf60297f500ba9, type: 2}

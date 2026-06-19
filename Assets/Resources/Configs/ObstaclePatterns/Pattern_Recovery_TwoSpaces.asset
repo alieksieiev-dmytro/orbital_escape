@@ -15,10 +15,14 @@ MonoBehaviour:
   _enabled: 1
   _orbit1Slots:
   - _type: 0
+    _length: 1
   - _type: 0
+    _length: 1
   _orbit2Slots:
   - _type: 0
+    _length: 1
   - _type: 0
+    _length: 1
   _tags: 1
   _baseWeight: 0
   _minScore: 0

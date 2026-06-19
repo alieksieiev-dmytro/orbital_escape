@@ -126,7 +126,6 @@ namespace OrbitalEscape.Editor
         private void DrawProbabilities()
         {
             PatternSlotLengthProvider lengthProvider = new PatternSlotLengthProvider(
-                _patternConfig.SpaceSlotLength,
                 _spikeConfig.SpikeArcLength,
                 _impulseTrapConfig.TrapArcLength,
                 _gravityWellConfig.FieldArcLength,

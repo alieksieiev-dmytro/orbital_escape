@@ -69,7 +69,6 @@ namespace OrbitalEscape.Orbits.Generators
             float score = _scoreService.Score;
 
             PatternSlotLengthProvider patternSlotLengthProvider = new PatternSlotLengthProvider(
-                _patternGenerationConfig.SpaceSlotLength,
                 _spikeConfig.SpikeArcLength,
                 _impulseTrapConfig.TrapArcLength,
                 _gravityWellConfig.FieldArcLength,
