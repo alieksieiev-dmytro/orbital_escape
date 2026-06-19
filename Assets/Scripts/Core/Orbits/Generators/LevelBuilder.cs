@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using OrbitalEscape.Difficulty;
-using OrbitalEscape.Movement;
 using OrbitalEscape.Orbits.Generators.Patterns;
 using OrbitalEscape.Score;
 using Zenject;
@@ -23,7 +22,6 @@ namespace OrbitalEscape.Orbits.Generators
         private readonly ILevelContentGenerator _contentGenerator;
         private readonly IDifficultyService _difficultyService;
         private readonly IScoreService _scoreService;
-        private readonly IMovementSpeedService _movementSpeedService;
 
         [Inject]
         public LevelBuilder(
@@ -37,8 +35,7 @@ namespace OrbitalEscape.Orbits.Generators
             ObstaclePatternGenerationConfig patternGenerationConfig,
             ILevelContentGenerator contentGenerator,
             IDifficultyService difficultyService,
-            IScoreService scoreService,
-            IMovementSpeedService movementSpeedService)
+            IScoreService scoreService)
         {
             _orbitGenerator = orbitGenerator;
             _orbitConfig = orbitConfig;
@@ -51,7 +48,6 @@ namespace OrbitalEscape.Orbits.Generators
             _contentGenerator = contentGenerator;
             _difficultyService = difficultyService;
             _scoreService = scoreService;
-            _movementSpeedService = movementSpeedService;
         }
 
         public async UniTask<LevelBuildResult> BuildAsync(
@@ -71,7 +67,6 @@ namespace OrbitalEscape.Orbits.Generators
         {
             DifficultyType difficulty = _difficultyService.CurrentDifficulty;
             float score = _scoreService.Score;
-            float movementSpeed = _movementSpeedService.CurrentLinearSpeed;
 
             PatternSlotLengthProvider patternSlotLengthProvider = new PatternSlotLengthProvider(
                 _patternGenerationConfig.SpaceSlotLength,
@@ -119,9 +114,7 @@ namespace OrbitalEscape.Orbits.Generators
                 count,
                 seed,
                 settings,
-                difficulty,
-                score,
-                movementSpeed);
+                score);
         }
 
         private LevelBuildResult Build(LevelBuildRequest request, CancellationToken cancellationToken)
@@ -154,8 +147,6 @@ namespace OrbitalEscape.Orbits.Generators
             return new LevelBuildResult(
                 orbits,
                 context.Warnings,
-                context.PatternDebugEntries,
-                request.Settings.Patterns.DebugGizmosEnabled,
                 context.CreateContentDeltas());
         }
     }

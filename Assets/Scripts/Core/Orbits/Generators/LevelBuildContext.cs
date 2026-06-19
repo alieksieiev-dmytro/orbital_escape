@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using OrbitalEscape.Orbits.Generators.Patterns;
 
 namespace OrbitalEscape.Orbits.Generators
 {
@@ -9,12 +8,10 @@ namespace OrbitalEscape.Orbits.Generators
     {
         private readonly List<Orbit> _orbits;
         private readonly List<string> _warnings;
-        private readonly List<PatternDebugEntry> _patternDebugEntries;
         private readonly Dictionary<int, List<ArcObject>> _stagedExistingOrbitObjects;
 
         public IReadOnlyList<Orbit> Orbits => _orbits;
         public IReadOnlyList<string> Warnings => _warnings;
-        public IReadOnlyList<PatternDebugEntry> PatternDebugEntries => _patternDebugEntries;
         public int StartIndex { get; }
         public int LastPlannedOrbitIndex { get; }
         public LevelBuildSettings Settings { get; }
@@ -28,7 +25,6 @@ namespace OrbitalEscape.Orbits.Generators
         {
             _orbits = existingOrbits.ToList();
             _warnings = new List<string>();
-            _patternDebugEntries = new List<PatternDebugEntry>();
             _stagedExistingOrbitObjects = new Dictionary<int, List<ArcObject>>();
             StartIndex = _orbits.Count;
             LastPlannedOrbitIndex = StartIndex + buildCount - 1;
@@ -56,11 +52,6 @@ namespace OrbitalEscape.Orbits.Generators
         public void AddWarning(string warning)
         {
             _warnings.Add(warning);
-        }
-
-        public void AddDebugEntry(PatternDebugEntry entry)
-        {
-            _patternDebugEntries.Add(entry);
         }
 
         public void StageExistingOrbitObject(Orbit orbit, ArcObject arcObject)

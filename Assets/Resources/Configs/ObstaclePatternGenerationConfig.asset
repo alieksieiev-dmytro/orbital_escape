@@ -39,4 +39,3 @@ MonoBehaviour:
   _useFixedSeed: 0
   _fixedSeed: 1337
   _maxSelectionAttempts: 64
-  _debugGizmosEnabled: 1

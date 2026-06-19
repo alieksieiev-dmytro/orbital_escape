@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using OrbitalEscape.Difficulty;
 
 namespace OrbitalEscape.Orbits.Generators.Patterns
 {
@@ -210,7 +209,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
     {
         public IReadOnlyList<ObstaclePatternSnapshot> Patterns { get; }
         public IReadOnlyList<PatternDifficultyStageSnapshot> Stages { get; }
-        public bool DebugGizmosEnabled { get; }
         public bool UseFixedSeed { get; }
         public int FixedSeed { get; }
         public int MaxSelectionAttempts { get; }
@@ -218,14 +216,12 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         public PatternGenerationSettings(
             IReadOnlyList<ObstaclePatternSnapshot> patterns,
             IReadOnlyList<PatternDifficultyStageSnapshot> stages,
-            bool debugGizmosEnabled,
             bool useFixedSeed,
             int fixedSeed,
             int maxSelectionAttempts)
         {
             Patterns = patterns ?? Array.Empty<ObstaclePatternSnapshot>();
             Stages = stages ?? Array.Empty<PatternDifficultyStageSnapshot>();
-            DebugGizmosEnabled = debugGizmosEnabled;
             UseFixedSeed = useFixedSeed;
             FixedSeed = fixedSeed;
             MaxSelectionAttempts = Math.Max(1, maxSelectionAttempts);
@@ -249,47 +245,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     0.35f,
                     0.75f,
                     PatternSlotTypeFlags.All);
-        }
-    }
-
-    public readonly struct PatternDebugEntry
-    {
-        public int LowerOrbitIndex { get; }
-        public int UpperOrbitIndex { get; }
-        public float LowerRadius { get; }
-        public float UpperRadius { get; }
-        public float StartAngleDegree { get; }
-        public float EndAngleDegree { get; }
-        public DifficultyType Difficulty { get; }
-        public int Seed { get; }
-        public float Score { get; }
-        public float MovementSpeed { get; }
-        public string RejectionSummary { get; }
-
-        public PatternDebugEntry(
-            int lowerOrbitIndex,
-            int upperOrbitIndex,
-            float lowerRadius,
-            float upperRadius,
-            float startAngleDegree,
-            float endAngleDegree,
-            DifficultyType difficulty,
-            int seed,
-            float score,
-            float movementSpeed,
-            string rejectionSummary)
-        {
-            LowerOrbitIndex = lowerOrbitIndex;
-            UpperOrbitIndex = upperOrbitIndex;
-            LowerRadius = lowerRadius;
-            UpperRadius = upperRadius;
-            StartAngleDegree = startAngleDegree;
-            EndAngleDegree = endAngleDegree;
-            Difficulty = difficulty;
-            Seed = seed;
-            Score = score;
-            MovementSpeed = movementSpeed;
-            RejectionSummary = rejectionSummary ?? string.Empty;
         }
     }
 

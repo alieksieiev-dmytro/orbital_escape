@@ -4,8 +4,6 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using OrbitalEscape.Events;
 using OrbitalEscape.Orbits.Generators;
-using OrbitalEscape.Orbits.Generators.Patterns;
-using OrbitalEscape.Utils;
 using OrbitalEscape.Visuals;
 using UnityEngine;
 using Zenject;
@@ -20,10 +18,8 @@ namespace OrbitalEscape.Orbits
         private LevelState _levelState;
         private EventBinding<PassedThroughOrbitEvent> _passedThroughOrbitBinding;
         private CancellationToken _destroyCancellationToken;
-        private readonly List<PatternDebugEntry> _patternDebugEntries = new List<PatternDebugEntry>();
         private bool _isBuildingLevel;
         private bool _isExtendingLevel;
-        private bool _showPatternDebugGizmos;
 
         [Inject]
         public void Construct(
@@ -105,8 +101,6 @@ namespace OrbitalEscape.Orbits
         private void ClearLevel()
         {
             _levelObjectSpawner.Clear();
-            _patternDebugEntries.Clear();
-            _showPatternDebugGizmos = false;
         }
         
         private void OnEnable()
@@ -188,8 +182,6 @@ namespace OrbitalEscape.Orbits
         {
             LevelBuildResult result = await _levelBuilder.BuildAsync(_levelState.Orbits, count, cancellationToken);
             LogWarnings(result.Warnings);
-            _showPatternDebugGizmos = result.PatternDebugGizmosEnabled;
-            _patternDebugEntries.AddRange(result.PatternDebugEntries);
 
             List<Orbit> newOrbits = new List<Orbit>(result.Orbits);
             _levelState.AddRange(newOrbits);
@@ -245,32 +237,5 @@ namespace OrbitalEscape.Orbits
             }
         }
 
-        private void OnDrawGizmos()
-        {
-            if (!_showPatternDebugGizmos || _patternDebugEntries == null)
-            {
-                return;
-            }
-
-            for (int i = 0; i < _patternDebugEntries.Count; i++)
-            {
-                DrawPatternDebugEntry(_patternDebugEntries[i]);
-            }
-        }
-
-        private static void DrawPatternDebugEntry(PatternDebugEntry entry)
-        {
-            Gizmos.color = new Color(1.0f, 0.85f, 0.15f, 0.5f);
-
-            DrawRadial(entry.LowerRadius, entry.UpperRadius, entry.StartAngleDegree);
-            DrawRadial(entry.LowerRadius, entry.UpperRadius, entry.EndAngleDegree);
-        }
-
-        private static void DrawRadial(float lowerRadius, float upperRadius, float angle)
-        {
-            Vector3 lower = OrbitMath.GetPointOnCircle(Constants.Center, lowerRadius, angle);
-            Vector3 upper = OrbitMath.GetPointOnCircle(Constants.Center, upperRadius, angle);
-            Gizmos.DrawLine(lower, upper);
-        }
     }
 }

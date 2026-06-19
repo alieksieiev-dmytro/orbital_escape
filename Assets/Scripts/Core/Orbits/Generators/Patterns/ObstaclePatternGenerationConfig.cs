@@ -16,7 +16,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         [SerializeField] private bool _useFixedSeed;
         [SerializeField] private int _fixedSeed = 1337;
         [SerializeField, Min(1)] private int _maxSelectionAttempts = 64;
-        [SerializeField] private bool _debugGizmosEnabled = true;
 
         public float SpaceSlotLength => Mathf.Max(0.01f, _spaceSlotLength);
         public bool UseFixedSeed => _useFixedSeed;
@@ -29,7 +28,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             return new PatternGenerationSettings(
                 CreatePatternSnapshots(difficulty, lengthProvider),
                 GetProfile(difficulty).CreateStageSnapshots(),
-                _debugGizmosEnabled,
                 _useFixedSeed,
                 _fixedSeed,
                 _maxSelectionAttempts);

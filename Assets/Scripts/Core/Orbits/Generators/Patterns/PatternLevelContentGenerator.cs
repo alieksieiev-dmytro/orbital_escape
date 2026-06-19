@@ -130,8 +130,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 ApplyPlacement(
                     placement,
                     context,
-                    request,
-                    rejectionLog.Summary,
                     writableOrbitIndices);
                 riftQuotas.Record(placement, writableOrbitIndices);
                 cursorWorld = placement.StartWorld + Math.Max(placement.Pattern.Length, 0.01f);
@@ -430,8 +428,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         private void ApplyPlacement(
             PatternPlacement placement,
             LevelBuildContext context,
-            LevelBuildRequest request,
-            string rejectionSummary,
             HashSet<int> writableOrbitIndices)
         {
             for (int i = 0; i < placement.Objects.Count; i++)
@@ -452,21 +448,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 }
             }
 
-            if (context.Settings.Patterns.DebugGizmosEnabled)
-            {
-                context.AddDebugEntry(new PatternDebugEntry(
-                    placement.LowerOrbit.Index,
-                    placement.UpperOrbit.Index,
-                    placement.LowerOrbit.Radius,
-                    placement.UpperOrbit.Radius,
-                    placement.StartAngleDegree,
-                    placement.EndAngleDegree,
-                    request.Difficulty,
-                    request.Seed,
-                    request.Score,
-                    request.MovementSpeed,
-                    rejectionSummary));
-            }
         }
 
         private static bool IsEligibleByContext(
