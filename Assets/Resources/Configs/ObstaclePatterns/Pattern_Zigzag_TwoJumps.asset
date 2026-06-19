@@ -14,11 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.Generators.Patterns.ObstaclePatternDefinition
   _enabled: 1
   _orbit1Slots:
-  - _type: 5
   - _type: 1
   - _type: 0
   - _type: 1
-  - _type: 5
   _orbit2Slots:
   - _type: 0
   - _type: 1
@@ -28,4 +26,4 @@ MonoBehaviour:
   _minScore: 0
   _maxScore: 0
   _difficultyWeightModifiers: []
-  _allowFlip: 1
+  _allowFlip: 0
