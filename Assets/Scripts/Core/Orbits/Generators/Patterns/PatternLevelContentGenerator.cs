@@ -86,7 +86,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     writableOrbitIndices,
                     enforceDueRifts: true,
                     out bool rejectedByDueRift,
-                    out List<RiftQuotaDemand> dueRiftDemands);
+                    out List<RiftQuotaDemand> dueRiftDemands,
+                    out float nextCursorWorld);
 
                 if (candidates.Count == 0 && rejectedByDueRift)
                 {
@@ -105,12 +106,23 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                         writableOrbitIndices,
                         enforceDueRifts: false,
                         out _,
-                        out _);
+                        out _,
+                        out float relaxedNextCursorWorld);
+                    nextCursorWorld = Math.Min(nextCursorWorld, relaxedNextCursorWorld);
                 }
 
                 PatternPlacement placement;
                 if (!_selector.TrySelect(candidates, context.Random, out placement))
                 {
+                    if (nextCursorWorld < float.PositiveInfinity &&
+                        nextCursorWorld > cursorWorld)
+                    {
+                        cursorWorld = Math.Max(
+                            nextCursorWorld,
+                            cursorWorld + PatternSlot.MinimumSpaceLength);
+                        continue;
+                    }
+
                     context.AddWarning(
                         $"Pattern generation stopped for orbit band {lowerOrbit.Index}-{upperOrbit.Index}: no valid pattern at {cursorWorld:F2} world units. Rejections: {rejectionLog.Summary}.");
                     break;
@@ -158,12 +170,14 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             HashSet<int> writableOrbitIndices,
             bool enforceDueRifts,
             out bool rejectedByDueRift,
-            out List<RiftQuotaDemand> dueRiftDemands)
+            out List<RiftQuotaDemand> dueRiftDemands,
+            out float nextCursorWorld)
         {
             PatternGenerationSettings settings = context.Settings.Patterns;
             List<WeightedPatternCandidate> candidates = new List<WeightedPatternCandidate>();
             bool hasDueRiftRejection = false;
             List<RiftQuotaDemand> dueDemandLog = new List<RiftQuotaDemand>();
+            float nearestNextCursorWorld = float.PositiveInfinity;
 
             for (int i = 0; i < settings.Patterns.Count && candidates.Count < settings.MaxSelectionAttempts; i++)
             {
@@ -210,9 +224,11 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                             placement,
                             context,
                             writableOrbitIndices,
-                            out string placementReason))
+                            out string placementReason,
+                            out float placementNextCursorWorld))
                     {
                         rejectionLog.Add(placementReason);
+                        nearestNextCursorWorld = Math.Min(nearestNextCursorWorld, placementNextCursorWorld);
                         return;
                     }
 
@@ -240,6 +256,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
 
             rejectedByDueRift = hasDueRiftRejection;
             dueRiftDemands = dueDemandLog;
+            nextCursorWorld = nearestNextCursorWorld;
             return candidates;
         }
 
@@ -494,8 +511,10 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             PatternPlacement placement,
             LevelBuildContext context,
             HashSet<int> writableOrbitIndices,
-            out string reason)
+            out string reason,
+            out float nextCursorWorld)
         {
+            float nearestNextCursorWorld = float.PositiveInfinity;
             for (int i = 0; i < placement.Objects.Count; i++)
             {
                 PatternPlacedObject placedObject = placement.Objects[i];
@@ -504,38 +523,63 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     continue;
                 }
 
-                if (IsBlockedBy(
-                        placedObject.ArcObject,
-                        placedObject.Orbit.OrbitObjects,
-                        context.Settings.Rift.MinDistanceBetweenRifts) ||
-                    IsBlockedBy(
-                        placedObject.ArcObject,
-                        context.GetStagedExistingOrbitObjects(placedObject.Orbit),
-                        context.Settings.Rift.MinDistanceBetweenRifts))
+                bool blockedByOrbit = IsBlockedBy(
+                    placedObject.ArcObject,
+                    placedObject.Orbit.OrbitObjects,
+                    context.Settings.Rift.MinDistanceBetweenRifts,
+                    out float orbitShiftDegrees);
+                bool blockedByStaged = IsBlockedBy(
+                    placedObject.ArcObject,
+                    context.GetStagedExistingOrbitObjects(placedObject.Orbit),
+                    context.Settings.Rift.MinDistanceBetweenRifts,
+                    out float stagedShiftDegrees);
+
+                if (blockedByOrbit || blockedByStaged)
                 {
-                    reason = "placement overlaps existing orbit object";
-                    return false;
+                    float shiftDegrees = Math.Min(orbitShiftDegrees, stagedShiftDegrees);
+                    float shiftedCursorWorld = placement.StartWorld +
+                                               DegreesToWorld(shiftDegrees, placement.LowerOrbit.Radius);
+                    nearestNextCursorWorld = Math.Min(nearestNextCursorWorld, shiftedCursorWorld);
                 }
             }
 
+            if (nearestNextCursorWorld < float.PositiveInfinity)
+            {
+                reason = "placement overlaps existing orbit object";
+                nextCursorWorld = nearestNextCursorWorld;
+                return false;
+            }
+
             reason = string.Empty;
+            nextCursorWorld = float.PositiveInfinity;
             return true;
         }
 
         private static bool IsBlockedBy(
             ArcObject candidate,
             IReadOnlyList<ArcObject> existingObjects,
-            float minRiftDistance)
+            float minRiftDistance,
+            out float requiredShiftDegrees)
         {
+            float nearestShiftDegrees = float.PositiveInfinity;
             for (int i = 0; i < existingObjects.Count; i++)
             {
-                if (BlocksPlacement(candidate, existingObjects[i], minRiftDistance))
+                ArcObject existing = existingObjects[i];
+                if (!BlocksPlacement(candidate, existing, minRiftDistance))
                 {
-                    return true;
+                    continue;
                 }
+
+                float clearanceDegrees = candidate.Object.Type == ArcObjectType.Rift &&
+                                         existing.Object.Type == ArcObjectType.Rift
+                    ? minRiftDistance
+                    : 0.0f;
+                float shiftDegrees = GetForwardClearanceDegrees(candidate.Arc, existing.Arc, clearanceDegrees);
+                nearestShiftDegrees = Math.Min(nearestShiftDegrees, shiftDegrees);
             }
 
-            return false;
+            requiredShiftDegrees = nearestShiftDegrees;
+            return nearestShiftDegrees < float.PositiveInfinity;
         }
 
         private static bool BlocksPlacement(
@@ -559,6 +603,36 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
 
             return candidate.Type == existing.Type &&
                    candidate.Arc.IsOverlapping(existing.Arc);
+        }
+
+        private static float GetForwardClearanceDegrees(Arc candidate, Arc existing, float clearanceDegrees)
+        {
+            float candidateStart = OrbitMath.NormalizeDegrees360(candidate.StartAngleDegree);
+            float candidateEnd = candidateStart + OrbitMath.DeltaDegrees(
+                candidate.StartAngleDegree,
+                candidate.EndAngleDegree);
+            float existingStart = OrbitMath.NormalizeDegrees360(existing.StartAngleDegree);
+            float existingLength = OrbitMath.DeltaDegrees(existing.StartAngleDegree, existing.EndAngleDegree);
+            float nearestShift = float.PositiveInfinity;
+
+            for (int turn = -1; turn <= 1; turn++)
+            {
+                float intervalStart = existingStart + turn * 360.0f - clearanceDegrees;
+                float intervalEnd = existingStart + turn * 360.0f + existingLength + clearanceDegrees;
+                if (candidateEnd < intervalStart || candidateStart > intervalEnd)
+                {
+                    continue;
+                }
+
+                float epsilonDegrees = WorldToDegrees(PatternSlot.MinimumSpaceLength, candidate.Radius);
+                float shift = intervalEnd - candidateStart + epsilonDegrees;
+                if (shift > 0.0f)
+                {
+                    nearestShift = Math.Min(nearestShift, shift);
+                }
+            }
+
+            return nearestShift;
         }
 
         private static IReadOnlyList<PatternSlotSnapshot> GetLane(
@@ -643,6 +717,11 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         private static float WorldToDegrees(float worldDistance, float radius)
         {
             return worldDistance / Math.Max(0.01f, radius) * OrbitMath.RADIANS_TO_DEGREES;
+        }
+
+        private static float DegreesToWorld(float angleDegrees, float radius)
+        {
+            return angleDegrees * OrbitMath.DEGREES_TO_RADIANS * Math.Max(0.01f, radius);
         }
 
         private readonly struct RiftQuotaDemand
