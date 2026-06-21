@@ -34,7 +34,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         Gravity = 1 << 3,
         Rift = 1 << 4,
         Compound = 1 << 5,
-        Zigzag = 1 << 6,
+        Mirror = 1 << 6,
     }
 
     public readonly struct PatternSlotSnapshot

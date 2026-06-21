@@ -14,24 +14,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.Generators.Patterns.ObstaclePatternGenerationConfig
   _patterns:
   - {fileID: 11400000, guid: 1b32cc3162404eac90b2cf757dbf0797, type: 2}
-  - {fileID: 11400000, guid: e726ceab884e17a40bdf60297f500ba9, type: 2}
-  - {fileID: 11400000, guid: 9b734166da3d8d746a4d1c5f9b827222, type: 2}
+  - {fileID: 11400000, guid: 0ad98c992f840664f9c7262c13d669da, type: 2}
+  - {fileID: 11400000, guid: fddc8c42d139acd48b837040ef15548d, type: 2}
+  - {fileID: 11400000, guid: 472f29714433e7b4e8a1bcf83fee03a6, type: 2}
+  - {fileID: 11400000, guid: 94cfa887cb498e943a8af268d8f1f81e, type: 2}
+  - {fileID: 11400000, guid: ea77c47c7df08234f9e9b960fb208f59, type: 2}
   - {fileID: 11400000, guid: 9902966d2fee5f7498604e56bf1543aa, type: 2}
   _difficultyProfiles:
   - _difficulty: 0
     _stages:
     - _minScore: 0
+      _maxScore: 5
+      _samePatternWeightMultiplier: 0.9
+      _sameTagWeightMultiplier: 1
+      _unlockedSlots: 19
+    - _minScore: 5
       _maxScore: 10
       _samePatternWeightMultiplier: 0.8
       _sameTagWeightMultiplier: 0.9
-      _unlockedSlots: 19
-    - _minScore: 10
-      _maxScore: 25
-      _samePatternWeightMultiplier: 0.35
-      _sameTagWeightMultiplier: 0.75
       _unlockedSlots: 23
-    - _minScore: 25
-      _maxScore: 0
+    - _minScore: 10
+      _maxScore: 15
       _samePatternWeightMultiplier: 0.35
       _sameTagWeightMultiplier: 0.75
       _unlockedSlots: 31
