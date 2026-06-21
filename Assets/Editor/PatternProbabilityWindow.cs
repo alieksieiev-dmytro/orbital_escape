@@ -20,6 +20,10 @@ namespace OrbitalEscape.Editor
         [SerializeField] private int _previousPatternIndex;
         [SerializeField] private int _consecutiveRepeats = 1;
         [SerializeField] private bool _showUnavailable = true;
+        [SerializeField] private int _lowerOrbitNonRiftStreak;
+        [SerializeField] private int _upperOrbitNonRiftStreak;
+        [SerializeField] private float _lowerNeighborRiftDistance = 180.0f;
+        [SerializeField] private float _upperNeighborRiftDistance = 180.0f;
 
         private readonly List<ObstaclePatternDefinition> _patternDefinitions = new List<ObstaclePatternDefinition>();
         private Vector2 _scrollPosition;
@@ -118,6 +122,23 @@ namespace OrbitalEscape.Editor
 
             _showUnavailable = EditorGUILayout.Toggle("Show Unavailable", _showUnavailable);
 
+            EditorGUILayout.Space(6.0f);
+            EditorGUILayout.LabelField("Rift Weight Context", EditorStyles.boldLabel);
+            _lowerOrbitNonRiftStreak = Mathf.Max(
+                0,
+                EditorGUILayout.IntField("Lower Non-Rift Streak", _lowerOrbitNonRiftStreak));
+            _upperOrbitNonRiftStreak = Mathf.Max(
+                0,
+                EditorGUILayout.IntField("Upper Non-Rift Streak", _upperOrbitNonRiftStreak));
+            _lowerNeighborRiftDistance = Mathf.Clamp(
+                EditorGUILayout.FloatField("Lower Neighbor Distance", _lowerNeighborRiftDistance),
+                0.0f,
+                180.0f);
+            _upperNeighborRiftDistance = Mathf.Clamp(
+                EditorGUILayout.FloatField("Upper Neighbor Distance", _upperNeighborRiftDistance),
+                0.0f,
+                180.0f);
+
             float radius = GetOrbitRadius();
             EditorGUILayout.LabelField("Radius", radius.ToString("0.##"));
             EditorGUILayout.LabelField("Circumference", (2.0f * Mathf.PI * radius).ToString("0.##"));
@@ -135,7 +156,8 @@ namespace OrbitalEscape.Editor
                 _difficulty,
                 lengthProvider);
             PatternDifficultyStageSnapshot stage = generationSettings.GetStage(_score);
-            List<PatternProbabilityRow> rows = CreateRows(lengthProvider, stage);
+            RiftGenerationSettings riftSettings = CreateRiftSettings();
+            List<PatternProbabilityRow> rows = CreateRows(lengthProvider, stage, riftSettings);
 
             float totalWeight = 0.0f;
             for (int i = 0; i < rows.Count; i++)
@@ -151,11 +173,16 @@ namespace OrbitalEscape.Editor
             EditorGUILayout.LabelField("Unlocked Slots", stage.UnlockedSlots.ToString());
             EditorGUILayout.LabelField("Same Pattern Multiplier", stage.SamePatternWeightMultiplier.ToString("0.###"));
             EditorGUILayout.LabelField("Same Tag Multiplier", stage.SameTagWeightMultiplier.ToString("0.###"));
+            EditorGUILayout.LabelField(
+                "Rift Pressure",
+                $"Lower {riftSettings.GetPressureMultiplier(_lowerOrbitNonRiftStreak):0.###}x  |  " +
+                $"Upper {riftSettings.GetPressureMultiplier(_upperOrbitNonRiftStreak):0.###}x");
             EditorGUILayout.LabelField("Total Candidate Weight", totalWeight.ToString("0.###"));
 
             EditorGUILayout.HelpBox(
-                "Probabilities describe the next pattern choice at this orbit and score. Runtime cursor space, " +
-                "object overlaps, and rift quotas can remove candidates and renormalize the final selection.",
+                "Probabilities include the configured rift pressure and neighbor distance for each physical lane. " +
+                "Runtime cursor space, object overlaps, band phase, and rift quotas can still remove candidates " +
+                "and renormalize the final selection.",
                 MessageType.Info);
 
             EditorGUILayout.Space(4.0f);
@@ -175,7 +202,8 @@ namespace OrbitalEscape.Editor
 
         private List<PatternProbabilityRow> CreateRows(
             PatternSlotLengthProvider lengthProvider,
-            PatternDifficultyStageSnapshot stage)
+            PatternDifficultyStageSnapshot stage,
+            RiftGenerationSettings riftSettings)
         {
             List<ObstaclePatternSnapshot> snapshots = new List<ObstaclePatternSnapshot>(_patternDefinitions.Count);
             for (int i = 0; i < _patternDefinitions.Count; i++)
@@ -191,12 +219,15 @@ namespace OrbitalEscape.Editor
             {
                 ObstaclePatternSnapshot snapshot = snapshots[i];
                 string unavailableReason = GetUnavailableReason(snapshot, stage, circumference);
-                float effectiveWeight = unavailableReason == null
+                float baseEffectiveWeight = unavailableReason == null
                     ? PatternWeightCalculator.GetEffectiveWeight(snapshot, stage, history)
                     : 0.0f;
                 int orientations = snapshot.AllowFlip ? 2 : 1;
+                float aggregateWeight = unavailableReason == null
+                    ? GetAggregateWeight(snapshot, baseEffectiveWeight, riftSettings)
+                    : 0.0f;
 
-                if (unavailableReason == null && effectiveWeight <= 0.0f)
+                if (unavailableReason == null && aggregateWeight <= 0.0f)
                 {
                     unavailableReason = "Effective weight is zero";
                 }
@@ -205,11 +236,64 @@ namespace OrbitalEscape.Editor
                     _patternDefinitions[i].name,
                     snapshot,
                     orientations,
-                    effectiveWeight,
+                    baseEffectiveWeight,
+                    aggregateWeight,
                     unavailableReason));
             }
 
             return rows;
+        }
+
+        private float GetAggregateWeight(
+            ObstaclePatternSnapshot pattern,
+            float baseEffectiveWeight,
+            RiftGenerationSettings riftSettings)
+        {
+            float weight = GetOrientationWeight(pattern, false, baseEffectiveWeight, riftSettings);
+            if (pattern.AllowFlip)
+            {
+                weight += GetOrientationWeight(pattern, true, baseEffectiveWeight, riftSettings);
+            }
+
+            return weight;
+        }
+
+        private float GetOrientationWeight(
+            ObstaclePatternSnapshot pattern,
+            bool flipped,
+            float baseEffectiveWeight,
+            RiftGenerationSettings riftSettings)
+        {
+            bool lowerHasRift = pattern.GetLowerLaneRiftCount(flipped) > 0;
+            bool upperHasRift = pattern.GetUpperLaneRiftCount(flipped) > 0;
+            if (!lowerHasRift && !upperHasRift)
+            {
+                return baseEffectiveWeight;
+            }
+
+            float pressureMultiplier = 1.0f;
+            float neighborMultiplier = 1.0f;
+            if (lowerHasRift)
+            {
+                pressureMultiplier = Mathf.Max(
+                    pressureMultiplier,
+                    riftSettings.GetPressureMultiplier(_lowerOrbitNonRiftStreak));
+                neighborMultiplier = Mathf.Min(
+                    neighborMultiplier,
+                    riftSettings.GetNeighborWeightMultiplier(_lowerNeighborRiftDistance));
+            }
+
+            if (upperHasRift)
+            {
+                pressureMultiplier = Mathf.Max(
+                    pressureMultiplier,
+                    riftSettings.GetPressureMultiplier(_upperOrbitNonRiftStreak));
+                neighborMultiplier = Mathf.Min(
+                    neighborMultiplier,
+                    riftSettings.GetNeighborWeightMultiplier(_upperNeighborRiftDistance));
+            }
+
+            return baseEffectiveWeight * pressureMultiplier * neighborMultiplier;
         }
 
         private List<ObstaclePatternSnapshot> CreateHistory(IReadOnlyList<ObstaclePatternSnapshot> snapshots)
@@ -293,12 +377,16 @@ namespace OrbitalEscape.Editor
 
             float baseDifficultyWeight = row.Pattern.BaseWeight * row.Pattern.DifficultyWeightMultiplier;
             float repetitionModifier = baseDifficultyWeight > 0.0f
-                ? row.EffectiveWeight / baseDifficultyWeight
+                ? row.BaseEffectiveWeight / baseDifficultyWeight
+                : 0.0f;
+            float riftModifier = row.BaseEffectiveWeight > 0.0f && row.Orientations > 0
+                ? row.AggregateWeight / (row.BaseEffectiveWeight * row.Orientations)
                 : 0.0f;
 
             EditorGUILayout.LabelField(
                 $"Base {row.Pattern.BaseWeight:0.###}  |  Difficulty {row.Pattern.DifficultyWeightMultiplier:0.###}  |  " +
-                $"Repeat/Tag {repetitionModifier:0.###}  |  Orientations {row.Orientations}  |  " +
+                $"Repeat/Tag {repetitionModifier:0.###}  |  Rift {riftModifier:0.###}  |  " +
+                $"Orientations {row.Orientations}  |  " +
                 $"Total {row.AggregateWeight:0.###}",
                 EditorStyles.miniLabel);
             EditorGUILayout.EndVertical();
@@ -347,6 +435,22 @@ namespace OrbitalEscape.Editor
                 _orbitConfig.FirstOrbitRadius + _orbitIndex * _orbitConfig.OrbitRadiusStep);
         }
 
+        private RiftGenerationSettings CreateRiftSettings()
+        {
+            return new RiftGenerationSettings(
+                _riftConfig.MinDistanceBetweenRifts,
+                _riftConfig.RiftLength,
+                _riftConfig.RiftCount,
+                _riftConfig.BaseRiftCountRadius,
+                _riftConfig.AdditionalRiftRadiusStep,
+                _riftConfig.RiftWeightIncreasePerNonRiftPattern,
+                _riftConfig.MaxRiftPressureMultiplier,
+                _riftConfig.NeighborRiftAvoidanceAngle,
+                _riftConfig.AlignedNeighborRiftWeightMultiplier,
+                _riftConfig.RiftPaddings,
+                _riftConfig.MaxPlacementAttempts);
+        }
+
         private string[] GetPatternNames()
         {
             string[] names = new string[_patternDefinitions.Count + 1];
@@ -374,8 +478,8 @@ namespace OrbitalEscape.Editor
             public string Name { get; }
             public ObstaclePatternSnapshot Pattern { get; }
             public int Orientations { get; }
-            public float EffectiveWeight { get; }
-            public float AggregateWeight => EffectiveWeight * Orientations;
+            public float BaseEffectiveWeight { get; }
+            public float AggregateWeight { get; }
             public string UnavailableReason { get; }
             public bool Available => string.IsNullOrEmpty(UnavailableReason);
 
@@ -383,13 +487,15 @@ namespace OrbitalEscape.Editor
                 string name,
                 ObstaclePatternSnapshot pattern,
                 int orientations,
-                float effectiveWeight,
+                float baseEffectiveWeight,
+                float aggregateWeight,
                 string unavailableReason)
             {
                 Name = name;
                 Pattern = pattern;
                 Orientations = orientations;
-                EffectiveWeight = effectiveWeight;
+                BaseEffectiveWeight = baseEffectiveWeight;
+                AggregateWeight = aggregateWeight;
                 UnavailableReason = unavailableReason;
             }
         }

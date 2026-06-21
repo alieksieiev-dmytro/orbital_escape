@@ -13,7 +13,7 @@ The values described here are relative selection weights, not percentages or gua
 
 Open `Orbital Escape > Generation > Pattern Probabilities` in the Unity Editor.
 
-The window calculates next-placement probability for the selected orbit, score, difficulty, and previous-pattern streak. It shows every configured pattern, its effective weight, flip-orientation count, normalized probability, and any reason it is currently unavailable. By default, score follows the orbit index; disable `Use Orbit As Score` to inspect a different score.
+The window calculates next-placement probability for the selected orbit, score, difficulty, previous-pattern streak, and rift context. Lower/upper non-rift streaks and nearest inward-neighbor rift distances can be entered independently. It shows every configured pattern, its effective weight, flip-orientation count, normalized probability, and any reason it is currently unavailable. By default, score follows the orbit index; disable `Use Orbit As Score` to inspect a different score.
 
 The displayed probability is the configured candidate probability before live cursor-space, overlap, and rift-quota filtering. Those runtime constraints can remove candidates and renormalize the final choice.
 
@@ -51,6 +51,8 @@ The runtime formula is:
 EffectiveWeight = BaseWeight
                 * DifficultyWeightMultiplier
                 * RepetitionModifier
+                * RiftPressureMultiplier
+                * NeighborRiftMultiplier
 ```
 
 `RepetitionModifier` is calculated as follows:
@@ -67,6 +69,32 @@ Otherwise:
 ```
 
 The same-pattern and same-tag modifiers are mutually exclusive for a candidate. Repeating the exact same pattern uses only the same-pattern rule. It does not also receive the same-tag penalty.
+
+For patterns without rifts, both rift modifiers are `1.0`.
+
+## Rift Pressure Multiplier
+
+Every physical orbit tracks its own consecutive non-rift pattern count. A pattern containing no rift on that orbit increments the count; placing a rift resets it. With the default RiftConfig values:
+
+```text
+RiftPressureMultiplier = min(1 + NonRiftStreak * 0.5, 4.0)
+```
+
+This produces `1.0x`, `1.5x`, `2.0x`, and so on up to `4.0x`. For a pattern placing rifts on both physical orbits, the larger pressure multiplier is used.
+
+## Neighbor Rift Multiplier
+
+A candidate rift compares its midpoint angle with rifts on the inward orbit (`current index - 1`). Distance is circular, so `359 degrees` and `1 degree` are only `2 degrees` apart.
+
+With the default avoidance angle of `75 degrees`, the multiplier interpolates linearly from `0.25` at perfect alignment to `1.0` at or beyond `75 degrees`:
+
+| Nearest angular distance | Multiplier |
+|---:|---:|
+| `0 degrees` | `0.25` |
+| `37.5 degrees` | `0.625` |
+| `75 degrees` or more | `1.0` |
+
+The multiplier never reaches zero, so neighboring rifts remain possible. For a pattern placing multiple rifts, the strongest proximity penalty is used.
 
 ## Base Weight
 
@@ -195,7 +223,7 @@ Use tags to describe the gameplay experience of a pattern, not every object it c
 - Candidate A: Orbit 1 is lower and Orbit 2 is upper.
 - Candidate B: Orbit 2 is lower and Orbit 1 is upper.
 
-Each valid orientation receives the full effective weight. Consequently, a flippable pattern can have twice the aggregate probability of an otherwise identical non-flippable pattern.
+Each valid orientation is a separate candidate. Non-rift orientations receive the same effective weight, but rift orientations can differ because flipping changes the physical orbit whose pressure and neighbor context apply. When both orientations have the same context, a flippable pattern has twice the aggregate probability of an otherwise identical non-flippable pattern.
 
 Example:
 
@@ -228,7 +256,9 @@ A candidate can be removed because of:
 
 Rift quotas can substantially change observed frequencies. When a rift is due, non-rift patterns are temporarily filtered out. Weights then choose only among valid rift candidates. Similarly, after an orbit reaches its rift target, candidates that would exceed it are removed.
 
-`Max Selection Attempts` limits the number of candidates collected at one cursor position. Flip orientations count as separate candidates. With the current value of `64` and four configured patterns, this limit has no practical effect. With a much larger pattern library, asset order can matter after the limit is reached.
+Each orbit band also receives one seeded random angular phase. Both lanes rotate together, preserving the authored layout while preventing every band from beginning visually at `0 degrees`.
+
+`Max Selection Attempts` limits the number of candidates collected at one cursor position. Flip orientations count as separate candidates. With the current value of `64` and a small pattern library, this limit has no practical effect. With a much larger pattern library, asset order can matter after the limit is reached.
 
 ## Score Ranges And Stage Boundaries
 
@@ -266,6 +296,8 @@ The current Basic configuration has four patterns:
 | Recovery Two Spaces | Recovery | `2` | Yes | `4` |
 
 Every pattern has a Basic difficulty multiplier of `1`, either explicitly or through the missing-entry fallback. Flip-enabled patterns contribute two candidates when both orientations are valid; Zigzag Three Jumps contributes one.
+
+The examples below assume a non-rift streak of `0` and no inward-neighbor rift within `75 degrees`, so both rift modifiers are `1.0`.
 
 ### Fresh selection
 
