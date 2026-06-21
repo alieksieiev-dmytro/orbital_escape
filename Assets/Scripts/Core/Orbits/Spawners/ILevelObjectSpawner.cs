@@ -7,6 +7,7 @@ namespace OrbitalEscape.Orbits
     {
         IReadOnlyList<GameObject> SpawnedOrbitObjects { get; }
         GameObject SpawnOrbit(Orbit orbit);
+        void AppendOrbitContent(Orbit orbit, IReadOnlyList<ArcObject> addedObjects);
         GameObject GetOrbitObject(int index);
         void Clear();
     }

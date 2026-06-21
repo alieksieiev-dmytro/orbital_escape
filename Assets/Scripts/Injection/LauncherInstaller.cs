@@ -5,6 +5,7 @@ using OrbitalEscape.Data;
 using OrbitalEscape.Input;
 using OrbitalEscape.Movement;
 using OrbitalEscape.Orbits.Generators;
+using OrbitalEscape.Orbits.Generators.Patterns;
 using OrbitalEscape.UI;
 using OrbitalEscape.Visuals.Palettes;
 using UnityEngine;
@@ -83,6 +84,7 @@ namespace OrbitalEscape.Injection
         {
             Container.Bind(typeof(OrbitConfig)).To<OrbitConfig>().FromScriptableObjectResource("Configs/OrbitConfig").AsSingle();
             Container.Bind(typeof(LevelGenerationConfig)).To<LevelGenerationConfig>().FromScriptableObjectResource("Configs/LevelGenerationConfig").AsSingle();
+            Container.Bind(typeof(ObstaclePatternGenerationConfig)).To<ObstaclePatternGenerationConfig>().FromScriptableObjectResource("Configs/ObstaclePatternGenerationConfig").AsSingle();
             Container.Bind(typeof(GamePaletteConfig)).To<GamePaletteConfig>().FromScriptableObjectResource("Configs/GamePaletteConfig").AsSingle();
             Container.Bind(typeof(MovementSpeedConfig)).To<MovementSpeedConfig>().FromScriptableObjectResource("Configs/MovementSpeedConfig").AsSingle();
             Container.Bind(typeof(RiftConfig)).To<RiftConfig>().FromScriptableObjectResource("Configs/RiftConfig").AsSingle();

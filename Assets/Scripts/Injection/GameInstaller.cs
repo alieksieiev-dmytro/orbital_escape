@@ -6,6 +6,7 @@ using OrbitalEscape.Input;
 using OrbitalEscape.Movement;
 using OrbitalEscape.Orbits;
 using OrbitalEscape.Orbits.Generators;
+using OrbitalEscape.Orbits.Generators.Patterns;
 using OrbitalEscape.Pause;
 using OrbitalEscape.Score;
 using OrbitalEscape.Visuals.Palettes;
@@ -63,14 +64,8 @@ namespace OrbitalEscape.Injection
         {
             Container.Bind<OrbitGenerator>().AsSingle();
             Container.Bind<ILevelBuilder>().To<LevelBuilder>().AsSingle();
-            Container.Bind<IOrbitContentPass>().To<RiftGenerationPass>().AsSingle();
-            Container.Bind<IOrbitContentPass>().To<SpikeGenerationPass>().AsSingle();
-            Container.Bind<IOrbitContentPass>().To<ImpulseTrapGenerationPass>().AsSingle();
-            Container.Bind<IOrbitContentPass>().To<GravityWellGenerationPass>().AsSingle();
-            Container.Bind<IArcGenerator>().WithId(ArcObjectType.Rift).To<RiftGenerator>().AsSingle();
-            Container.Bind<IArcGenerator>().WithId(ArcObjectType.Spike).To<SpikeGenerator>().AsSingle();
-            Container.Bind<IArcGenerator>().WithId(ArcObjectType.ImpulseTrap).To<ImpulseTrapGenerator>().AsSingle();
-            Container.Bind<IArcGenerator>().WithId(ArcObjectType.GravityWell).To<GravityWellGenerator>().AsSingle();
+            Container.Bind<WeightedPatternSelector>().AsSingle();
+            Container.Bind<ILevelContentGenerator>().To<PatternLevelContentGenerator>().AsSingle();
         }
         
         private void BindFactories()

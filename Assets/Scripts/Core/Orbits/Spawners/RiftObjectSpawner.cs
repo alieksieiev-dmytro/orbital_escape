@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using OrbitalEscape.Factories;
 using OrbitalEscape.Visuals;
 using UnityEngine;
@@ -21,7 +22,7 @@ namespace OrbitalEscape.Orbits
             _riftConfig = riftConfig;
         }
 
-        public void Spawn(GameObject orbitObject, Orbit orbit)
+        public void Spawn(GameObject orbitObject, Orbit orbit, IReadOnlyList<ArcObject> objects)
         {
             var rifts = orbit.GetOrbitObjectsByType(ArcObjectType.Rift);
             orbitObject.GetComponent<RiftController>().Initialize(rifts);
@@ -29,8 +30,14 @@ namespace OrbitalEscape.Orbits
                 rifts,
                 _riftConfig.AuroraRiftAlphaMultiplier);
 
-            foreach (ArcObject rift in rifts)
+            for (int i = 0; i < objects.Count; i++)
             {
+                ArcObject rift = objects[i];
+                if (rift.Object.Type != ArcObjectType.Rift)
+                {
+                    continue;
+                }
+
                 _riftFactory.Create(orbitObject.transform, rift);
             }
         }

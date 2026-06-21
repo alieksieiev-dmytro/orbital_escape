@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using OrbitalEscape.Difficulty;
+using OrbitalEscape.Orbits.Generators.Patterns;
+using OrbitalEscape.Score;
 using Zenject;
 
 namespace OrbitalEscape.Orbits.Generators
@@ -16,7 +18,10 @@ namespace OrbitalEscape.Orbits.Generators
         private readonly SpikeConfig _spikeConfig;
         private readonly ImpulseTrapConfig _impulseTrapConfig;
         private readonly GravityWellConfig _gravityWellConfig;
-        private readonly List<IOrbitContentPass> _contentPasses;
+        private readonly ObstaclePatternGenerationConfig _patternGenerationConfig;
+        private readonly ILevelContentGenerator _contentGenerator;
+        private readonly IDifficultyService _difficultyService;
+        private readonly IScoreService _scoreService;
 
         [Inject]
         public LevelBuilder(
@@ -27,7 +32,10 @@ namespace OrbitalEscape.Orbits.Generators
             SpikeConfig spikeConfig,
             ImpulseTrapConfig impulseTrapConfig,
             GravityWellConfig gravityWellConfig,
-            List<IOrbitContentPass> contentPasses)
+            ObstaclePatternGenerationConfig patternGenerationConfig,
+            ILevelContentGenerator contentGenerator,
+            IDifficultyService difficultyService,
+            IScoreService scoreService)
         {
             _orbitGenerator = orbitGenerator;
             _orbitConfig = orbitConfig;
@@ -36,9 +44,10 @@ namespace OrbitalEscape.Orbits.Generators
             _spikeConfig = spikeConfig;
             _impulseTrapConfig = impulseTrapConfig;
             _gravityWellConfig = gravityWellConfig;
-            _contentPasses = contentPasses
-                .OrderBy(pass => pass.Order)
-                .ToList();
+            _patternGenerationConfig = patternGenerationConfig;
+            _contentGenerator = contentGenerator;
+            _difficultyService = difficultyService;
+            _scoreService = scoreService;
         }
 
         public async UniTask<LevelBuildResult> BuildAsync(
@@ -56,6 +65,15 @@ namespace OrbitalEscape.Orbits.Generators
 
         private LevelBuildRequest CreateRequest(IReadOnlyList<Orbit> existingOrbits, int count)
         {
+            DifficultyType difficulty = _difficultyService.CurrentDifficulty;
+            float score = _scoreService.Score;
+
+            PatternSlotLengthProvider patternSlotLengthProvider = new PatternSlotLengthProvider(
+                _spikeConfig.SpikeArcLength,
+                _impulseTrapConfig.TrapArcLength,
+                _gravityWellConfig.FieldArcLength,
+                _riftConfig.RiftLength);
+
             LevelBuildSettings settings = new LevelBuildSettings(
                 new OrbitGenerationSettings(_orbitConfig.FirstOrbitRadius, _orbitConfig.OrbitRadiusStep),
                 new LevelContentSettings(_generationConfig.FirstOrbitIndexWithContent),
@@ -63,6 +81,12 @@ namespace OrbitalEscape.Orbits.Generators
                     _riftConfig.MinDistanceBetweenRifts,
                     _riftConfig.RiftLength,
                     _riftConfig.RiftCount,
+                    _riftConfig.BaseRiftCountRadius,
+                    _riftConfig.AdditionalRiftRadiusStep,
+                    _riftConfig.RiftWeightIncreasePerNonRiftPattern,
+                    _riftConfig.MaxRiftPressureMultiplier,
+                    _riftConfig.NeighborRiftAvoidanceAngle,
+                    _riftConfig.AlignedNeighborRiftWeightMultiplier,
                     _riftConfig.RiftPaddings,
                     _riftConfig.MaxPlacementAttempts),
                 new SpikeGenerationSettings(
@@ -81,10 +105,20 @@ namespace OrbitalEscape.Orbits.Generators
                     _gravityWellConfig.PartialJumpStep,
                     _gravityWellConfig.PullSpeed,
                     _gravityWellConfig.ReturnDuration,
-                    _gravityWellConfig.VisualAlpha));
+                    _gravityWellConfig.VisualAlpha),
+                _patternGenerationConfig.CreateSettings(difficulty, patternSlotLengthProvider),
+                _patternGenerationConfig.RandomizeBandPhase);
 
-            int seed = HashCode.Combine(Environment.TickCount, existingOrbits.Count, count);
-            return new LevelBuildRequest(existingOrbits.ToList(), count, seed, settings);
+            int seedBase = _patternGenerationConfig.UseFixedSeed
+                ? _patternGenerationConfig.FixedSeed
+                : Environment.TickCount;
+            int seed = HashCode.Combine(seedBase, existingOrbits.Count, count, difficulty);
+            return new LevelBuildRequest(
+                new List<Orbit>(existingOrbits),
+                count,
+                seed,
+                settings,
+                score);
         }
 
         private LevelBuildResult Build(LevelBuildRequest request, CancellationToken cancellationToken)
@@ -99,6 +133,7 @@ namespace OrbitalEscape.Orbits.Generators
                 request.Count,
                 request.Settings,
                 new LevelRandom(request.Seed));
+
             List<Orbit> orbits = _orbitGenerator.GenerateOrbits(
                 context.StartIndex,
                 request.Count,
@@ -107,20 +142,16 @@ namespace OrbitalEscape.Orbits.Generators
             foreach (Orbit orbit in orbits)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-
-                if (request.Settings.ShouldGenerateContent(orbit))
-                {
-                    foreach (IOrbitContentPass contentPass in _contentPasses)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        contentPass.Populate(orbit, context);
-                    }
-                }
-
                 context.RegisterBuiltOrbit(orbit);
             }
 
-            return new LevelBuildResult(orbits, context.Warnings.ToList());
+            cancellationToken.ThrowIfCancellationRequested();
+            _contentGenerator.Populate(orbits, context, request);
+
+            return new LevelBuildResult(
+                orbits,
+                context.Warnings,
+                context.CreateContentDeltas());
         }
     }
 }

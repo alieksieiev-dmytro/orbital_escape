@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using OrbitalEscape.Factories;
 using UnityEngine;
 using Zenject;
@@ -16,10 +17,16 @@ namespace OrbitalEscape.Orbits
             _spikeFactory = spikeFactory;
         }
 
-        public void Spawn(GameObject orbitObject, Orbit orbit)
+        public void Spawn(GameObject orbitObject, Orbit orbit, IReadOnlyList<ArcObject> objects)
         {
-            foreach (ArcObject spike in orbit.GetOrbitObjectsByType(ArcObjectType.Spike))
+            for (int i = 0; i < objects.Count; i++)
             {
+                ArcObject spike = objects[i];
+                if (spike.Object.Type != ArcObjectType.Spike)
+                {
+                    continue;
+                }
+
                 _spikeFactory.Create(orbitObject.transform, orbit, spike);
             }
         }

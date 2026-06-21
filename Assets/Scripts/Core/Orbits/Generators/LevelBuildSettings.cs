@@ -2,6 +2,8 @@ using System;
 
 namespace OrbitalEscape.Orbits.Generators
 {
+    using Patterns;
+
     public readonly struct LevelBuildSettings
     {
         public OrbitGenerationSettings Orbit { get; }
@@ -10,6 +12,8 @@ namespace OrbitalEscape.Orbits.Generators
         public SpikeGenerationSettings Spike { get; }
         public ImpulseTrapGenerationSettings ImpulseTrap { get; }
         public GravityWellGenerationSettings GravityWell { get; }
+        public PatternGenerationSettings Patterns { get; }
+        public bool RandomizeBandPhase { get; }
 
         public LevelBuildSettings(
             OrbitGenerationSettings orbit,
@@ -17,7 +21,9 @@ namespace OrbitalEscape.Orbits.Generators
             RiftGenerationSettings rift,
             SpikeGenerationSettings spike,
             ImpulseTrapGenerationSettings impulseTrap,
-            GravityWellGenerationSettings gravityWell)
+            GravityWellGenerationSettings gravityWell,
+            PatternGenerationSettings patterns,
+            bool randomizeBandPhase)
         {
             Orbit = orbit;
             Content = content;
@@ -25,6 +31,8 @@ namespace OrbitalEscape.Orbits.Generators
             Spike = spike;
             ImpulseTrap = impulseTrap;
             GravityWell = gravityWell;
+            Patterns = patterns;
+            RandomizeBandPhase = randomizeBandPhase;
         }
 
         public bool ShouldGenerateContent(Orbit orbit)
@@ -60,6 +68,12 @@ namespace OrbitalEscape.Orbits.Generators
         public float MinDistanceBetweenRifts { get; }
         public float RiftLength { get; }
         public float RiftCount { get; }
+        public float BaseRiftCountRadius { get; }
+        public float AdditionalRiftRadiusStep { get; }
+        public float RiftWeightIncreasePerNonRiftPattern { get; }
+        public float MaxRiftPressureMultiplier { get; }
+        public float NeighborRiftAvoidanceAngle { get; }
+        public float AlignedNeighborRiftWeightMultiplier { get; }
         public float RiftPadding { get; }
         public int MaxPlacementAttempts { get; }
 
@@ -67,14 +81,58 @@ namespace OrbitalEscape.Orbits.Generators
             float minDistanceBetweenRifts,
             float riftLength,
             float riftCount,
+            float baseRiftCountRadius,
+            float additionalRiftRadiusStep,
+            float riftWeightIncreasePerNonRiftPattern,
+            float maxRiftPressureMultiplier,
+            float neighborRiftAvoidanceAngle,
+            float alignedNeighborRiftWeightMultiplier,
             float riftPadding,
             int maxPlacementAttempts)
         {
             MinDistanceBetweenRifts = minDistanceBetweenRifts;
             RiftLength = riftLength;
             RiftCount = riftCount;
+            BaseRiftCountRadius = Math.Max(0.01f, baseRiftCountRadius);
+            AdditionalRiftRadiusStep = Math.Max(0.01f, additionalRiftRadiusStep);
+            RiftWeightIncreasePerNonRiftPattern = Math.Max(0.0f, riftWeightIncreasePerNonRiftPattern);
+            MaxRiftPressureMultiplier = Math.Max(1.0f, maxRiftPressureMultiplier);
+            NeighborRiftAvoidanceAngle = Math.Min(180.0f, Math.Max(0.01f, neighborRiftAvoidanceAngle));
+            AlignedNeighborRiftWeightMultiplier = Math.Min(
+                1.0f,
+                Math.Max(0.01f, alignedNeighborRiftWeightMultiplier));
             RiftPadding = riftPadding;
             MaxPlacementAttempts = Math.Max(1, maxPlacementAttempts);
+        }
+
+        public int GetTargetCount(Orbit orbit)
+        {
+            int baseCount = Math.Max(0, (int)Math.Ceiling(RiftCount));
+            if (orbit == null)
+            {
+                return baseCount;
+            }
+
+            float radiusDelta = Math.Max(0.0f, orbit.Radius - BaseRiftCountRadius);
+            int additionalCount = (int)Math.Floor(radiusDelta / AdditionalRiftRadiusStep);
+            return baseCount + additionalCount;
+        }
+
+        public float GetPressureMultiplier(int consecutiveNonRiftPatterns)
+        {
+            float multiplier = 1.0f +
+                               Math.Max(0, consecutiveNonRiftPatterns) *
+                               RiftWeightIncreasePerNonRiftPattern;
+            return Math.Min(multiplier, MaxRiftPressureMultiplier);
+        }
+
+        public float GetNeighborWeightMultiplier(float angularDistance)
+        {
+            float normalizedDistance = Math.Min(
+                1.0f,
+                Math.Max(0.0f, angularDistance) / NeighborRiftAvoidanceAngle);
+            return AlignedNeighborRiftWeightMultiplier +
+                   (1.0f - AlignedNeighborRiftWeightMultiplier) * normalizedDistance;
         }
     }
 
