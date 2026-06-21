@@ -15,9 +15,11 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         [SerializeField] private bool _useFixedSeed;
         [SerializeField] private int _fixedSeed = 1337;
         [SerializeField, Min(1)] private int _maxSelectionAttempts = 64;
+        [SerializeField] private bool _randomizeBandPhase = true;
 
         public bool UseFixedSeed => _useFixedSeed;
         public int FixedSeed => _fixedSeed;
+        public bool RandomizeBandPhase => _randomizeBandPhase;
 
         public PatternGenerationSettings CreateSettings(
             DifficultyType difficulty,

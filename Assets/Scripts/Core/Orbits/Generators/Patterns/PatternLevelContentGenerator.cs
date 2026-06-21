@@ -70,6 +70,9 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
 
             float cursorWorld = 0.0f;
             List<ObstaclePatternSnapshot> history = new List<ObstaclePatternSnapshot>();
+            float bandPhaseDegree = context.Settings.RandomizeBandPhase
+                ? context.Random.Range(0.0f, 360.0f)
+                : 0.0f;
 
             for (int step = 0; step < MaxCursorStepsPerBand && cursorWorld < lowerOrbit.Circumference; step++)
             {
@@ -78,6 +81,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     lowerOrbit,
                     upperOrbit,
                     cursorWorld,
+                    bandPhaseDegree,
                     stage,
                     history,
                     context,
@@ -99,6 +103,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                         lowerOrbit,
                         upperOrbit,
                         cursorWorld,
+                        bandPhaseDegree,
                         stage,
                         history,
                         context,
@@ -144,6 +149,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                         lowerOrbit,
                         upperOrbit,
                         placement.StartWorld,
+                        bandPhaseDegree,
                         context,
                         randomizeSpikeHeight: true);
                 }
@@ -170,6 +176,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             Orbit lowerOrbit,
             Orbit upperOrbit,
             float cursorWorld,
+            float bandPhaseDegree,
             PatternDifficultyStageSnapshot stage,
             IReadOnlyList<ObstaclePatternSnapshot> history,
             LevelBuildContext context,
@@ -217,21 +224,26 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                         return;
                     }
 
-                    float weight = PatternWeightCalculator.GetEffectiveWeight(pattern, stage, history);
-                    if (weight <= 0.0f)
-                    {
-                        rejectionLog.Add("weight reduced to zero");
-                        return;
-                    }
-
                     PatternPlacement placement = CreatePlacement(
                         pattern,
                         flipped,
                         lowerOrbit,
                         upperOrbit,
                         startWorld,
+                        bandPhaseDegree,
                         context,
                         randomizeSpikeHeight: false);
+
+                    float weight = PatternWeightCalculator.GetEffectiveWeight(pattern, stage, history) *
+                                   riftQuotas.GetWeightModifier(
+                                       placement,
+                                       context,
+                                       writableOrbitIndices);
+                    if (weight <= 0.0f)
+                    {
+                        rejectionLog.Add("weight reduced to zero");
+                        return;
+                    }
 
                     if (!IsPlacementCompatibleWithExistingObjects(
                             placement,
@@ -280,6 +292,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             Orbit lowerOrbit,
             Orbit upperOrbit,
             float startWorld,
+            float bandPhaseDegree,
             LevelBuildContext context,
             bool randomizeSpikeHeight)
         {
@@ -305,6 +318,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 lowerOrbit,
                 ArcType.Outer,
                 startWorld,
+                bandPhaseDegree,
                 context,
                 randomizeSpikeHeight,
                 objects);
@@ -316,12 +330,14 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 upperOrbit,
                 ArcType.Inner,
                 upperStartWorld,
+                bandPhaseDegree,
                 context,
                 randomizeSpikeHeight,
                 objects);
 
-            float startAngle = WorldToDegrees(startWorld, lowerOrbit.Radius);
-            float endAngle = WorldToDegrees(startWorld + Math.Max(pattern.Length, 0.01f), lowerOrbit.Radius);
+            float startAngle = bandPhaseDegree + WorldToDegrees(startWorld, lowerOrbit.Radius);
+            float endAngle = bandPhaseDegree +
+                             WorldToDegrees(startWorld + Math.Max(pattern.Length, 0.01f), lowerOrbit.Radius);
             return new PatternPlacement(
                 pattern,
                 flipped,
@@ -340,6 +356,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             Orbit orbit,
             ArcType side,
             float patternStartWorld,
+            float bandPhaseDegree,
             LevelBuildContext context,
             bool randomizeSpikeHeight,
             List<PatternPlacedObject> objects)
@@ -352,8 +369,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 if (slot.IsObstacle)
                 {
                     float objectStartWorld = patternStartWorld + localWorld;
-                    float startAngle = WorldToDegrees(objectStartWorld, orbit.Radius);
-                    float endAngle = WorldToDegrees(objectStartWorld + slot.Length, orbit.Radius);
+                    float startAngle = bandPhaseDegree + WorldToDegrees(objectStartWorld, orbit.Radius);
+                    float endAngle = bandPhaseDegree + WorldToDegrees(objectStartWorld + slot.Length, orbit.Radius);
                     Arc arc = new Arc(startAngle, endAngle, orbit.Radius);
                     ArcType arcType = slot.Type == PatternSlotType.Rift ? ArcType.TwoSide : side;
                     objects.Add(new PatternPlacedObject(
@@ -760,6 +777,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             private readonly Dictionary<int, Orbit> _orbits = new Dictionary<int, Orbit>();
             private readonly Dictionary<int, int> _targets = new Dictionary<int, int>();
             private readonly Dictionary<int, int> _counts = new Dictionary<int, int>();
+            private readonly Dictionary<int, int> _nonRiftStreaks = new Dictionary<int, int>();
             private readonly HashSet<string> _missingDueWarnings = new HashSet<string>();
 
             public RiftQuotaTracker(IReadOnlyList<Orbit> orbits, RiftGenerationSettings settings)
@@ -771,6 +789,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     _orbits[orbit.Index] = orbit;
                     _targets[orbit.Index] = settings.GetTargetCount(orbit);
                     _counts[orbit.Index] = orbit.GetOrbitObjectsByType(ArcObjectType.Rift).Count;
+                    _nonRiftStreaks[orbit.Index] = 0;
                 }
             }
 
@@ -784,6 +803,39 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             {
                 EnsureOrbit(orbit);
                 return _counts[orbit.Index];
+            }
+
+            public float GetWeightModifier(
+                PatternPlacement placement,
+                LevelBuildContext context,
+                HashSet<int> writableOrbitIndices)
+            {
+                bool containsRift = false;
+                float pressureMultiplier = 1.0f;
+                float neighborMultiplier = 1.0f;
+
+                for (int i = 0; i < placement.Objects.Count; i++)
+                {
+                    PatternPlacedObject placedObject = placement.Objects[i];
+                    if (placedObject.ArcObject.Object.Type != ArcObjectType.Rift ||
+                        !writableOrbitIndices.Contains(placedObject.Orbit.Index))
+                    {
+                        continue;
+                    }
+
+                    containsRift = true;
+                    EnsureOrbit(placedObject.Orbit);
+                    pressureMultiplier = Math.Max(
+                        pressureMultiplier,
+                        _settings.GetPressureMultiplier(_nonRiftStreaks[placedObject.Orbit.Index]));
+                    neighborMultiplier = Math.Min(
+                        neighborMultiplier,
+                        GetNeighborWeightMultiplier(placedObject, context));
+                }
+
+                return containsRift
+                    ? pressureMultiplier * neighborMultiplier
+                    : 1.0f;
             }
 
             public bool WouldExceed(
@@ -840,8 +892,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
 
             public void Record(PatternPlacement placement, HashSet<int> writableOrbitIndices)
             {
-                AddCount(placement.LowerOrbit, CountPlacedRifts(placement, placement.LowerOrbit, writableOrbitIndices));
-                AddCount(placement.UpperOrbit, CountPlacedRifts(placement, placement.UpperOrbit, writableOrbitIndices));
+                RecordOrbit(placement, placement.LowerOrbit, writableOrbitIndices);
+                RecordOrbit(placement, placement.UpperOrbit, writableOrbitIndices);
             }
 
             public void WarnMissingDuePatterns(
@@ -924,15 +976,62 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 }
             }
 
-            private void AddCount(Orbit orbit, int addedRifts)
+            private float GetNeighborWeightMultiplier(
+                PatternPlacedObject candidate,
+                LevelBuildContext context)
             {
-                if (addedRifts <= 0)
+                if (!_orbits.TryGetValue(candidate.Orbit.Index - 1, out Orbit previousOrbit))
+                {
+                    return 1.0f;
+                }
+
+                float candidateAngle = candidate.ArcObject.Arc.MidAngleDegree();
+                float nearestDistance = float.PositiveInfinity;
+                UpdateNearestDistance(previousOrbit.OrbitObjects);
+                UpdateNearestDistance(context.GetStagedExistingOrbitObjects(previousOrbit));
+
+                return nearestDistance < float.PositiveInfinity
+                    ? _settings.GetNeighborWeightMultiplier(nearestDistance)
+                    : 1.0f;
+
+                void UpdateNearestDistance(IReadOnlyList<ArcObject> objects)
+                {
+                    for (int i = 0; i < objects.Count; i++)
+                    {
+                        ArcObject existing = objects[i];
+                        if (existing.Object.Type != ArcObjectType.Rift)
+                        {
+                            continue;
+                        }
+
+                        float distance = CircularAngleDistance(
+                            candidateAngle,
+                            existing.Arc.MidAngleDegree());
+                        nearestDistance = Math.Min(nearestDistance, distance);
+                    }
+                }
+            }
+
+            private void RecordOrbit(
+                PatternPlacement placement,
+                Orbit orbit,
+                HashSet<int> writableOrbitIndices)
+            {
+                if (!writableOrbitIndices.Contains(orbit.Index))
                 {
                     return;
                 }
 
                 EnsureOrbit(orbit);
-                _counts[orbit.Index] += addedRifts;
+                int addedRifts = CountPlacedRifts(placement, orbit, writableOrbitIndices);
+                if (addedRifts > 0)
+                {
+                    _counts[orbit.Index] += addedRifts;
+                    _nonRiftStreaks[orbit.Index] = 0;
+                    return;
+                }
+
+                _nonRiftStreaks[orbit.Index]++;
             }
 
             private static int CountPlacedRifts(
@@ -971,6 +1070,15 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 _orbits[orbit.Index] = orbit;
                 _targets[orbit.Index] = _settings.GetTargetCount(orbit);
                 _counts[orbit.Index] = orbit.GetOrbitObjectsByType(ArcObjectType.Rift).Count;
+                _nonRiftStreaks[orbit.Index] = 0;
+            }
+
+            private static float CircularAngleDistance(float first, float second)
+            {
+                float delta = Math.Abs(
+                    OrbitMath.NormalizeDegrees360(first) -
+                    OrbitMath.NormalizeDegrees360(second));
+                return Math.Min(delta, 360.0f - delta);
             }
         }
 

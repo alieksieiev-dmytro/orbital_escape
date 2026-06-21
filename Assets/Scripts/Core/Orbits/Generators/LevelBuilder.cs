@@ -83,6 +83,10 @@ namespace OrbitalEscape.Orbits.Generators
                     _riftConfig.RiftCount,
                     _riftConfig.BaseRiftCountRadius,
                     _riftConfig.AdditionalRiftRadiusStep,
+                    _riftConfig.RiftWeightIncreasePerNonRiftPattern,
+                    _riftConfig.MaxRiftPressureMultiplier,
+                    _riftConfig.NeighborRiftAvoidanceAngle,
+                    _riftConfig.AlignedNeighborRiftWeightMultiplier,
                     _riftConfig.RiftPaddings,
                     _riftConfig.MaxPlacementAttempts),
                 new SpikeGenerationSettings(
@@ -102,7 +106,8 @@ namespace OrbitalEscape.Orbits.Generators
                     _gravityWellConfig.PullSpeed,
                     _gravityWellConfig.ReturnDuration,
                     _gravityWellConfig.VisualAlpha),
-                _patternGenerationConfig.CreateSettings(difficulty, patternSlotLengthProvider));
+                _patternGenerationConfig.CreateSettings(difficulty, patternSlotLengthProvider),
+                _patternGenerationConfig.RandomizeBandPhase);
 
             int seedBase = _patternGenerationConfig.UseFixedSeed
                 ? _patternGenerationConfig.FixedSeed
