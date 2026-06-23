@@ -46,6 +46,7 @@ namespace OrbitalEscape.Injection
             Container.BindInterfacesAndSelfTo<GamePauseService>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<PlayerOrbitState>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<OrbitJumpTransitionService>().AsSingle().NonLazy();
+            Container.Bind<IJumpSpeedService>().To<ScoreJumpSpeedService>().AsSingle();
             Container.BindInterfacesAndSelfTo<GravityWellInfluenceService>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<PlayerMovementController>().AsSingle().WithArguments(_player);
             Container.Bind<LevelManager>().FromComponentInHierarchy().AsSingle();

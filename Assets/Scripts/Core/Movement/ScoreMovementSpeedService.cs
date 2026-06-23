@@ -12,6 +12,7 @@ namespace OrbitalEscape.Movement
         private readonly MovementSpeedConfig _config;
 
         public float CurrentLinearSpeed { get; private set; }
+        public float CurrentSpeedMultiplier { get; private set; }
 
         [Inject]
         public ScoreMovementSpeedService(
@@ -44,6 +45,7 @@ namespace OrbitalEscape.Movement
         private void ApplyScore(float score)
         {
             CurrentLinearSpeed = _config.Evaluate(_difficultyService.CurrentDifficulty, score);
+            CurrentSpeedMultiplier = _config.EvaluateSpeedMultiplier(_difficultyService.CurrentDifficulty, score);
         }
     }
 }

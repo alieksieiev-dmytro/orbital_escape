@@ -14,6 +14,11 @@ namespace OrbitalEscape.Movement
             return GetProfile(difficulty).Evaluate(score);
         }
 
+        public float EvaluateSpeedMultiplier(DifficultyType difficulty, float score)
+        {
+            return GetProfile(difficulty).EvaluateMultiplier(score);
+        }
+
         private DifficultyMovementSpeedProfile GetProfile(DifficultyType difficulty)
         {
             if (_difficultyProfiles != null)
@@ -54,6 +59,11 @@ namespace OrbitalEscape.Movement
             public float Evaluate(float score)
             {
                 return BaseLinearSpeed + SpeedIncreasePerScore * Mathf.Max(0.0f, score);
+            }
+
+            public float EvaluateMultiplier(float score)
+            {
+                return Evaluate(score) / Mathf.Max(0.01f, BaseLinearSpeed);
             }
 
             private float BaseLinearSpeed => _baseLinearSpeed > 0.0f

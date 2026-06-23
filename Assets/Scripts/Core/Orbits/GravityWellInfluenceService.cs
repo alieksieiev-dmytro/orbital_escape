@@ -19,6 +19,7 @@ namespace OrbitalEscape.Orbits
         private readonly PlayerOrbitState _orbitState;
         private readonly IGravityWellZoneRegistry _zoneRegistry;
         private readonly IOrbitJumpTransitionService _jumpTransitionService;
+        private readonly IJumpSpeedService _jumpSpeedService;
 
         private GravityWellZone? _activeZone;
         private GravityWellZone? _suppressedZone;
@@ -28,12 +29,14 @@ namespace OrbitalEscape.Orbits
             IMovementModel movementModel,
             PlayerOrbitState orbitState,
             IGravityWellZoneRegistry zoneRegistry,
-            IOrbitJumpTransitionService jumpTransitionService)
+            IOrbitJumpTransitionService jumpTransitionService,
+            IJumpSpeedService jumpSpeedService)
         {
             _movementModel = movementModel;
             _orbitState = orbitState;
             _zoneRegistry = zoneRegistry;
             _jumpTransitionService = jumpTransitionService;
+            _jumpSpeedService = jumpSpeedService;
         }
 
         public void Initialize()
@@ -226,7 +229,10 @@ namespace OrbitalEscape.Orbits
             }
 
             _orbitState.SetCurrentAndOpposite(returnOrbit, returnOppositeOrbit);
-            _jumpTransitionService.Play(new OrbitJumpStep(returnRadius, zone.ReturnDuration, Ease.OutQuad));
+            _jumpTransitionService.Play(new OrbitJumpStep(
+                returnRadius,
+                _jumpSpeedService.ScaleDuration(zone.ReturnDuration),
+                Ease.OutQuad));
         }
 
         private void OnZonesChanged()

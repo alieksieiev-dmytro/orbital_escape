@@ -10,12 +10,14 @@ namespace OrbitalEscape.Movement
     public class JumpBehaviour : IDisposable
     {
         private const float JUMP_THROUGH_RIFT_HEIGHT = 1f;
-        private const float JUMP_SPEED = 0.4f;
+        private const float BASE_JUMP_DURATION = 0.4f;
+        private const float BASE_RIFT_JUMP_STEP_DURATION = 0.2f;
         
         private readonly IMovementModel _movementModel;
         private readonly PlayerOrbitState _orbitState;
         private readonly IGravityWellInfluenceService _gravityWellInfluenceService;
         private readonly IOrbitJumpTransitionService _jumpTransitionService;
+        private readonly IJumpSpeedService _jumpSpeedService;
         private readonly EventBinding<ObstacleCollidedEvent> _onObstacleCollidedEvent;
 
         private bool _canGoThroughRift;
@@ -26,12 +28,14 @@ namespace OrbitalEscape.Movement
             IMovementModel movementModel,
             PlayerOrbitState orbitState,
             IGravityWellInfluenceService gravityWellInfluenceService,
-            IOrbitJumpTransitionService jumpTransitionService)
+            IOrbitJumpTransitionService jumpTransitionService,
+            IJumpSpeedService jumpSpeedService)
         {
             _movementModel = movementModel;
             _orbitState = orbitState;
             _gravityWellInfluenceService = gravityWellInfluenceService;
             _jumpTransitionService = jumpTransitionService;
+            _jumpSpeedService = jumpSpeedService;
             
             _onObstacleCollidedEvent = new EventBinding<ObstacleCollidedEvent>(OnObstacleCollided);
             EventBus<ObstacleCollidedEvent>.Register(_onObstacleCollidedEvent);
@@ -91,11 +95,12 @@ namespace OrbitalEscape.Movement
             Orbit currentOrbit = _orbitState.CurrentOrbit;
             bool isJumpingOut = currentOrbit.Index > _orbitState.OppositeOrbit.Index;
             float jumpHeight = isJumpingOut ? JUMP_THROUGH_RIFT_HEIGHT : -JUMP_THROUGH_RIFT_HEIGHT;
+            float stepDuration = _jumpSpeedService.ScaleDuration(BASE_RIFT_JUMP_STEP_DURATION);
 
             _jumpTransitionService.Play(new[]
             {
-                new OrbitJumpStep(currentOrbit.Radius + jumpHeight, 0.2f, Ease.Linear),
-                new OrbitJumpStep(_orbitState.GetRiftExitRadius(), 0.2f, Ease.Linear)
+                new OrbitJumpStep(currentOrbit.Radius + jumpHeight, stepDuration, Ease.Linear),
+                new OrbitJumpStep(_orbitState.GetRiftExitRadius(), stepDuration, Ease.Linear)
             });
 
             EventBus<PassedThroughOrbitEvent>.Raise(new PassedThroughOrbitEvent(currentOrbit, isJumpingOut));
@@ -105,7 +110,10 @@ namespace OrbitalEscape.Movement
         {
             float targetRadius = _orbitState.GetMovementRadius(_orbitState.OppositeOrbit, _orbitState.CurrentOrbit);
 
-            _jumpTransitionService.Play(new OrbitJumpStep(targetRadius, JUMP_SPEED, Ease.OutQuad));
+            _jumpTransitionService.Play(new OrbitJumpStep(
+                targetRadius,
+                _jumpSpeedService.ScaleDuration(BASE_JUMP_DURATION),
+                Ease.OutQuad));
             _orbitState.Swap();
         }
 
@@ -117,9 +125,12 @@ namespace OrbitalEscape.Movement
             float step = fullGap * Mathf.Clamp01(zone.PartialJumpStep);
             float partialTargetRadius = Mathf.MoveTowards(_movementModel.Radius, targetRadius, step);
             float distance = Mathf.Abs(_movementModel.Radius - partialTargetRadius);
-            float duration = Mathf.Max(0.01f, JUMP_SPEED * (distance / fullGap));
+            float baseDuration = BASE_JUMP_DURATION * (distance / fullGap);
 
-            _jumpTransitionService.Play(new OrbitJumpStep(partialTargetRadius, duration, Ease.OutQuad));
+            _jumpTransitionService.Play(new OrbitJumpStep(
+                partialTargetRadius,
+                _jumpSpeedService.ScaleDuration(baseDuration),
+                Ease.OutQuad));
         }
         
         private void OnObstacleCollided(ObstacleCollidedEvent @event)
