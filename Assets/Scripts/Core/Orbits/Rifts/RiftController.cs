@@ -18,11 +18,11 @@ namespace OrbitalEscape.Orbits
         private readonly Vector4[] _riftsPacked = new Vector4[32];
         private MaterialPropertyBlock _materialPropertyBlock;
         private Renderer _cachedRenderer;
-        private List<ArcObject> _rifts;
+        private IReadOnlyList<ArcObject> _rifts;
         private Color _paletteColor;
         private bool _hasPaletteColor;
 
-        public void Initialize(List<ArcObject> rifts)
+        public void Initialize(IReadOnlyList<ArcObject> rifts)
         {
             _rifts = rifts;
             Apply();

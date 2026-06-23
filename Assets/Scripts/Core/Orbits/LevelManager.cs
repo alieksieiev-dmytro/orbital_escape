@@ -16,6 +16,7 @@ namespace OrbitalEscape.Orbits
         private ILevelObjectSpawner _levelObjectSpawner;
         private LevelGenerationConfig _generationConfig;
         private LevelState _levelState;
+        private IRiftClosureState _riftClosureState;
         private EventBinding<PassedThroughOrbitEvent> _passedThroughOrbitBinding;
         private CancellationToken _destroyCancellationToken;
         private bool _isBuildingLevel;
@@ -26,12 +27,14 @@ namespace OrbitalEscape.Orbits
             ILevelBuilder levelBuilder,
             ILevelObjectSpawner levelObjectSpawner,
             LevelGenerationConfig generationConfig,
-            LevelState levelState)
+            LevelState levelState,
+            IRiftClosureState riftClosureState)
         {
             _levelBuilder = levelBuilder;
             _levelObjectSpawner = levelObjectSpawner;
             _generationConfig = generationConfig;
             _levelState = levelState;
+            _riftClosureState = riftClosureState;
         }
 
         private void Awake()
@@ -65,6 +68,7 @@ namespace OrbitalEscape.Orbits
                 cancellationToken.ThrowIfCancellationRequested();
                 ClearLevel();
                 _levelState.Clear();
+                _riftClosureState.Clear();
 
                 List<Orbit> newOrbits = await ExpandLevelAsync(_generationConfig.InitialOrbitCount, cancellationToken);
                 CreateLevel(newOrbits);

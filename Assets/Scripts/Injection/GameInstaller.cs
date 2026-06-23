@@ -43,6 +43,8 @@ namespace OrbitalEscape.Injection
             
             Container.Bind<IMovementModel>().To<CircularOrbitModel>().FromInstance(new CircularOrbitModel(0.0f, 15f + CHARACTER_OFFSET_FROM_ORBIT)).AsSingle();
             Container.Bind<LevelState>().AsSingle();
+            Container.Bind<IRiftClosureState>().To<RiftClosureState>().AsSingle();
+            Container.BindInterfacesTo<RiftClosureService>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<GamePauseService>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<PlayerOrbitState>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<OrbitJumpTransitionService>().AsSingle().NonLazy();

@@ -96,6 +96,7 @@ namespace OrbitalEscape.Movement
             bool isJumpingOut = currentOrbit.Index > _orbitState.OppositeOrbit.Index;
             float jumpHeight = isJumpingOut ? JUMP_THROUGH_RIFT_HEIGHT : -JUMP_THROUGH_RIFT_HEIGHT;
             float stepDuration = _jumpSpeedService.ScaleDuration(BASE_RIFT_JUMP_STEP_DURATION);
+            _canGoThroughRift = false;
 
             _jumpTransitionService.Play(new[]
             {

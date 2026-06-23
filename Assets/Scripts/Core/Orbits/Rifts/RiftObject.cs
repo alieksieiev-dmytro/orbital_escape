@@ -11,5 +11,13 @@ namespace OrbitalEscape
             transform.localScale = arcObjectScale;
             _colliderObject.transform.localScale = colliderScale;
         }
+
+        public void SetColliderActive(bool isActive)
+        {
+            if (_colliderObject != null)
+            {
+                _colliderObject.SetActive(isActive);
+            }
+        }
     }
 }
