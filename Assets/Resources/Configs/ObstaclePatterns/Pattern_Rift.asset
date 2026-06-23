@@ -33,7 +33,7 @@ MonoBehaviour:
     _length: 1
   _tags: 16
   _baseWeight: 1.5
-  _minScore: 0
-  _maxScore: 0
+  _minOrbitIndex: 0
+  _maxOrbitIndex: 0
   _difficultyWeightModifiers: []
   _allowFlip: 1

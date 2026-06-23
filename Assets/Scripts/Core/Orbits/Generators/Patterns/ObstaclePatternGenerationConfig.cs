@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using OrbitalEscape.Difficulty;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace OrbitalEscape.Orbits.Generators.Patterns
 {
@@ -103,7 +104,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 snapshots[i] = _stages[i].CreateSnapshot();
             }
 
-            Array.Sort(snapshots, (a, b) => a.MinScore.CompareTo(b.MinScore));
+            Array.Sort(snapshots, (a, b) => a.MinOrbitIndex.CompareTo(b.MinOrbitIndex));
             return snapshots;
         }
     }
@@ -111,8 +112,10 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
     [Serializable]
     public struct PatternDifficultyStage
     {
-        [SerializeField, Min(0.0f)] private float _minScore;
-        [SerializeField, Min(0.0f)] private float _maxScore;
+        [FormerlySerializedAs("_minScore")]
+        [SerializeField, Min(0)] private int _minOrbitIndex;
+        [FormerlySerializedAs("_maxScore")]
+        [SerializeField, Min(0)] private int _maxOrbitIndex;
         [SerializeField, Range(0.0f, 1.0f)] private float _samePatternWeightMultiplier;
         [SerializeField, Range(0.0f, 1.0f)] private float _sameTagWeightMultiplier;
         [SerializeField] private PatternSlotTypeFlags _unlockedSlots;
@@ -127,8 +130,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         public PatternDifficultyStageSnapshot CreateSnapshot()
         {
             return new PatternDifficultyStageSnapshot(
-                _minScore,
-                _maxScore,
+                _minOrbitIndex,
+                _maxOrbitIndex,
                 _samePatternWeightMultiplier <= 0.0f ? 0.35f : _samePatternWeightMultiplier,
                 _sameTagWeightMultiplier <= 0.0f ? 0.75f : _sameTagWeightMultiplier,
                 _unlockedSlots == PatternSlotTypeFlags.None ? PatternSlotTypeFlags.All : _unlockedSlots);

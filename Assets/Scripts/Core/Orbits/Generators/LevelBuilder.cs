@@ -4,7 +4,6 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using OrbitalEscape.Difficulty;
 using OrbitalEscape.Orbits.Generators.Patterns;
-using OrbitalEscape.Score;
 using Zenject;
 
 namespace OrbitalEscape.Orbits.Generators
@@ -22,7 +21,6 @@ namespace OrbitalEscape.Orbits.Generators
         private readonly ObstaclePatternGenerationConfig _patternGenerationConfig;
         private readonly ILevelContentGenerator _contentGenerator;
         private readonly IDifficultyService _difficultyService;
-        private readonly IScoreService _scoreService;
 
         [Inject]
         public LevelBuilder(
@@ -36,8 +34,7 @@ namespace OrbitalEscape.Orbits.Generators
             GravityWellConfig gravityWellConfig,
             ObstaclePatternGenerationConfig patternGenerationConfig,
             ILevelContentGenerator contentGenerator,
-            IDifficultyService difficultyService,
-            IScoreService scoreService)
+            IDifficultyService difficultyService)
         {
             _orbitGenerator = orbitGenerator;
             _orbitConfig = orbitConfig;
@@ -50,7 +47,6 @@ namespace OrbitalEscape.Orbits.Generators
             _patternGenerationConfig = patternGenerationConfig;
             _contentGenerator = contentGenerator;
             _difficultyService = difficultyService;
-            _scoreService = scoreService;
         }
 
         public async UniTask<LevelBuildResult> BuildAsync(
@@ -69,7 +65,6 @@ namespace OrbitalEscape.Orbits.Generators
         private LevelBuildRequest CreateRequest(IReadOnlyList<Orbit> existingOrbits, int count)
         {
             DifficultyType difficulty = _difficultyService.CurrentDifficulty;
-            float score = _scoreService.Score;
 
             PatternSlotLengthProvider patternSlotLengthProvider = new PatternSlotLengthProvider(
                 _spikeConfig.SpikeArcLength,
@@ -124,8 +119,7 @@ namespace OrbitalEscape.Orbits.Generators
                 new List<Orbit>(existingOrbits),
                 count,
                 seed,
-                settings,
-                score);
+                settings);
         }
 
         private LevelBuildResult Build(LevelBuildRequest request, CancellationToken cancellationToken)

@@ -33,6 +33,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         Recovery = 1,
         Complement = 2,
         Mirror = 4,
+        Alternating = 8,
     }
 
     public readonly struct PatternSlotSnapshot
@@ -56,8 +57,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         public IReadOnlyList<PatternSlotSnapshot> Orbit2Slots { get; }
         public PatternTag Tags { get; }
         public float BaseWeight { get; }
-        public float MinScore { get; }
-        public float MaxScore { get; }
+        public int MinOrbitIndex { get; }
+        public int MaxOrbitIndex { get; }
         public float DifficultyWeightMultiplier { get; }
         public bool AllowFlip { get; }
         public float Orbit1Length { get; }
@@ -72,8 +73,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             IReadOnlyList<PatternSlotSnapshot> orbit2Slots,
             PatternTag tags,
             float baseWeight,
-            float minScore,
-            float maxScore,
+            int minOrbitIndex,
+            int maxOrbitIndex,
             float difficultyWeightMultiplier,
             bool allowFlip)
         {
@@ -82,8 +83,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             Orbit2Slots = orbit2Slots ?? Array.Empty<PatternSlotSnapshot>();
             Tags = tags;
             BaseWeight = Math.Max(0.0f, baseWeight);
-            MinScore = Math.Max(0.0f, minScore);
-            MaxScore = maxScore <= 0.0f ? float.PositiveInfinity : Math.Max(minScore, maxScore);
+            MinOrbitIndex = Math.Max(0, minOrbitIndex);
+            MaxOrbitIndex = maxOrbitIndex <= 0 ? int.MaxValue : Math.Max(MinOrbitIndex, maxOrbitIndex);
             DifficultyWeightMultiplier = Math.Max(0.0f, difficultyWeightMultiplier);
             AllowFlip = allowFlip;
             Orbit1Length = SumLength(Orbit1Slots);
@@ -173,21 +174,21 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
 
     public readonly struct PatternDifficultyStageSnapshot
     {
-        public float MinScore { get; }
-        public float MaxScore { get; }
+        public int MinOrbitIndex { get; }
+        public int MaxOrbitIndex { get; }
         public float SamePatternWeightMultiplier { get; }
         public float SameTagWeightMultiplier { get; }
         public PatternSlotTypeFlags UnlockedSlots { get; }
 
         public PatternDifficultyStageSnapshot(
-            float minScore,
-            float maxScore,
+            int minOrbitIndex,
+            int maxOrbitIndex,
             float samePatternWeightMultiplier,
             float sameTagWeightMultiplier,
             PatternSlotTypeFlags unlockedSlots)
         {
-            MinScore = Math.Max(0.0f, minScore);
-            MaxScore = maxScore <= 0.0f ? float.PositiveInfinity : Math.Max(minScore, maxScore);
+            MinOrbitIndex = Math.Max(0, minOrbitIndex);
+            MaxOrbitIndex = maxOrbitIndex <= 0 ? int.MaxValue : Math.Max(MinOrbitIndex, maxOrbitIndex);
             SamePatternWeightMultiplier = Math.Min(Math.Max(samePatternWeightMultiplier, 0.0f), 1.0f);
             SameTagWeightMultiplier = Math.Min(Math.Max(sameTagWeightMultiplier, 0.0f), 1.0f);
             UnlockedSlots = unlockedSlots == PatternSlotTypeFlags.None
@@ -195,9 +196,9 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 : unlockedSlots;
         }
 
-        public bool Contains(float score)
+        public bool Contains(int orbitIndex)
         {
-            return score >= MinScore && score <= MaxScore;
+            return orbitIndex >= MinOrbitIndex && orbitIndex <= MaxOrbitIndex;
         }
     }
 
@@ -223,11 +224,11 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             MaxSelectionAttempts = Math.Max(1, maxSelectionAttempts);
         }
 
-        public PatternDifficultyStageSnapshot GetStage(float score)
+        public PatternDifficultyStageSnapshot GetStage(int orbitIndex)
         {
             for (int i = 0; i < Stages.Count; i++)
             {
-                if (Stages[i].Contains(score))
+                if (Stages[i].Contains(orbitIndex))
                 {
                     return Stages[i];
                 }
@@ -236,8 +237,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             return Stages.Count > 0
                 ? Stages[^1]
                 : new PatternDifficultyStageSnapshot(
-                    0.0f,
-                    0.0f,
+                    0,
+                    0,
                     0.35f,
                     0.75f,
                     PatternSlotTypeFlags.All);

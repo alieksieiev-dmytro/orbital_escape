@@ -47,7 +47,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     continue;
                 }
 
-                GenerateBand(lowerOrbit, upperOrbit, context, request, riftQuotas, writableOrbitIndices);
+                GenerateBand(lowerOrbit, upperOrbit, context, riftQuotas, writableOrbitIndices);
             }
 
             WarnForUnmetRiftQuotas(generatedOrbits, context, riftQuotas);
@@ -57,11 +57,10 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             Orbit lowerOrbit,
             Orbit upperOrbit,
             LevelBuildContext context,
-            LevelBuildRequest request,
             RiftQuotaTracker riftQuotas,
             HashSet<int> writableOrbitIndices)
         {
-            PatternDifficultyStageSnapshot stage = context.Settings.Patterns.GetStage(request.Score);
+            PatternDifficultyStageSnapshot stage = context.Settings.Patterns.GetStage(lowerOrbit.Index);
             if (!context.Settings.ShouldGenerateContent(lowerOrbit) ||
                 !context.Settings.ShouldGenerateContent(upperOrbit))
             {
@@ -85,7 +84,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     stage,
                     history,
                     context,
-                    request,
                     rejectionLog,
                     riftQuotas,
                     writableOrbitIndices,
@@ -107,7 +105,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                         stage,
                         history,
                         context,
-                        request,
                         rejectionLog,
                         riftQuotas,
                         writableOrbitIndices,
@@ -180,7 +177,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             PatternDifficultyStageSnapshot stage,
             IReadOnlyList<ObstaclePatternSnapshot> history,
             LevelBuildContext context,
-            LevelBuildRequest request,
             PatternRejectionLog rejectionLog,
             RiftQuotaTracker riftQuotas,
             HashSet<int> writableOrbitIndices,
@@ -200,7 +196,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             for (int i = 0; i < settings.Patterns.Count && candidates.Count < settings.MaxSelectionAttempts; i++)
             {
                 ObstaclePatternSnapshot pattern = settings.Patterns[i];
-                if (!IsEligibleByContext(pattern, stage, request.Score, out string contextReason))
+                if (!IsEligibleByContext(pattern, stage, lowerOrbit.Index, out string contextReason))
                 {
                     rejectionLog.Add(contextReason);
                     continue;
@@ -507,7 +503,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         private static bool IsEligibleByContext(
             ObstaclePatternSnapshot pattern,
             PatternDifficultyStageSnapshot stage,
-            float score,
+            int orbitIndex,
             out string reason)
         {
             if (!pattern.Enabled)
@@ -528,9 +524,9 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 return false;
             }
 
-            if (score < pattern.MinScore || score > pattern.MaxScore)
+            if (orbitIndex < pattern.MinOrbitIndex || orbitIndex > pattern.MaxOrbitIndex)
             {
-                reason = "score outside pattern range";
+                reason = "orbit index outside pattern range";
                 return false;
             }
 

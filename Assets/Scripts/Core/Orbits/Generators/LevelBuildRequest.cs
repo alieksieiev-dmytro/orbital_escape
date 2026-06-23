@@ -8,20 +8,17 @@ namespace OrbitalEscape.Orbits.Generators
         public int Count { get; }
         public int Seed { get; }
         public LevelBuildSettings Settings { get; }
-        public float Score { get; }
 
         public LevelBuildRequest(
             IReadOnlyList<Orbit> existingOrbits,
             int count,
             int seed,
-            LevelBuildSettings settings,
-            float score)
+            LevelBuildSettings settings)
         {
             ExistingOrbits = existingOrbits;
             Count = count;
             Seed = seed;
             Settings = settings;
-            Score = score;
         }
     }
 }

@@ -15,8 +15,6 @@ namespace OrbitalEscape.Editor
 
         [SerializeField] private DifficultyType _difficulty = DifficultyType.Basic;
         [SerializeField] private int _orbitIndex = 1;
-        [SerializeField] private bool _useOrbitIndexAsScore = true;
-        [SerializeField] private float _score = 1.0f;
         [SerializeField] private int _previousPatternIndex;
         [SerializeField] private int _consecutiveRepeats = 1;
         [SerializeField] private bool _showUnavailable = true;
@@ -91,20 +89,6 @@ namespace OrbitalEscape.Editor
 
             _difficulty = (DifficultyType)EditorGUILayout.EnumPopup("Difficulty", _difficulty);
             _orbitIndex = Mathf.Max(0, EditorGUILayout.IntField("Orbit Index", _orbitIndex));
-            _useOrbitIndexAsScore = EditorGUILayout.Toggle("Use Orbit As Score", _useOrbitIndexAsScore);
-
-            if (_useOrbitIndexAsScore)
-            {
-                _score = _orbitIndex;
-                using (new EditorGUI.DisabledScope(true))
-                {
-                    EditorGUILayout.FloatField("Score", _score);
-                }
-            }
-            else
-            {
-                _score = Mathf.Max(0.0f, EditorGUILayout.FloatField("Score", _score));
-            }
 
             string[] patternNames = GetPatternNames();
             _previousPatternIndex = Mathf.Clamp(
@@ -157,7 +141,7 @@ namespace OrbitalEscape.Editor
             PatternGenerationSettings generationSettings = _patternConfig.CreateSettings(
                 _difficulty,
                 lengthProvider);
-            PatternDifficultyStageSnapshot stage = generationSettings.GetStage(_score);
+            PatternDifficultyStageSnapshot stage = generationSettings.GetStage(_orbitIndex);
             RiftGenerationSettings riftSettings = CreateRiftSettings();
             List<PatternProbabilityRow> rows = CreateRows(lengthProvider, stage, riftSettings);
 
@@ -336,9 +320,9 @@ namespace OrbitalEscape.Editor
                 return "Base weight is zero";
             }
 
-            if (_score < pattern.MinScore || _score > pattern.MaxScore)
+            if (_orbitIndex < pattern.MinOrbitIndex || _orbitIndex > pattern.MaxOrbitIndex)
             {
-                return $"Score range {pattern.MinScore:0.##}-{FormatMaxScore(pattern.MaxScore)}";
+                return $"Orbit index range {pattern.MinOrbitIndex}-{FormatMaxOrbitIndex(pattern.MaxOrbitIndex)}";
             }
 
             if (pattern.ContainsLockedSlot(stage.UnlockedSlots))
@@ -472,9 +456,9 @@ namespace OrbitalEscape.Editor
             return AssetDatabase.LoadAssetAtPath<T>(ConfigRoot + fileName);
         }
 
-        private static string FormatMaxScore(float maxScore)
+        private static string FormatMaxOrbitIndex(int maxOrbitIndex)
         {
-            return float.IsPositiveInfinity(maxScore) ? "infinity" : maxScore.ToString("0.##");
+            return maxOrbitIndex == int.MaxValue ? "infinity" : maxOrbitIndex.ToString();
         }
 
         private sealed class PatternProbabilityRow

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using OrbitalEscape.Difficulty;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace OrbitalEscape.Orbits.Generators.Patterns
 {
@@ -15,8 +16,10 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         [SerializeField] private PatternSlot[] _orbit2Slots;
         [SerializeField] private PatternTag _tags;
         [SerializeField, Min(0.0f)] private float _baseWeight = 1.0f;
-        [SerializeField, Min(0.0f)] private float _minScore;
-        [SerializeField, Min(0.0f)] private float _maxScore;
+        [FormerlySerializedAs("_minScore")]
+        [SerializeField, Min(0)] private int _minOrbitIndex;
+        [FormerlySerializedAs("_maxScore")]
+        [SerializeField, Min(0)] private int _maxOrbitIndex;
         [SerializeField] private PatternDifficultyWeight[] _difficultyWeightModifiers;
         [SerializeField] private bool _allowFlip = true;
 
@@ -30,8 +33,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 CreateSlotSnapshots(_orbit2Slots, lengthProvider),
                 _tags,
                 _baseWeight,
-                _minScore,
-                _maxScore,
+                _minOrbitIndex,
+                _maxOrbitIndex,
                 GetDifficultyWeight(difficulty),
                 _allowFlip);
         }

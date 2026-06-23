@@ -13,7 +13,7 @@ The values described here are relative selection weights, not percentages or gua
 
 Open `Orbital Escape > Generation > Pattern Probabilities` in the Unity Editor.
 
-The window calculates next-placement probability for the selected orbit, score, difficulty, previous-pattern streak, and rift context. Lower/upper non-rift streaks and nearest inward-neighbor rift distances can be entered independently. It shows every configured pattern, its effective weight, flip-orientation count, normalized probability, and any reason it is currently unavailable. By default, score follows the orbit index; disable `Use Orbit As Score` to inspect a different score.
+The window calculates next-placement probability for the selected orbit index, difficulty, previous-pattern streak, and rift context. Lower/upper non-rift streaks and nearest inward-neighbor rift distances can be entered independently. It shows every configured pattern, its effective weight, flip-orientation count, normalized probability, and any reason it is currently unavailable.
 
 The displayed probability is the configured candidate probability before live cursor-space, overlap, and rift-quota filtering. Those runtime constraints can remove candidates and renormalize the final choice.
 
@@ -21,8 +21,8 @@ The displayed probability is the configured candidate probability before live cu
 
 For every pattern position in an orbit band, generation follows this order:
 
-1. Select the difficulty stage that contains the current score.
-2. Reject patterns that are disabled, outside their score range, contain locked slot types, have zero weight, or do not fit the orbit.
+1. Select the difficulty stage that contains the lower orbit index of the current orbit band.
+2. Reject patterns that are disabled, outside their orbit-index range, contain locked slot types, have zero weight, or do not fit the orbit.
 3. Create one candidate for the normal orientation.
 4. Create a second candidate when `Allow Flip` is enabled.
 5. Reject candidates that conflict with existing orbit objects or rift quotas.
@@ -138,7 +138,7 @@ Use this modifier when the same authored pattern should have different importanc
 
 ## Same Pattern Weight Multiplier
 
-`Same Pattern Weight Multiplier` is configured per score stage in `ObstaclePatternGenerationConfig`.
+`Same Pattern Weight Multiplier` is configured per orbit-index stage in `ObstaclePatternGenerationConfig`.
 
 It reduces the chance of immediately repeating the exact same pattern. The multiplier is exponential across a consecutive streak:
 
@@ -183,7 +183,7 @@ Therefore, setting either stage modifier to `0` does not produce zero weight wit
 
 ## Same Tag Weight Multiplier
 
-`Same Tag Weight Multiplier` is also configured per score stage. It reduces the chance of selecting a different pattern with a similar theme immediately after the previous pattern.
+`Same Tag Weight Multiplier` is also configured per orbit-index stage. It reduces the chance of selecting a different pattern with a similar theme immediately after the previous pattern.
 
 The current tags are:
 
@@ -246,7 +246,7 @@ A candidate can be removed because of:
 
 - Disabled pattern asset.
 - `Base Weight` or effective weight equal to zero.
-- Current score outside the pattern's Min/Max Score range.
+- Current lower orbit index outside the pattern's Min/Max Orbit Index range.
 - A slot type locked by the active difficulty stage.
 - Pattern length exceeding the orbit circumference.
 - Collision with an existing object or a two-sided rift.
@@ -260,27 +260,27 @@ Each orbit band also receives one seeded random angular phase. Both lanes rotate
 
 `Max Selection Attempts` limits the number of candidates collected at one cursor position. Flip orientations count as separate candidates. With the current value of `64` and a small pattern library, this limit has no practical effect. With a much larger pattern library, asset order can matter after the limit is reached.
 
-## Score Ranges And Stage Boundaries
+## Orbit Index Ranges And Stage Boundaries
 
 Pattern and stage ranges use inclusive comparisons:
 
 ```text
-score >= MinScore && score <= MaxScore
+orbitIndex >= MinOrbitIndex && orbitIndex <= MaxOrbitIndex
 ```
 
-`Max Score = 0` is converted to positive infinity and means "no upper limit."
+`Max Orbit Index = 0` is converted to an unlimited upper range and means "no upper limit."
 
-Difficulty stages are sorted by Min Score, and the first matching stage is used. Because both ends are inclusive, shared boundaries belong to the earlier stage.
+Difficulty stages are sorted by Min Orbit Index, and the first matching stage is used. Because both ends are inclusive, shared boundaries belong to the earlier stage.
 
 For the current Basic profile, the effective ranges are:
 
-| Actual score range | Unlocked slots | Same Pattern | Same Tag |
+| Actual lower orbit index range | Unlocked slots | Same Pattern | Same Tag |
 |---|---|---:|---:|
-| `0 <= score <= 10` | Space, Spike, Rift | `0.8` | `0.9` |
-| `10 < score <= 25` | Space, Spike, Impulse Trap, Rift | `0.35` | `0.75` |
-| `score > 25` | All slots, including Gravity Well | `0.35` | `0.75` |
+| `0 <= orbitIndex <= 10` | Space, Spike, Rift | `0.8` | `0.9` |
+| `10 < orbitIndex <= 25` | Space, Spike, Impulse Trap, Rift | `0.35` | `0.75` |
+| `orbitIndex > 25` | All slots, including Gravity Well | `0.35` | `0.75` |
 
-At exactly score `10`, the first stage is used. At exactly score `25`, the second stage is used.
+At exactly orbit index `10`, the first stage is used. At exactly orbit index `25`, the second stage is used.
 
 If any slot in a pattern is locked, the entire pattern is rejected. A mixed pattern containing Spike and Gravity Well is therefore unavailable until Gravity Well is unlocked.
 
@@ -301,7 +301,7 @@ The examples below assume a non-rift streak of `0` and no inward-neighbor rift w
 
 ### Fresh selection
 
-At score `0`, all four patterns are eligible. With no history and no quota or placement restrictions:
+At orbit index `0`, all four patterns are eligible. With no history and no quota or placement restrictions:
 
 ```text
 Rift:                 1 * 2 orientations = 2
@@ -398,7 +398,7 @@ Suggested tuning workflow:
 - Treating a weight as a percentage. Weight `5` means five relative shares, not 5%.
 - Forgetting that `Allow Flip` can create two full-weight candidates.
 - Expecting stage modifier `0` to disable repetition under the current fallback implementation.
-- Using `Max Score = 0` to mean score zero only. It actually means unlimited.
+- Using `Max Orbit Index = 0` to mean orbit index zero only. It actually means unlimited.
 - Overlapping stage boundaries and expecting the later stage to win.
 - Giving every pattern many tags, causing frequent same-tag penalties.
 - Expecting weights to override rift quotas, locked slots, or placement conflicts.
