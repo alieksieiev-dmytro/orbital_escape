@@ -10,6 +10,7 @@ namespace OrbitalEscape.Orbits.Generators
         public LevelContentSettings Content { get; }
         public RiftGenerationSettings Rift { get; }
         public SpikeGenerationSettings Spike { get; }
+        public MiniSpikeGenerationSettings MiniSpike { get; }
         public ImpulseTrapGenerationSettings ImpulseTrap { get; }
         public GravityWellGenerationSettings GravityWell { get; }
         public PatternGenerationSettings Patterns { get; }
@@ -20,6 +21,7 @@ namespace OrbitalEscape.Orbits.Generators
             LevelContentSettings content,
             RiftGenerationSettings rift,
             SpikeGenerationSettings spike,
+            MiniSpikeGenerationSettings miniSpike,
             ImpulseTrapGenerationSettings impulseTrap,
             GravityWellGenerationSettings gravityWell,
             PatternGenerationSettings patterns,
@@ -29,6 +31,7 @@ namespace OrbitalEscape.Orbits.Generators
             Content = content;
             Rift = rift;
             Spike = spike;
+            MiniSpike = miniSpike;
             ImpulseTrap = impulseTrap;
             GravityWell = gravityWell;
             Patterns = patterns;
@@ -161,6 +164,18 @@ namespace OrbitalEscape.Orbits.Generators
         private static float Clamp01(float value)
         {
             return Math.Min(Math.Max(value, 0.0f), 1.0f);
+        }
+    }
+
+    public readonly struct MiniSpikeGenerationSettings
+    {
+        public float Height { get; }
+        public float SpikeArcLength { get; }
+
+        public MiniSpikeGenerationSettings(float height, float spikeArcLength)
+        {
+            Height = height;
+            SpikeArcLength = spikeArcLength;
         }
     }
 

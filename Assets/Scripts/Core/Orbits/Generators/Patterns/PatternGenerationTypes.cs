@@ -9,7 +9,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         Spike = 1,
         ImpulseTrap = 2,
         GravityWell = 3,
-        Rift = 4
+        Rift = 4,
+        MiniSpike = 5
     }
 
     [Flags]
@@ -21,20 +22,17 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         ImpulseTrap = 1 << 2,
         GravityWell = 1 << 3,
         Rift = 1 << 4,
-        All = Space | Spike | ImpulseTrap | GravityWell | Rift
+        MiniSpike = 1 << 5,
+        All = Space | Spike | ImpulseTrap | GravityWell | Rift | MiniSpike
     }
 
     [Flags]
     public enum PatternTag
     {
         None = 0,
-        Recovery = 1 << 0,
-        Spike = 1 << 1,
-        Trap = 1 << 2,
-        Gravity = 1 << 3,
-        Rift = 1 << 4,
-        Compound = 1 << 5,
-        Mirror = 1 << 6,
+        Recovery = 1,
+        Complement = 2,
+        Mirror = 4,
     }
 
     public readonly struct PatternSlotSnapshot
@@ -257,6 +255,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 PatternSlotType.ImpulseTrap => PatternSlotTypeFlags.ImpulseTrap,
                 PatternSlotType.GravityWell => PatternSlotTypeFlags.GravityWell,
                 PatternSlotType.Rift => PatternSlotTypeFlags.Rift,
+                PatternSlotType.MiniSpike => PatternSlotTypeFlags.MiniSpike,
                 _ => PatternSlotTypeFlags.None
             };
 
@@ -267,17 +266,20 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
     public readonly struct PatternSlotLengthProvider
     {
         private readonly float _spikeLength;
+        private readonly float _miniSpikeLength;
         private readonly float _impulseTrapLength;
         private readonly float _gravityWellLength;
         private readonly float _riftLength;
 
         public PatternSlotLengthProvider(
             float spikeLength,
+            float miniSpikeLength,
             float impulseTrapLength,
             float gravityWellLength,
             float riftLength)
         {
             _spikeLength = Math.Max(0.01f, spikeLength);
+            _miniSpikeLength = Math.Max(0.01f, miniSpikeLength);
             _impulseTrapLength = Math.Max(0.01f, impulseTrapLength);
             _gravityWellLength = Math.Max(0.01f, gravityWellLength);
             _riftLength = Math.Max(0.01f, riftLength);
@@ -288,6 +290,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             return type switch
             {
                 PatternSlotType.Spike => _spikeLength,
+                PatternSlotType.MiniSpike => _miniSpikeLength,
                 PatternSlotType.ImpulseTrap => _impulseTrapLength,
                 PatternSlotType.GravityWell => _gravityWellLength,
                 PatternSlotType.Rift => _riftLength,

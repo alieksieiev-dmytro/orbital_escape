@@ -450,7 +450,11 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         {
             return type switch
             {
-                PatternSlotType.Spike => new SpikeObstacle(GetSpikeHeight(context, randomizeSpikeHeight)),
+                PatternSlotType.Spike => new SpikeObstacle(GetSpikeHeight(
+                    context,
+                    context.Settings.Spike,
+                    randomizeSpikeHeight)),
+                PatternSlotType.MiniSpike => new SpikeObstacle(context.Settings.MiniSpike.Height),
                 PatternSlotType.ImpulseTrap => new ImpulseTrap(context.Settings.ImpulseTrap.Height),
                 PatternSlotType.GravityWell => new GravityWell(
                     context.Settings.GravityWell.PartialJumpStep,
@@ -458,13 +462,15 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     context.Settings.GravityWell.ReturnDuration,
                     context.Settings.GravityWell.VisualAlpha),
                 PatternSlotType.Rift => new Rift(context.Settings.Rift.RiftPadding),
-                _ => new SpikeObstacle(GetSpikeHeight(context, randomizeSpikeHeight))
+                _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unsupported obstacle pattern slot type.")
             };
         }
 
-        private static float GetSpikeHeight(LevelBuildContext context, bool randomizeSpikeHeight)
+        private static float GetSpikeHeight(
+            LevelBuildContext context,
+            SpikeGenerationSettings settings,
+            bool randomizeSpikeHeight)
         {
-            SpikeGenerationSettings settings = context.Settings.Spike;
             if (!randomizeSpikeHeight)
             {
                 return (settings.MinSpikeHeight + settings.MaxSpikeHeight) * 0.5f;

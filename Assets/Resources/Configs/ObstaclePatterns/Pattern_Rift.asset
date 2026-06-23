@@ -36,4 +36,4 @@ MonoBehaviour:
   _minScore: 0
   _maxScore: 0
   _difficultyWeightModifiers: []
-  _allowFlip: 0
+  _allowFlip: 1

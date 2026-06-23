@@ -30,6 +30,7 @@ namespace OrbitalEscape.Editor
         private ObstaclePatternGenerationConfig _patternConfig;
         private OrbitConfig _orbitConfig;
         private SpikeConfig _spikeConfig;
+        private MiniSpikeConfig _miniSpikeConfig;
         private ImpulseTrapConfig _impulseTrapConfig;
         private GravityWellConfig _gravityWellConfig;
         private RiftConfig _riftConfig;
@@ -148,6 +149,7 @@ namespace OrbitalEscape.Editor
         {
             PatternSlotLengthProvider lengthProvider = new PatternSlotLengthProvider(
                 _spikeConfig.SpikeArcLength,
+                _miniSpikeConfig.SpikeArcLength,
                 _impulseTrapConfig.TrapArcLength,
                 _gravityWellConfig.FieldArcLength,
                 _riftConfig.RiftLength);
@@ -397,6 +399,7 @@ namespace OrbitalEscape.Editor
             _patternConfig = LoadConfig<ObstaclePatternGenerationConfig>("ObstaclePatternGenerationConfig.asset");
             _orbitConfig = LoadConfig<OrbitConfig>("OrbitConfig.asset");
             _spikeConfig = LoadConfig<SpikeConfig>("SpikeConfig.asset");
+            _miniSpikeConfig = LoadConfig<MiniSpikeConfig>("MiniSpikeConfig.asset");
             _impulseTrapConfig = LoadConfig<ImpulseTrapConfig>("ImpulseTrapConfig.asset");
             _gravityWellConfig = LoadConfig<GravityWellConfig>("GravityWellConfig.asset");
             _riftConfig = LoadConfig<RiftConfig>("RiftConfig.asset");
@@ -423,6 +426,7 @@ namespace OrbitalEscape.Editor
             return _patternConfig != null &&
                    _orbitConfig != null &&
                    _spikeConfig != null &&
+                   _miniSpikeConfig != null &&
                    _impulseTrapConfig != null &&
                    _gravityWellConfig != null &&
                    _riftConfig != null;

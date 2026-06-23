@@ -16,6 +16,7 @@ namespace OrbitalEscape.Orbits.Generators
         private readonly LevelGenerationConfig _generationConfig;
         private readonly RiftConfig _riftConfig;
         private readonly SpikeConfig _spikeConfig;
+        private readonly MiniSpikeConfig _miniSpikeConfig;
         private readonly ImpulseTrapConfig _impulseTrapConfig;
         private readonly GravityWellConfig _gravityWellConfig;
         private readonly ObstaclePatternGenerationConfig _patternGenerationConfig;
@@ -30,6 +31,7 @@ namespace OrbitalEscape.Orbits.Generators
             LevelGenerationConfig generationConfig,
             RiftConfig riftConfig,
             SpikeConfig spikeConfig,
+            MiniSpikeConfig miniSpikeConfig,
             ImpulseTrapConfig impulseTrapConfig,
             GravityWellConfig gravityWellConfig,
             ObstaclePatternGenerationConfig patternGenerationConfig,
@@ -42,6 +44,7 @@ namespace OrbitalEscape.Orbits.Generators
             _generationConfig = generationConfig;
             _riftConfig = riftConfig;
             _spikeConfig = spikeConfig;
+            _miniSpikeConfig = miniSpikeConfig;
             _impulseTrapConfig = impulseTrapConfig;
             _gravityWellConfig = gravityWellConfig;
             _patternGenerationConfig = patternGenerationConfig;
@@ -70,6 +73,7 @@ namespace OrbitalEscape.Orbits.Generators
 
             PatternSlotLengthProvider patternSlotLengthProvider = new PatternSlotLengthProvider(
                 _spikeConfig.SpikeArcLength,
+                _miniSpikeConfig.SpikeArcLength,
                 _impulseTrapConfig.TrapArcLength,
                 _gravityWellConfig.FieldArcLength,
                 _riftConfig.RiftLength);
@@ -95,6 +99,9 @@ namespace OrbitalEscape.Orbits.Generators
                     _spikeConfig.MinSpikeHeight,
                     _spikeConfig.MaxSpikeHeight,
                     _spikeConfig.SpikeArcLength),
+                new MiniSpikeGenerationSettings(
+                    _miniSpikeConfig.Height,
+                    _miniSpikeConfig.SpikeArcLength),
                 new ImpulseTrapGenerationSettings(
                     _impulseTrapConfig.Density,
                     _impulseTrapConfig.TrapArcLength,
