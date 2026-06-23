@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d5f7a0b1c2e4f6a8b9c0d1e2f3a4b5c, type: 3}
   m_Name: MiniSpikeConfig
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.Generators.MiniSpikeConfig
-  <Height>k__BackingField: 0.4
+  <Height>k__BackingField: 0.35
   <SpikeArcLength>k__BackingField: 0.5

@@ -24,8 +24,8 @@ MonoBehaviour:
   - _type: 0
     _length: 1.75
   _tags: 2
-  _baseWeight: 3
+  _baseWeight: 5
   _minScore: 0
-  _maxScore: 5
+  _maxScore: 4
   _difficultyWeightModifiers: []
   _allowFlip: 0

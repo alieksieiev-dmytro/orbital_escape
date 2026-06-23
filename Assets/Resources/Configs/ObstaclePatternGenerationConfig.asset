@@ -21,6 +21,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ea77c47c7df08234f9e9b960fb208f59, type: 2}
   - {fileID: 11400000, guid: 9902966d2fee5f7498604e56bf1543aa, type: 2}
   - {fileID: 11400000, guid: 21f2e5bc82d017d43b5b84c41f7d4522, type: 2}
+  - {fileID: 11400000, guid: 891cbdbe7dcff174fbd0d9c67acffba5, type: 2}
   _difficultyProfiles:
   - _difficulty: 0
     _stages:
@@ -32,12 +33,12 @@ MonoBehaviour:
     - _minScore: 5
       _maxScore: 10
       _samePatternWeightMultiplier: 0.8
-      _sameTagWeightMultiplier: 0.9
+      _sameTagWeightMultiplier: 0.8
       _unlockedSlots: 55
     - _minScore: 10
       _maxScore: 15
       _samePatternWeightMultiplier: 0.35
-      _sameTagWeightMultiplier: 0.75
+      _sameTagWeightMultiplier: 0.6
       _unlockedSlots: 63
   _useFixedSeed: 0
   _fixedSeed: 1337

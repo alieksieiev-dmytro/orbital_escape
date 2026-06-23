@@ -40,7 +40,7 @@ MonoBehaviour:
   - _type: 1
     _length: 2
   _tags: 2
-  _baseWeight: 4
+  _baseWeight: 3
   _minScore: 0
   _maxScore: 15
   _difficultyWeightModifiers: []

@@ -28,7 +28,7 @@ MonoBehaviour:
   - _type: 0
     _length: 2
   _tags: 2
-  _baseWeight: 5
+  _baseWeight: 4
   _minScore: 2
   _maxScore: 10
   _difficultyWeightModifiers: []
