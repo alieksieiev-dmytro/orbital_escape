@@ -18,10 +18,8 @@ namespace OrbitalEscape.Editor
         [SerializeField] private int _previousPatternIndex;
         [SerializeField] private int _consecutiveRepeats = 1;
         [SerializeField] private bool _showUnavailable = true;
-        [SerializeField] private int _lowerOrbitNonRiftStreak;
-        [SerializeField] private int _upperOrbitNonRiftStreak;
-        [SerializeField] private float _lowerNeighborRiftDistance = 180.0f;
-        [SerializeField] private float _upperNeighborRiftDistance = 180.0f;
+        [SerializeField] private float _lowerNeighborRiftDistance = 26.18f;
+        [SerializeField] private float _upperNeighborRiftDistance = 26.18f;
 
         private readonly List<ObstaclePatternDefinition> _patternDefinitions = new List<ObstaclePatternDefinition>();
         private Vector2 _scrollPosition;
@@ -109,20 +107,15 @@ namespace OrbitalEscape.Editor
 
             EditorGUILayout.Space(6.0f);
             EditorGUILayout.LabelField("Rift Weight Context", EditorStyles.boldLabel);
-            _lowerOrbitNonRiftStreak = Mathf.Max(
-                0,
-                EditorGUILayout.IntField("Lower Non-Rift Streak", _lowerOrbitNonRiftStreak));
-            _upperOrbitNonRiftStreak = Mathf.Max(
-                0,
-                EditorGUILayout.IntField("Upper Non-Rift Streak", _upperOrbitNonRiftStreak));
+            float maxNeighborDistance = Mathf.Max(1.0f, _riftConfig.NeighborRiftAvoidanceDistance * 2.0f);
             _lowerNeighborRiftDistance = Mathf.Clamp(
-                EditorGUILayout.FloatField("Lower Neighbor Distance", _lowerNeighborRiftDistance),
+                EditorGUILayout.FloatField("Lower Neighbor Center Distance (units)", _lowerNeighborRiftDistance),
                 0.0f,
-                180.0f);
+                maxNeighborDistance);
             _upperNeighborRiftDistance = Mathf.Clamp(
-                EditorGUILayout.FloatField("Upper Neighbor Distance", _upperNeighborRiftDistance),
+                EditorGUILayout.FloatField("Upper Neighbor Center Distance (units)", _upperNeighborRiftDistance),
                 0.0f,
-                180.0f);
+                maxNeighborDistance);
 
             float radius = GetOrbitRadius();
             EditorGUILayout.LabelField("Radius", radius.ToString("0.##"));
@@ -159,15 +152,11 @@ namespace OrbitalEscape.Editor
             EditorGUILayout.LabelField("Unlocked Slots", stage.UnlockedSlots.ToString());
             EditorGUILayout.LabelField("Same Pattern Multiplier", stage.SamePatternWeightMultiplier.ToString("0.###"));
             EditorGUILayout.LabelField("Same Tag Multiplier", stage.SameTagWeightMultiplier.ToString("0.###"));
-            EditorGUILayout.LabelField(
-                "Rift Pressure",
-                $"Lower {riftSettings.GetPressureMultiplier(_lowerOrbitNonRiftStreak):0.###}x  |  " +
-                $"Upper {riftSettings.GetPressureMultiplier(_upperOrbitNonRiftStreak):0.###}x");
             EditorGUILayout.LabelField("Total Candidate Weight", totalWeight.ToString("0.###"));
 
             EditorGUILayout.HelpBox(
-                "Probabilities include the configured rift pressure and neighbor distance for each physical lane. " +
-                "Runtime cursor space, object overlaps, band phase, and rift quotas can still remove candidates " +
+                "Probabilities include the configured neighbor-rift distance for each physical lane. " +
+                "Runtime cursor space, object overlaps, band phase, and rift reservations can still remove candidates " +
                 "and renormalize the final selection.",
                 MessageType.Info);
 
@@ -257,13 +246,9 @@ namespace OrbitalEscape.Editor
                 return baseEffectiveWeight;
             }
 
-            float pressureMultiplier = 1.0f;
             float neighborMultiplier = 1.0f;
             if (lowerHasRift)
             {
-                pressureMultiplier = Mathf.Max(
-                    pressureMultiplier,
-                    riftSettings.GetPressureMultiplier(_lowerOrbitNonRiftStreak));
                 neighborMultiplier = Mathf.Min(
                     neighborMultiplier,
                     riftSettings.GetNeighborWeightMultiplier(_lowerNeighborRiftDistance));
@@ -271,15 +256,12 @@ namespace OrbitalEscape.Editor
 
             if (upperHasRift)
             {
-                pressureMultiplier = Mathf.Max(
-                    pressureMultiplier,
-                    riftSettings.GetPressureMultiplier(_upperOrbitNonRiftStreak));
                 neighborMultiplier = Mathf.Min(
                     neighborMultiplier,
                     riftSettings.GetNeighborWeightMultiplier(_upperNeighborRiftDistance));
             }
 
-            return baseEffectiveWeight * pressureMultiplier * neighborMultiplier;
+            return baseEffectiveWeight * neighborMultiplier;
         }
 
         private List<ObstaclePatternSnapshot> CreateHistory(IReadOnlyList<ObstaclePatternSnapshot> snapshots)
@@ -426,14 +408,12 @@ namespace OrbitalEscape.Editor
         private RiftGenerationSettings CreateRiftSettings()
         {
             return new RiftGenerationSettings(
-                _riftConfig.MinDistanceBetweenRifts,
+                _riftConfig.MinCenterDistanceBetweenRifts,
                 _riftConfig.RiftLength,
                 _riftConfig.RiftCount,
                 _riftConfig.BaseRiftCountRadius,
                 _riftConfig.AdditionalRiftRadiusStep,
-                _riftConfig.RiftWeightIncreasePerNonRiftPattern,
-                _riftConfig.MaxRiftPressureMultiplier,
-                _riftConfig.NeighborRiftAvoidanceAngle,
+                _riftConfig.NeighborRiftAvoidanceDistance,
                 _riftConfig.AlignedNeighborRiftWeightMultiplier,
                 _riftConfig.RiftPaddings,
                 _riftConfig.MaxPlacementAttempts);

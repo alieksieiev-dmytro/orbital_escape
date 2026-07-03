@@ -68,39 +68,33 @@ namespace OrbitalEscape.Orbits.Generators
 
     public readonly struct RiftGenerationSettings
     {
-        public float MinDistanceBetweenRifts { get; }
+        public float MinCenterDistanceBetweenRifts { get; }
         public float RiftLength { get; }
         public float RiftCount { get; }
         public float BaseRiftCountRadius { get; }
         public float AdditionalRiftRadiusStep { get; }
-        public float RiftWeightIncreasePerNonRiftPattern { get; }
-        public float MaxRiftPressureMultiplier { get; }
-        public float NeighborRiftAvoidanceAngle { get; }
+        public float NeighborRiftAvoidanceDistance { get; }
         public float AlignedNeighborRiftWeightMultiplier { get; }
         public float RiftPadding { get; }
         public int MaxPlacementAttempts { get; }
 
         public RiftGenerationSettings(
-            float minDistanceBetweenRifts,
+            float minCenterDistanceBetweenRifts,
             float riftLength,
             float riftCount,
             float baseRiftCountRadius,
             float additionalRiftRadiusStep,
-            float riftWeightIncreasePerNonRiftPattern,
-            float maxRiftPressureMultiplier,
-            float neighborRiftAvoidanceAngle,
+            float neighborRiftAvoidanceDistance,
             float alignedNeighborRiftWeightMultiplier,
             float riftPadding,
             int maxPlacementAttempts)
         {
-            MinDistanceBetweenRifts = minDistanceBetweenRifts;
-            RiftLength = riftLength;
+            RiftLength = Math.Max(0.01f, riftLength);
+            MinCenterDistanceBetweenRifts = Math.Max(RiftLength, minCenterDistanceBetweenRifts);
             RiftCount = riftCount;
             BaseRiftCountRadius = Math.Max(0.01f, baseRiftCountRadius);
             AdditionalRiftRadiusStep = Math.Max(0.01f, additionalRiftRadiusStep);
-            RiftWeightIncreasePerNonRiftPattern = Math.Max(0.0f, riftWeightIncreasePerNonRiftPattern);
-            MaxRiftPressureMultiplier = Math.Max(1.0f, maxRiftPressureMultiplier);
-            NeighborRiftAvoidanceAngle = Math.Min(180.0f, Math.Max(0.01f, neighborRiftAvoidanceAngle));
+            NeighborRiftAvoidanceDistance = Math.Max(0.01f, neighborRiftAvoidanceDistance);
             AlignedNeighborRiftWeightMultiplier = Math.Min(
                 1.0f,
                 Math.Max(0.01f, alignedNeighborRiftWeightMultiplier));
@@ -121,19 +115,24 @@ namespace OrbitalEscape.Orbits.Generators
             return baseCount + additionalCount;
         }
 
-        public float GetPressureMultiplier(int consecutiveNonRiftPatterns)
+        public float GetEffectiveMinCenterDistanceBetweenRifts(Orbit orbit)
         {
-            float multiplier = 1.0f +
-                               Math.Max(0, consecutiveNonRiftPatterns) *
-                               RiftWeightIncreasePerNonRiftPattern;
-            return Math.Min(multiplier, MaxRiftPressureMultiplier);
+            int targetCount = GetTargetCount(orbit);
+            if (orbit == null || targetCount <= 1)
+            {
+                return MinCenterDistanceBetweenRifts;
+            }
+
+            float feasibleCenterDistance = Math.Max(0.01f, orbit.Circumference) / targetCount;
+            float preferredDistance = Math.Max(RiftLength, MinCenterDistanceBetweenRifts);
+            return Math.Max(RiftLength, Math.Min(preferredDistance, feasibleCenterDistance));
         }
 
-        public float GetNeighborWeightMultiplier(float angularDistance)
+        public float GetNeighborWeightMultiplier(float centerDistance)
         {
             float normalizedDistance = Math.Min(
                 1.0f,
-                Math.Max(0.0f, angularDistance) / NeighborRiftAvoidanceAngle);
+                Math.Max(0.0f, centerDistance) / NeighborRiftAvoidanceDistance);
             return AlignedNeighborRiftWeightMultiplier +
                    (1.0f - AlignedNeighborRiftWeightMultiplier) * normalizedDistance;
         }

@@ -14,6 +14,7 @@ namespace OrbitalEscape.Orbits.Generators
             List<ArcObject> blockingObjects = GetBlockingObjects(context);
             int targetCount = config.GetTargetCount(orbit);
             int maxAttempts = Math.Max(config.MaxPlacementAttempts, targetCount);
+            float minCenterDistance = config.GetEffectiveMinCenterDistanceBetweenRifts(orbit);
             int attempts = 0;
 
             while (result.Count < targetCount && attempts < maxAttempts)
@@ -34,8 +35,7 @@ namespace OrbitalEscape.Orbits.Generators
 
                 foreach (var arc in result)
                 {
-                    if (newRiftArc.IsOverlapping(arc.Arc) ||
-                        newRiftArc.Distance(arc.Arc) < config.MinDistanceBetweenRifts)
+                    if (CenterDistance(newRiftArc, arc.Arc) < minCenterDistance)
                     {
                         arcConflict = true;
                         break;
@@ -57,6 +57,17 @@ namespace OrbitalEscape.Orbits.Generators
             }
             
             return result;
+        }
+
+        private static float CenterDistance(Arc first, Arc second)
+        {
+            float firstCenter = first.MidAngleDegree();
+            float secondCenter = second.MidAngleDegree();
+            float delta = Math.Abs(
+                OrbitMath.NormalizeDegrees360(firstCenter) -
+                OrbitMath.NormalizeDegrees360(secondCenter));
+            float centerDistanceDegrees = Math.Min(delta, 360.0f - delta);
+            return centerDistanceDegrees * OrbitMath.DEGREES_TO_RADIANS * first.Radius;
         }
 
         private static List<ArcObject> GetBlockingObjects(LevelBuildContext context)
