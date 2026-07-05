@@ -59,7 +59,7 @@ namespace OrbitalEscape.Visuals.Palettes
 
             public static DifficultyPalette Default => new DifficultyPalette
             {
-                _difficulty = DifficultyType.Basic,
+                _difficulty = DifficultyType.Easy,
                 _scoreToGradientMultiplier = 0.05f,
                 _loop = true,
                 _backgroundGradient = DefaultGradient(new Color(0.02f, 0.0f, 0.08f, 1.0f)),

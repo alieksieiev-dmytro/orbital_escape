@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8039ebd0990a05740aa3c573ce83cb72, type: 3}
+  m_Name: DifficultySelectionConfig
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Difficulty.DifficultySelectionConfig
+  _options:
+  - _difficulty: 0
+    _enabled: 1
+    _title: EASY
+    _description: A readable route for learning the rhythm of orbit jumps.
+    _image: {fileID: 0}
+  - _difficulty: 1
+    _enabled: 1
+    _title: MEDIUM
+    _description: Balanced pressure with denser obstacle chains.
+    _image: {fileID: 0}
+  - _difficulty: 2
+    _enabled: 1
+    _title: HARD
+    _description: Sharper patterns and faster escalation for confident runs.
+    _image: {fileID: 0}
+  - _difficulty: 3
+    _enabled: 1
+    _title: IMPOSSIBLE
+    _description: A hostile route tuned for precision and recovery.
+    _image: {fileID: 0}
+  - _difficulty: 4
+    _enabled: 1
+    _title: NIGHTMARE
+    _description: Maximum pressure with very little room to breathe.
+    _image: {fileID: 0}

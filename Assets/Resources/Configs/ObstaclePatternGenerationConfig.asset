@@ -40,6 +40,74 @@ MonoBehaviour:
       _samePatternWeightMultiplier: 0.35
       _sameTagWeightMultiplier: 0.6
       _unlockedSlots: 63
+  - _difficulty: 1
+    _stages:
+    - _minOrbitIndex: 0
+      _maxOrbitIndex: 5
+      _samePatternWeightMultiplier: 0.9
+      _sameTagWeightMultiplier: 1
+      _unlockedSlots: 51
+    - _minOrbitIndex: 5
+      _maxOrbitIndex: 10
+      _samePatternWeightMultiplier: 0.8
+      _sameTagWeightMultiplier: 0.8
+      _unlockedSlots: 55
+    - _minOrbitIndex: 10
+      _maxOrbitIndex: 15
+      _samePatternWeightMultiplier: 0.35
+      _sameTagWeightMultiplier: 0.6
+      _unlockedSlots: 63
+  - _difficulty: 2
+    _stages:
+    - _minOrbitIndex: 0
+      _maxOrbitIndex: 5
+      _samePatternWeightMultiplier: 0.9
+      _sameTagWeightMultiplier: 1
+      _unlockedSlots: 51
+    - _minOrbitIndex: 5
+      _maxOrbitIndex: 10
+      _samePatternWeightMultiplier: 0.8
+      _sameTagWeightMultiplier: 0.8
+      _unlockedSlots: 55
+    - _minOrbitIndex: 10
+      _maxOrbitIndex: 15
+      _samePatternWeightMultiplier: 0.35
+      _sameTagWeightMultiplier: 0.6
+      _unlockedSlots: 63
+  - _difficulty: 3
+    _stages:
+    - _minOrbitIndex: 0
+      _maxOrbitIndex: 5
+      _samePatternWeightMultiplier: 0.9
+      _sameTagWeightMultiplier: 1
+      _unlockedSlots: 51
+    - _minOrbitIndex: 5
+      _maxOrbitIndex: 10
+      _samePatternWeightMultiplier: 0.8
+      _sameTagWeightMultiplier: 0.8
+      _unlockedSlots: 55
+    - _minOrbitIndex: 10
+      _maxOrbitIndex: 15
+      _samePatternWeightMultiplier: 0.35
+      _sameTagWeightMultiplier: 0.6
+      _unlockedSlots: 63
+  - _difficulty: 4
+    _stages:
+    - _minOrbitIndex: 0
+      _maxOrbitIndex: 5
+      _samePatternWeightMultiplier: 0.9
+      _sameTagWeightMultiplier: 1
+      _unlockedSlots: 51
+    - _minOrbitIndex: 5
+      _maxOrbitIndex: 10
+      _samePatternWeightMultiplier: 0.8
+      _sameTagWeightMultiplier: 0.8
+      _unlockedSlots: 55
+    - _minOrbitIndex: 10
+      _maxOrbitIndex: 15
+      _samePatternWeightMultiplier: 0.35
+      _sameTagWeightMultiplier: 0.6
+      _unlockedSlots: 63
   _useFixedSeed: 0
   _fixedSeed: 1337
   _maxSelectionAttempts: 64

@@ -84,7 +84,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
 
         public static PatternDifficultyProfile Default => new PatternDifficultyProfile
         {
-            _difficulty = DifficultyType.Basic,
+            _difficulty = DifficultyType.Easy,
             _stages = new[]
             {
                 PatternDifficultyStage.Default

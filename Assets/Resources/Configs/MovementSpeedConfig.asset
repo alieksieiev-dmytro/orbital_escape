@@ -15,4 +15,16 @@ MonoBehaviour:
   _difficultyProfiles:
   - _difficulty: 0
     _baseLinearSpeed: 6
-    _speedIncreasePerScore: 0.1
+    _speedIncreasePerScore: 0.05
+  - _difficulty: 1
+    _baseLinearSpeed: 6
+    _speedIncreasePerScore: 0.05
+  - _difficulty: 2
+    _baseLinearSpeed: 6
+    _speedIncreasePerScore: 0.05
+  - _difficulty: 3
+    _baseLinearSpeed: 6
+    _speedIncreasePerScore: 0.05
+  - _difficulty: 4
+    _baseLinearSpeed: 6
+    _speedIncreasePerScore: 0.05

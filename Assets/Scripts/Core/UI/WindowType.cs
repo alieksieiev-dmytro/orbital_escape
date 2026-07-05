@@ -6,5 +6,6 @@ namespace OrbitalEscape.UI
         Restart = 1,
         MainMenu = 2,
         Pause = 3,
+        SelectGameMode = 4,
     }
 }

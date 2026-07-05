@@ -7,18 +7,18 @@ namespace OrbitalEscape.UI
     public class MainMenuWindowController : BaseController<MainMenuWindowView>
     {
         private readonly IViewFactory _viewFactory;
-        private readonly Command _playCommand;
+        private readonly IUIManager _uiManager;
         private readonly Command _exitCommand;
         
         public override IConvertible Type => WindowType.MainMenu;
 
         [Inject]
         public MainMenuWindowController(IViewFactory viewFactory,
-            [Inject(Id = nameof(CommandType.Play))] Command playCommand,
+            IUIManager uiManager,
             [Inject(Id = nameof(CommandType.Exit))] Command exitCommand)
         {
             _viewFactory = viewFactory;
-            _playCommand = playCommand;
+            _uiManager = uiManager;
             _exitCommand = exitCommand;
         }
 
@@ -41,7 +41,7 @@ namespace OrbitalEscape.UI
         private void OnPlayClicked()
         {
             Complete();
-            _playCommand.Execute();
+            _uiManager.OpenWindow(WindowType.SelectGameMode, null);
         }
 
         private void OnSettingsClicked()

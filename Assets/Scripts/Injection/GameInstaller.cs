@@ -1,6 +1,5 @@
 using System;
 using OrbitalEscape.Audio;
-using OrbitalEscape.Difficulty;
 using OrbitalEscape.Factories;
 using OrbitalEscape.Input;
 using OrbitalEscape.Movement;
@@ -88,7 +87,6 @@ namespace OrbitalEscape.Injection
 
         private void BindPalettes()
         {
-            Container.Bind<IDifficultyService>().To<BasicDifficultyService>().AsSingle();
             Container.Bind<PaletteSceneReferences>().FromInstance(new PaletteSceneReferences(_player, _backgroundRenderer, _accentRenderer)).AsSingle();
             Container.Bind<IPaletteObjectPainter>().To<PaletteObjectPainter>().AsSingle();
         }

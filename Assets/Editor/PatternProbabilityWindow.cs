@@ -13,7 +13,7 @@ namespace OrbitalEscape.Editor
     {
         private const string ConfigRoot = "Assets/Resources/Configs/";
 
-        [SerializeField] private DifficultyType _difficulty = DifficultyType.Basic;
+        [SerializeField] private DifficultyType _difficulty = DifficultyType.Easy;
         [SerializeField] private int _orbitIndex = 1;
         [SerializeField] private int _previousPatternIndex;
         [SerializeField] private int _consecutiveRepeats = 1;

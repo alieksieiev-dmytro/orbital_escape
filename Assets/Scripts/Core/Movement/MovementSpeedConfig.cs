@@ -51,7 +51,7 @@ namespace OrbitalEscape.Movement
 
             public static DifficultyMovementSpeedProfile Default => new DifficultyMovementSpeedProfile
             {
-                _difficulty = DifficultyType.Basic,
+                _difficulty = DifficultyType.Easy,
                 _baseLinearSpeed = 5.0f,
                 _speedIncreasePerScore = 0.03f
             };

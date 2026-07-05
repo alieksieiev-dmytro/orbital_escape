@@ -21,6 +21,7 @@ namespace OrbitalEscape.Injection
         private void InstallWindows()
         {
             Container.Bind<IController>().To<MainMenuWindowController>().AsSingle();
+            Container.Bind<IController>().To<SelectGameModeWindowController>().AsSingle();
         }
 
         private void InstallCommands()

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using OrbitalEscape.Audio;
 using OrbitalEscape.Data;
+using OrbitalEscape.Difficulty;
 using OrbitalEscape.Input;
 using OrbitalEscape.Movement;
 using OrbitalEscape.Orbits.Generators;
@@ -25,6 +26,7 @@ namespace OrbitalEscape.Injection
 
             InstallConfigs();
             InstallData();
+            InstallDifficulty();
             InstallFactory();
             InstallAudio();
             InstallKeyBindings();
@@ -50,6 +52,13 @@ namespace OrbitalEscape.Injection
         private void InstallAudio()
         {
             Container.BindInterfacesAndSelfTo<AudioService>().AsSingle().NonLazy();
+        }
+
+        private void InstallDifficulty()
+        {
+            Container.Bind(typeof(ISelectedDifficultyService), typeof(IDifficultyService))
+                .To<SelectedDifficultyService>()
+                .AsSingle();
         }
         
         private void InstallKeyBindings()
@@ -93,6 +102,7 @@ namespace OrbitalEscape.Injection
             Container.Bind(typeof(ImpulseTrapConfig)).To<ImpulseTrapConfig>().FromScriptableObjectResource("Configs/ImpulseTrapConfig").AsSingle();
             Container.Bind(typeof(GravityWellConfig)).To<GravityWellConfig>().FromScriptableObjectResource("Configs/GravityWellConfig").AsSingle();
             Container.Bind(typeof(GameAudioConfig)).To<GameAudioConfig>().FromScriptableObjectResource("Configs/GameAudioConfig").AsSingle();
+            Container.Bind(typeof(DifficultySelectionConfig)).To<DifficultySelectionConfig>().FromScriptableObjectResource("Configs/DifficultySelectionConfig").AsSingle();
         }
     }
 }
