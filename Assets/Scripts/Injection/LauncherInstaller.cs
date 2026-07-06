@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using OrbitalEscape.Audio;
+using OrbitalEscape.Cheats;
 using OrbitalEscape.Data;
 using OrbitalEscape.Difficulty;
 using OrbitalEscape.Input;
@@ -46,6 +47,7 @@ namespace OrbitalEscape.Injection
 
         private void InstallFactory()
         {
+            Container.Bind<WindowRoot>().FromInstance(_windowsRoot.GetComponent<WindowRoot>()).AsSingle();
             Container.Bind(typeof(IViewFactory)).To<ViewFactory>().AsSingle().WithArguments(_windowsRoot, WINDOW_PREFAB_PATH);
         }
 
@@ -103,6 +105,7 @@ namespace OrbitalEscape.Injection
             Container.Bind(typeof(GravityWellConfig)).To<GravityWellConfig>().FromScriptableObjectResource("Configs/GravityWellConfig").AsSingle();
             Container.Bind(typeof(GameAudioConfig)).To<GameAudioConfig>().FromScriptableObjectResource("Configs/GameAudioConfig").AsSingle();
             Container.Bind(typeof(DifficultySelectionConfig)).To<DifficultySelectionConfig>().FromScriptableObjectResource("Configs/DifficultySelectionConfig").AsSingle();
+            Container.Bind(typeof(CheatPanelConfig)).To<CheatPanelConfig>().FromScriptableObjectResource("Configs/CheatPanelConfig").AsSingle();
         }
     }
 }

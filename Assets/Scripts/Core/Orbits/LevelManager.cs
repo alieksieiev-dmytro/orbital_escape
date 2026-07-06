@@ -106,6 +106,48 @@ namespace OrbitalEscape.Orbits
         {
             _levelObjectSpawner.Clear();
         }
+
+        public void ClearObstacleContent()
+        {
+            if (_levelState.Count == 0)
+            {
+                return;
+            }
+
+            for (int i = 0; i < _levelState.Count; i++)
+            {
+                _levelState.GetOrbit(i).OrbitObjects.Clear();
+            }
+
+            _riftClosureState.Clear();
+            _levelObjectSpawner.RefreshOrbitContent(_levelState.Orbits);
+        }
+
+        public async UniTask EnsureOrbitAvailableAsync(int orbitIndex, CancellationToken cancellationToken)
+        {
+            if (orbitIndex < 0)
+            {
+                return;
+            }
+
+            await WaitForIdleAsync(cancellationToken);
+
+            while (_levelState.Count <= orbitIndex)
+            {
+                int missingCount = orbitIndex - _levelState.Count + 1;
+                int configuredCount = _generationConfig.GetExtensionCount(_levelState.Count);
+                int extensionCount = Mathf.Max(missingCount, configuredCount);
+                int previousCount = _levelState.Count;
+
+                await ExtendLevelAsync(extensionCount, cancellationToken);
+                await WaitForIdleAsync(cancellationToken);
+
+                if (_levelState.Count <= previousCount)
+                {
+                    break;
+                }
+            }
+        }
         
         private void OnEnable()
         {
@@ -179,6 +221,15 @@ namespace OrbitalEscape.Orbits
             finally
             {
                 _isExtendingLevel = false;
+            }
+        }
+
+        private async UniTask WaitForIdleAsync(CancellationToken cancellationToken)
+        {
+            while (_isBuildingLevel || _isExtendingLevel)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
             }
         }
 

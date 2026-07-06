@@ -63,6 +63,36 @@ namespace OrbitalEscape.Orbits
             _paletteObjectPainter.ApplyLevelObject(orbitObject, _paletteService.CurrentPalette);
         }
 
+        public void RefreshOrbitContent(IReadOnlyList<Orbit> orbits)
+        {
+            foreach (IOrbitObjectSpawner spawner in _objectSpawners)
+            {
+                spawner.Clear();
+            }
+
+            if (orbits == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < orbits.Count; i++)
+            {
+                Orbit orbit = orbits[i];
+                if (orbit == null || orbit.Index < 0 || orbit.Index >= _spawnedOrbitObjects.Count)
+                {
+                    continue;
+                }
+
+                GameObject orbitObject = _orbitFactory.Get(orbit.Index);
+                foreach (IOrbitObjectSpawner spawner in _objectSpawners)
+                {
+                    spawner.Spawn(orbitObject, orbit, orbit.OrbitObjects);
+                }
+
+                _paletteObjectPainter.ApplyLevelObject(orbitObject, _paletteService.CurrentPalette);
+            }
+        }
+
         public GameObject GetOrbitObject(int index)
         {
             return _orbitFactory.Get(index);

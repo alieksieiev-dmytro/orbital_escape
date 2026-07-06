@@ -4,5 +4,6 @@ namespace OrbitalEscape.Orbits
     {
         bool TryGetActiveZone(out GravityWellZone zone);
         void SuppressActiveUntilExit();
+        void ClearState();
     }
 }

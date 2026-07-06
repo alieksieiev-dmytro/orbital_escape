@@ -1,3 +1,4 @@
+using OrbitalEscape.Cheats;
 using OrbitalEscape.UI;
 using OrbitalEscape.Visuals.Palettes;
 using Zenject;
@@ -12,12 +13,16 @@ namespace OrbitalEscape.Injection
             InstallHUDs();
             Container.Bind<IUIManager>().To<UIManager>().AsSingle();
             Container.BindInterfacesAndSelfTo<PaletteUITextController>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<MovementSpeedCheatInfoProvider>().AsSingle();
+            Container.BindInterfacesAndSelfTo<DifficultyCheatInfoProvider>().AsSingle();
+            Container.BindInterfacesAndSelfTo<CheatInfoHUDController>().AsSingle().NonLazy();
         }
 
         private void InstallWindows()
         {
             Container.Bind<IController>().To<RestartWindowController>().AsSingle();
             Container.Bind<IController>().To<PauseWindowController>().AsSingle();
+            Container.Bind<IController>().To<CheatCommandWindowController>().AsSingle();
         }
         
         private void InstallHUDs()

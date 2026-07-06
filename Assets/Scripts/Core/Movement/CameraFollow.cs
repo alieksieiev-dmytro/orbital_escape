@@ -13,13 +13,28 @@ namespace OrbitalEscape.Movement
         [SerializeField] private float _outerOffset = 1.65f;
 
         private EventBinding<PassedThroughOrbitEvent> _passedThroughOrbitEventBinding;
+        private EventBinding<OrbitFocusRequestedEvent> _orbitFocusRequestedEventBinding;
+        private Tween _radiusTween;
 
-        private void Awake() => 
+        private void Awake()
+        {
             _passedThroughOrbitEventBinding = new EventBinding<PassedThroughOrbitEvent>(OnPassedThroughOrbit);
+            _orbitFocusRequestedEventBinding = new EventBinding<OrbitFocusRequestedEvent>(OnOrbitFocusRequested);
+        }
 
-        private void OnEnable() => EventBus<PassedThroughOrbitEvent>.Register(_passedThroughOrbitEventBinding);
+        private void OnEnable()
+        {
+            EventBus<PassedThroughOrbitEvent>.Register(_passedThroughOrbitEventBinding);
+            EventBus<OrbitFocusRequestedEvent>.Register(_orbitFocusRequestedEventBinding);
+        }
 
-        private void OnDisable() => EventBus<PassedThroughOrbitEvent>.Deregister(_passedThroughOrbitEventBinding);
+        private void OnDisable()
+        {
+            EventBus<PassedThroughOrbitEvent>.Deregister(_passedThroughOrbitEventBinding);
+            EventBus<OrbitFocusRequestedEvent>.Deregister(_orbitFocusRequestedEventBinding);
+            _radiusTween?.Kill();
+            _radiusTween = null;
+        }
 
         private void LateUpdate()
         {
@@ -48,11 +63,19 @@ namespace OrbitalEscape.Movement
         {
             float offset = @event.IsOuterOrbit ? _outerOffset : -_innerOffset;
             float targetRadius = @event.Orbit.Radius + offset;
-            DOTween.To(
+            _radiusTween?.Kill();
+            _radiusTween = DOTween.To(
                 () => _radius,
                 x => _radius = x,
                 targetRadius,
                 0.5f).SetEase(Ease.InOutSine);
+        }
+
+        private void OnOrbitFocusRequested(OrbitFocusRequestedEvent @event)
+        {
+            _radiusTween?.Kill();
+            _radiusTween = null;
+            _radius = Mathf.Max(0.1f, @event.CameraRadius);
         }
     }
 }

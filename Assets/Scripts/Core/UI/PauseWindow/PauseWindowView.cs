@@ -12,6 +12,7 @@ namespace OrbitalEscape.UI
         private const string ResumeButtonName = "btn-resume";
         private const string RestartButtonName = "btn-restart";
         private const string ExitButtonName = "btn-exit";
+        private const string CheatsButtonName = "btn-cheats";
 
         [SerializeField] private float _fadeDuration = 0.1f;
         [SerializeField] private int _sortingOrder = 100;
@@ -19,6 +20,7 @@ namespace OrbitalEscape.UI
         private Button _resumeButton;
         private Button _restartButton;
         private Button _exitButton;
+        private Button _cheatsButton;
         private PauseBlurBackground _blurBackground;
         private Coroutine _showCoroutine;
         private Tween _fadeTween;
@@ -26,6 +28,7 @@ namespace OrbitalEscape.UI
         public event Action ResumeClicked;
         public event Action RestartClicked;
         public event Action ExitClicked;
+        public event Action CheatsClicked;
 
         private void Awake()
         {
@@ -33,6 +36,7 @@ namespace OrbitalEscape.UI
             _resumeButton = GetRequiredButton(buttons, ResumeButtonName);
             _restartButton = GetRequiredButton(buttons, RestartButtonName);
             _exitButton = GetRequiredButton(buttons, ExitButtonName);
+            _cheatsButton = GetOptionalButton(buttons, CheatsButtonName);
             _blurBackground = GetComponentInChildren<PauseBlurBackground>(true);
         }
 
@@ -41,6 +45,7 @@ namespace OrbitalEscape.UI
             _resumeButton.onClick.AddListener(OnResumeClicked);
             _restartButton.onClick.AddListener(OnRestartClicked);
             _exitButton.onClick.AddListener(OnExitClicked);
+            _cheatsButton?.onClick.AddListener(OnCheatsClicked);
         }
 
         private void OnDisable()
@@ -48,9 +53,18 @@ namespace OrbitalEscape.UI
             _resumeButton.onClick.RemoveListener(OnResumeClicked);
             _restartButton.onClick.RemoveListener(OnRestartClicked);
             _exitButton.onClick.RemoveListener(OnExitClicked);
+            _cheatsButton?.onClick.RemoveListener(OnCheatsClicked);
             StopShowCoroutine();
             _fadeTween?.Kill();
             _blurBackground?.Release();
+        }
+
+        public void SetCheatsVisible(bool visible)
+        {
+            if (_cheatsButton != null)
+            {
+                _cheatsButton.gameObject.SetActive(visible);
+            }
         }
 
         public override void Show()
@@ -156,6 +170,13 @@ namespace OrbitalEscape.UI
             throw new MissingComponentException($"{nameof(PauseWindowView)} requires child Button '{buttonName}'.");
         }
 
+        private Button GetOptionalButton(IReadOnlyDictionary<string, Button> buttons, string buttonName)
+        {
+            return buttons.TryGetValue(buttonName, out Button button)
+                ? button
+                : null;
+        }
+
         private void ConfigureRootCanvas()
         {
             if (Root == null)
@@ -170,5 +191,6 @@ namespace OrbitalEscape.UI
         private void OnResumeClicked() => ResumeClicked?.Invoke();
         private void OnRestartClicked() => RestartClicked?.Invoke();
         private void OnExitClicked() => ExitClicked?.Invoke();
+        private void OnCheatsClicked() => CheatsClicked?.Invoke();
     }
 }

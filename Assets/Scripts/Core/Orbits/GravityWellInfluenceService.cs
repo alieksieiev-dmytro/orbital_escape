@@ -243,7 +243,7 @@ namespace OrbitalEscape.Orbits
             }
         }
 
-        private void ClearState()
+        public void ClearState()
         {
             _activeZone = null;
             _suppressedZone = null;

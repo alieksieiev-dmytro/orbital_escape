@@ -34,6 +34,11 @@ namespace OrbitalEscape.Movement
                 return;
             
             _movementModel.Step(_movementSpeedService.CurrentLinearSpeed, Time.deltaTime, _currentDirection);
+            RefreshTransform();
+        }
+
+        public void RefreshTransform()
+        {
             var newPos = _movementModel.GetPosition(_center);
             _playerTransform.position = new Vector3(newPos.x, newPos.y, _playerTransform.position.z);
             

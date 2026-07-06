@@ -1,5 +1,6 @@
 using System;
 using OrbitalEscape.Audio;
+using OrbitalEscape.Cheats;
 using OrbitalEscape.Factories;
 using OrbitalEscape.Input;
 using OrbitalEscape.Movement;
@@ -60,6 +61,7 @@ namespace OrbitalEscape.Injection
             Container.BindInterfacesAndSelfTo<ScorePaletteService>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<PaletteSceneController>().AsSingle().NonLazy();
             Container.BindInterfacesTo<GameplayAudioController>().AsSingle().NonLazy();
+            Container.Bind<ICheatCommandService>().To<CheatCommandService>().AsSingle();
         }
         
         private void BindGenerators()

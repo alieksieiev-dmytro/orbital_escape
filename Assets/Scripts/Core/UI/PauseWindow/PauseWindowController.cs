@@ -1,5 +1,6 @@
 using System;
 using OrbitalEscape.Audio;
+using OrbitalEscape.Cheats;
 using OrbitalEscape.Input;
 using Zenject;
 
@@ -12,6 +13,8 @@ namespace OrbitalEscape.UI
         private readonly Command _restartCommand;
         private readonly Command _exitToMainMenuCommand;
         private readonly IAudioService _audioService;
+        private readonly IUIManager _uiManager;
+        private readonly CheatPanelConfig _cheatPanelConfig;
 
         public override IConvertible Type => WindowType.Pause;
 
@@ -20,13 +23,17 @@ namespace OrbitalEscape.UI
             [Inject(Id = nameof(CommandType.Resume))] Command resumeCommand,
             [Inject(Id = nameof(CommandType.Restart))] Command restartCommand,
             [Inject(Id = nameof(CommandType.ExitToMainMenu))] Command exitToMainMenuCommand,
-            IAudioService audioService)
+            IAudioService audioService,
+            IUIManager uiManager,
+            CheatPanelConfig cheatPanelConfig)
         {
             _viewFactory = viewFactory;
             _resumeCommand = resumeCommand;
             _restartCommand = restartCommand;
             _exitToMainMenuCommand = exitToMainMenuCommand;
             _audioService = audioService;
+            _uiManager = uiManager;
+            _cheatPanelConfig = cheatPanelConfig;
         }
 
         public override void Initialize(ScreenData screenData)
@@ -35,6 +42,8 @@ namespace OrbitalEscape.UI
             View.ResumeClicked += OnResumeClicked;
             View.RestartClicked += OnRestartClicked;
             View.ExitClicked += OnExitClicked;
+            View.CheatsClicked += OnCheatsClicked;
+            View.SetCheatsVisible(_cheatPanelConfig.ShouldShowCommandPanel);
             View.Show();
         }
 
@@ -43,6 +52,7 @@ namespace OrbitalEscape.UI
             View.ResumeClicked -= OnResumeClicked;
             View.RestartClicked -= OnRestartClicked;
             View.ExitClicked -= OnExitClicked;
+            View.CheatsClicked -= OnCheatsClicked;
             View.Hide();
             _audioService.SetMusicObscured(false);
         }
@@ -66,6 +76,17 @@ namespace OrbitalEscape.UI
         {
             Complete();
             _exitToMainMenuCommand.Execute();
+        }
+
+        private void OnCheatsClicked()
+        {
+            if (!_cheatPanelConfig.ShouldShowCommandPanel)
+            {
+                return;
+            }
+
+            Complete();
+            _uiManager.OpenWindow(WindowType.CheatCommand, null);
         }
     }
 }
