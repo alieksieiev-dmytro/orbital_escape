@@ -7,5 +7,6 @@ namespace OrbitalEscape.Orbits
         Spike = 1,
         ImpulseTrap = 2,
         GravityWell = 3,
+        LaserGate = 4,
     }
 }

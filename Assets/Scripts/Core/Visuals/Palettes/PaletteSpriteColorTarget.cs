@@ -2,13 +2,6 @@ using UnityEngine;
 
 namespace OrbitalEscape.Visuals.Palettes
 {
-    public enum PaletteSpriteColorType
-    {
-        Accent = 0,
-        Background = 1,
-        Environment = 2
-    }
-
     [DisallowMultipleComponent]
     [RequireComponent(typeof(SpriteRenderer))]
     public sealed class PaletteSpriteColorTarget : MonoBehaviour, IPaletteTarget

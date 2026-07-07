@@ -22,6 +22,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 9902966d2fee5f7498604e56bf1543aa, type: 2}
   - {fileID: 11400000, guid: 1b32cc3162404eac90b2cf757dbf0797, type: 2}
   - {fileID: 11400000, guid: b66b6113def8b554886eacb8f5bcff70, type: 2}
+  - {fileID: 11400000, guid: 77d0d8280dc941f99c62616d8f1c54f4, type: 2}
   _difficultyProfiles:
   - _difficulty: 0
     _stages:
@@ -29,17 +30,17 @@ MonoBehaviour:
       _maxOrbitIndex: 5
       _samePatternWeightMultiplier: 0.9
       _sameTagWeightMultiplier: 1
-      _unlockedSlots: 51
+      _unlockedSlots: 115
     - _minOrbitIndex: 5
       _maxOrbitIndex: 10
       _samePatternWeightMultiplier: 0.8
       _sameTagWeightMultiplier: 0.8
-      _unlockedSlots: 55
+      _unlockedSlots: 119
     - _minOrbitIndex: 10
       _maxOrbitIndex: 15
       _samePatternWeightMultiplier: 0.35
       _sameTagWeightMultiplier: 0.6
-      _unlockedSlots: 63
+      _unlockedSlots: 127
   - _difficulty: 1
     _stages:
     - _minOrbitIndex: 0
@@ -51,12 +52,12 @@ MonoBehaviour:
       _maxOrbitIndex: 10
       _samePatternWeightMultiplier: 0.8
       _sameTagWeightMultiplier: 0.8
-      _unlockedSlots: 55
+      _unlockedSlots: 119
     - _minOrbitIndex: 10
       _maxOrbitIndex: 15
       _samePatternWeightMultiplier: 0.35
       _sameTagWeightMultiplier: 0.6
-      _unlockedSlots: 63
+      _unlockedSlots: 127
   - _difficulty: 2
     _stages:
     - _minOrbitIndex: 0
@@ -68,12 +69,12 @@ MonoBehaviour:
       _maxOrbitIndex: 10
       _samePatternWeightMultiplier: 0.8
       _sameTagWeightMultiplier: 0.8
-      _unlockedSlots: 55
+      _unlockedSlots: 119
     - _minOrbitIndex: 10
       _maxOrbitIndex: 15
       _samePatternWeightMultiplier: 0.35
       _sameTagWeightMultiplier: 0.6
-      _unlockedSlots: 63
+      _unlockedSlots: 127
   - _difficulty: 3
     _stages:
     - _minOrbitIndex: 0
@@ -85,12 +86,12 @@ MonoBehaviour:
       _maxOrbitIndex: 10
       _samePatternWeightMultiplier: 0.8
       _sameTagWeightMultiplier: 0.8
-      _unlockedSlots: 55
+      _unlockedSlots: 119
     - _minOrbitIndex: 10
       _maxOrbitIndex: 15
       _samePatternWeightMultiplier: 0.35
       _sameTagWeightMultiplier: 0.6
-      _unlockedSlots: 63
+      _unlockedSlots: 127
   - _difficulty: 4
     _stages:
     - _minOrbitIndex: 0
@@ -102,12 +103,12 @@ MonoBehaviour:
       _maxOrbitIndex: 10
       _samePatternWeightMultiplier: 0.8
       _sameTagWeightMultiplier: 0.8
-      _unlockedSlots: 55
+      _unlockedSlots: 119
     - _minOrbitIndex: 10
       _maxOrbitIndex: 15
       _samePatternWeightMultiplier: 0.35
       _sameTagWeightMultiplier: 0.6
-      _unlockedSlots: 63
+      _unlockedSlots: 127
   _useFixedSeed: 0
   _fixedSeed: 1337
   _maxSelectionAttempts: 64

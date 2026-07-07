@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using OrbitalEscape.Difficulty;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace OrbitalEscape.Orbits.Generators.Patterns
 {
@@ -71,70 +70,6 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             }
 
             return PatternDifficultyProfile.Default;
-        }
-    }
-
-    [Serializable]
-    public struct PatternDifficultyProfile
-    {
-        [SerializeField] private DifficultyType _difficulty;
-        [SerializeField] private PatternDifficultyStage[] _stages;
-
-        public DifficultyType Difficulty => _difficulty;
-
-        public static PatternDifficultyProfile Default => new PatternDifficultyProfile
-        {
-            _difficulty = DifficultyType.Easy,
-            _stages = new[]
-            {
-                PatternDifficultyStage.Default
-            }
-        };
-
-        public IReadOnlyList<PatternDifficultyStageSnapshot> CreateStageSnapshots()
-        {
-            if (_stages == null || _stages.Length == 0)
-            {
-                return new[] { PatternDifficultyStage.Default.CreateSnapshot() };
-            }
-
-            PatternDifficultyStageSnapshot[] snapshots = new PatternDifficultyStageSnapshot[_stages.Length];
-            for (int i = 0; i < _stages.Length; i++)
-            {
-                snapshots[i] = _stages[i].CreateSnapshot();
-            }
-
-            Array.Sort(snapshots, (a, b) => a.MinOrbitIndex.CompareTo(b.MinOrbitIndex));
-            return snapshots;
-        }
-    }
-
-    [Serializable]
-    public struct PatternDifficultyStage
-    {
-        [FormerlySerializedAs("_minScore")]
-        [SerializeField, Min(0)] private int _minOrbitIndex;
-        [FormerlySerializedAs("_maxScore")]
-        [SerializeField, Min(0)] private int _maxOrbitIndex;
-        [SerializeField, Range(0.0f, 1.0f)] private float _samePatternWeightMultiplier;
-        [SerializeField, Range(0.0f, 1.0f)] private float _sameTagWeightMultiplier;
-        [SerializeField] private PatternSlotTypeFlags _unlockedSlots;
-
-        public static PatternDifficultyStage Default => new PatternDifficultyStage
-        {
-            _samePatternWeightMultiplier = 0.35f,
-            _sameTagWeightMultiplier = 0.75f,
-            _unlockedSlots = PatternSlotTypeFlags.All
-        };
-
-        public PatternDifficultyStageSnapshot CreateSnapshot()
-        {
-            return new PatternDifficultyStageSnapshot(
-                _minOrbitIndex,
-                _maxOrbitIndex,
-                _samePatternWeightMultiplier <= 0.0f ? 0.35f : _samePatternWeightMultiplier,
-                _sameTagWeightMultiplier <= 0.0f ? 0.75f : _sameTagWeightMultiplier,
-                _unlockedSlots == PatternSlotTypeFlags.None ? PatternSlotTypeFlags.All : _unlockedSlots);
         }
     }
 }

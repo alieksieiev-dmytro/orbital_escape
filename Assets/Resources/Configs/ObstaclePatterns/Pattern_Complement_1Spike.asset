@@ -26,6 +26,6 @@ MonoBehaviour:
   _tags: 2
   _baseWeight: 5
   _minOrbitIndex: 0
-  _maxOrbitIndex: 5
+  _maxOrbitIndex: 0
   _difficultyWeightModifiers: []
   _allowFlip: 1

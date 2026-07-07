@@ -1,0 +1,48 @@
+using System;
+using OrbitalEscape.Difficulty;
+using UnityEngine;
+using UnityEngine.Serialization;
+
+namespace OrbitalEscape.Visuals.Palettes
+{
+    [Serializable]
+    public struct DifficultyPalette
+    {
+        [SerializeField] private DifficultyType _difficulty;
+        [SerializeField, Min(0.0f)] private float _scoreToGradientMultiplier;
+        [SerializeField] private bool _loop;
+        [SerializeField, FormerlySerializedAs("_mainGradient")] private Gradient _backgroundGradient;
+        [SerializeField] private Gradient _environmentGradient;
+        [SerializeField, FormerlySerializedAs("_outlineGradient")] private Gradient _accentGradient;
+
+        public DifficultyType Difficulty => _difficulty;
+        public Gradient BackgroundGradient => _backgroundGradient ?? DefaultGradient(Color.black);
+        public Gradient EnvironmentGradient => _environmentGradient ?? DefaultGradient(new Color(0.05f, 0.9f, 1.0f, 1.0f));
+        public Gradient AccentGradient => _accentGradient ?? DefaultGradient(Color.white);
+
+        public static DifficultyPalette Default => new DifficultyPalette
+        {
+            _difficulty = DifficultyType.Easy,
+            _scoreToGradientMultiplier = 0.05f,
+            _loop = true,
+            _backgroundGradient = DefaultGradient(new Color(0.02f, 0.0f, 0.08f, 1.0f)),
+            _environmentGradient = DefaultGradient(new Color(0.05f, 0.9f, 1.0f, 1.0f)),
+            _accentGradient = DefaultGradient(new Color(0.0f, 1.0f, 0.75f, 1.0f))
+        };
+
+        public float EvaluateProgress(float score)
+        {
+            float rawProgress = Mathf.Max(0.0f, score) * _scoreToGradientMultiplier;
+            return _loop ? Mathf.Repeat(rawProgress, 1.0f) : Mathf.Clamp01(rawProgress);
+        }
+
+        private static Gradient DefaultGradient(Color color)
+        {
+            Gradient gradient = new Gradient();
+            gradient.SetKeys(
+                new[] { new GradientColorKey(color, 0.0f), new GradientColorKey(color, 1.0f) },
+                new[] { new GradientAlphaKey(color.a, 0.0f), new GradientAlphaKey(color.a, 1.0f) });
+            return gradient;
+        }
+    }
+}

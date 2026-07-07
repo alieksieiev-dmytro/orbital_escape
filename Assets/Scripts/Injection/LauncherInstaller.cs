@@ -103,6 +103,7 @@ namespace OrbitalEscape.Injection
             Container.Bind(typeof(MiniSpikeConfig)).To<MiniSpikeConfig>().FromScriptableObjectResource("Configs/MiniSpikeConfig").AsSingle();
             Container.Bind(typeof(ImpulseTrapConfig)).To<ImpulseTrapConfig>().FromScriptableObjectResource("Configs/ImpulseTrapConfig").AsSingle();
             Container.Bind(typeof(GravityWellConfig)).To<GravityWellConfig>().FromScriptableObjectResource("Configs/GravityWellConfig").AsSingle();
+            Container.Bind(typeof(LaserGateConfig)).To<LaserGateConfig>().FromScriptableObjectResource("Configs/LaserGateConfig").AsSingle();
             Container.Bind(typeof(GameAudioConfig)).To<GameAudioConfig>().FromScriptableObjectResource("Configs/GameAudioConfig").AsSingle();
             Container.Bind(typeof(DifficultySelectionConfig)).To<DifficultySelectionConfig>().FromScriptableObjectResource("Configs/DifficultySelectionConfig").AsSingle();
             Container.Bind(typeof(CheatPanelConfig)).To<CheatPanelConfig>().FromScriptableObjectResource("Configs/CheatPanelConfig").AsSingle();

@@ -18,6 +18,7 @@ namespace OrbitalEscape.Orbits.Generators
         private readonly MiniSpikeConfig _miniSpikeConfig;
         private readonly ImpulseTrapConfig _impulseTrapConfig;
         private readonly GravityWellConfig _gravityWellConfig;
+        private readonly LaserGateConfig _laserGateConfig;
         private readonly ObstaclePatternGenerationConfig _patternGenerationConfig;
         private readonly ILevelContentGenerator _contentGenerator;
         private readonly IDifficultyService _difficultyService;
@@ -32,6 +33,7 @@ namespace OrbitalEscape.Orbits.Generators
             MiniSpikeConfig miniSpikeConfig,
             ImpulseTrapConfig impulseTrapConfig,
             GravityWellConfig gravityWellConfig,
+            LaserGateConfig laserGateConfig,
             ObstaclePatternGenerationConfig patternGenerationConfig,
             ILevelContentGenerator contentGenerator,
             IDifficultyService difficultyService)
@@ -44,6 +46,7 @@ namespace OrbitalEscape.Orbits.Generators
             _miniSpikeConfig = miniSpikeConfig;
             _impulseTrapConfig = impulseTrapConfig;
             _gravityWellConfig = gravityWellConfig;
+            _laserGateConfig = laserGateConfig;
             _patternGenerationConfig = patternGenerationConfig;
             _contentGenerator = contentGenerator;
             _difficultyService = difficultyService;
@@ -71,7 +74,8 @@ namespace OrbitalEscape.Orbits.Generators
                 _miniSpikeConfig.SpikeArcLength,
                 _impulseTrapConfig.TrapArcLength,
                 _gravityWellConfig.FieldArcLength,
-                _riftConfig.RiftLength);
+                _riftConfig.RiftLength,
+                _laserGateConfig.Width);
 
             LevelBuildSettings settings = new LevelBuildSettings(
                 new OrbitGenerationSettings(_orbitConfig.FirstOrbitRadius, _orbitConfig.OrbitRadiusStep),
@@ -106,6 +110,11 @@ namespace OrbitalEscape.Orbits.Generators
                     _gravityWellConfig.PullSpeed,
                     _gravityWellConfig.ReturnDuration,
                     _gravityWellConfig.VisualAlpha),
+                new LaserGateGenerationSettings(
+                    _laserGateConfig.Width,
+                    _laserGateConfig.PassTime,
+                    _laserGateConfig.ChargingTime,
+                    _laserGateConfig.ActiveTime),
                 _patternGenerationConfig.CreateSettings(difficulty, patternSlotLengthProvider),
                 _patternGenerationConfig.RandomizeBandPhase);
 

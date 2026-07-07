@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using OrbitalEscape.Utils;
 
 namespace OrbitalEscape.Orbits.Generators.Patterns
@@ -9,6 +8,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
     {
         private const int MaxCursorStepsPerBand = 2048;
         private const float OrbitBoundaryTolerance = 0.0001f;
+        private const float ArcOverlapToleranceDegrees = 0.0001f;
 
         private readonly WeightedPatternSelector _selector;
 
@@ -34,12 +34,12 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 return;
             }
 
-            RiftReservationTracker riftReservations = new RiftReservationTracker(
-                context,
-                context.Orbits,
-                context.Settings.Rift,
-                request.Seed);
             HashSet<int> writableOrbitIndices = GetWritableOrbitIndices(generatedOrbits, context.StartIndex);
+            Dictionary<int, List<float>> riftMarkerAngles = CreateRiftMarkerAngles(
+                context,
+                writableOrbitIndices,
+                request.Seed);
+            HashSet<string> skippedMarkerWarnings = new HashSet<string>();
             int firstGeneratedBandIndex = context.StartIndex > 0 ? context.StartIndex - 1 : context.StartIndex;
             int firstBandIndex = Math.Max(firstGeneratedBandIndex, context.Settings.Content.FirstOrbitIndexWithContent);
             for (int lowerOrbitIndex = firstBandIndex; lowerOrbitIndex < context.LastPlannedOrbitIndex; lowerOrbitIndex++)
@@ -51,17 +51,24 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     continue;
                 }
 
-                GenerateBand(lowerOrbit, upperOrbit, context, riftReservations, writableOrbitIndices);
+                GenerateBand(
+                    lowerOrbit,
+                    upperOrbit,
+                    context,
+                    riftMarkerAngles,
+                    skippedMarkerWarnings,
+                    writableOrbitIndices);
             }
 
-            WarnForUnmetRiftReservations(generatedOrbits, context, riftReservations);
+            WarnForUnmetRiftMarkers(context, riftMarkerAngles);
         }
 
         private void GenerateBand(
             Orbit lowerOrbit,
             Orbit upperOrbit,
             LevelBuildContext context,
-            RiftReservationTracker riftReservations,
+            Dictionary<int, List<float>> riftMarkerAngles,
+            HashSet<string> skippedMarkerWarnings,
             HashSet<int> writableOrbitIndices)
         {
             PatternDifficultyStageSnapshot stage = context.Settings.Patterns.GetStage(lowerOrbit.Index);
@@ -89,16 +96,16 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     history,
                     context,
                     rejectionLog,
-                    riftReservations,
+                    riftMarkerAngles,
                     writableOrbitIndices,
-                    enforceReservations: true,
-                    out bool rejectedByReservation,
-                    out List<RiftReservationDemand> reservationDemands,
+                    out bool rejectedByMarker,
+                    out int rejectedMarkerOrbitIndex,
+                    out float rejectedMarkerAngle,
                     out bool reachedOrbitEnd,
                     out float nextCursorWorld);
 
                 if (candidates.Count == 0 &&
-                    rejectedByReservation &&
+                    rejectedByMarker &&
                     nextCursorWorld < float.PositiveInfinity &&
                     nextCursorWorld > cursorWorld)
                 {
@@ -108,11 +115,11 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     continue;
                 }
 
-                if (candidates.Count == 0 && rejectedByReservation)
+                int forcedMarkerOrbitIndex = -1;
+                float forcedMarkerAngle = 0.0f;
+                if (candidates.Count == 0 && rejectedByMarker && rejectedMarkerOrbitIndex >= 0)
                 {
-                    riftReservations.WarnMissingReservationPatterns(context, reservationDemands);
-                    rejectionLog.Add("relaxed rift reservation");
-                    candidates = BuildCandidates(
+                    candidates = BuildForcedRiftCandidates(
                         lowerOrbit,
                         upperOrbit,
                         cursorWorld,
@@ -121,15 +128,25 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                         history,
                         context,
                         rejectionLog,
-                        riftReservations,
                         writableOrbitIndices,
-                        enforceReservations: false,
-                        out _,
-                        out _,
-                        out bool relaxedReachedOrbitEnd,
-                        out float relaxedNextCursorWorld);
-                    reachedOrbitEnd |= relaxedReachedOrbitEnd;
-                    nextCursorWorld = Math.Min(nextCursorWorld, relaxedNextCursorWorld);
+                        rejectedMarkerOrbitIndex);
+
+                    if (candidates.Count > 0)
+                    {
+                        forcedMarkerOrbitIndex = rejectedMarkerOrbitIndex;
+                        forcedMarkerAngle = rejectedMarkerAngle;
+                    }
+                    else
+                    {
+                        WarnAndSkipRiftMarker(
+                            context,
+                            riftMarkerAngles,
+                            skippedMarkerWarnings,
+                            rejectedMarkerOrbitIndex,
+                            rejectedMarkerAngle,
+                            rejectionLog.Summary);
+                        continue;
+                    }
                 }
 
                 PatternPlacement placement;
@@ -170,7 +187,16 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     placement,
                     context,
                     writableOrbitIndices);
-                riftReservations.Record(placement, writableOrbitIndices);
+                FulfillRiftMarkers(placement, riftMarkerAngles, writableOrbitIndices);
+                if (forcedMarkerOrbitIndex >= 0)
+                {
+                    FulfillSpecificRiftMarker(
+                        placement,
+                        riftMarkerAngles,
+                        forcedMarkerOrbitIndex,
+                        forcedMarkerAngle);
+                }
+
                 cursorWorld = placement.StartWorld + Math.Max(placement.Pattern.Length, 0.01f);
 
                 if (placement.Pattern != null)
@@ -193,19 +219,20 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             IReadOnlyList<ObstaclePatternSnapshot> history,
             LevelBuildContext context,
             PatternRejectionLog rejectionLog,
-            RiftReservationTracker riftReservations,
+            Dictionary<int, List<float>> riftMarkerAngles,
             HashSet<int> writableOrbitIndices,
-            bool enforceReservations,
-            out bool rejectedByReservation,
-            out List<RiftReservationDemand> reservationDemands,
+            out bool rejectedByMarker,
+            out int rejectedMarkerOrbitIndex,
+            out float rejectedMarkerAngle,
             out bool reachedOrbitEnd,
             out float nextCursorWorld)
         {
             PatternGenerationSettings settings = context.Settings.Patterns;
             List<WeightedPatternCandidate> candidates = new List<WeightedPatternCandidate>();
-            bool hasReservationRejection = false;
+            bool hasMarkerRejection = false;
             bool hasOrbitEndRejection = false;
-            List<RiftReservationDemand> reservationDemandLog = new List<RiftReservationDemand>();
+            int firstRejectedMarkerOrbitIndex = -1;
+            float firstRejectedMarkerAngle = 0.0f;
             float nearestNextCursorWorld = float.PositiveInfinity;
 
             for (int i = 0; i < settings.Patterns.Count && candidates.Count < settings.MaxSelectionAttempts; i++)
@@ -246,7 +273,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                         randomizeSpikeHeight: false);
 
                     float weight = PatternWeightCalculator.GetEffectiveWeight(pattern, stage, history) *
-                                   riftReservations.GetWeightModifier(
+                                   GetNeighborRiftWeightModifier(
                                        placement,
                                        context,
                                        writableOrbitIndices);
@@ -268,33 +295,32 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                         return;
                     }
 
-                    if (riftReservations.WouldExceed(placement, writableOrbitIndices, out string reservationLimitReason))
-                    {
-                        rejectionLog.Add(reservationLimitReason);
-                        return;
-                    }
-
-                    if (!riftReservations.SatisfiesReservations(
+                    if (!SatisfiesRiftMarkers(
                             placement,
+                            lowerOrbit,
+                            upperOrbit,
+                            cursorWorld,
+                            bandPhaseDegree,
+                            riftMarkerAngles,
                             writableOrbitIndices,
-                            enforceReservations,
-                            out string reservationReason,
-                            reservationDemandLog))
+                            out string markerReason,
+                            out int markerOrbitIndex,
+                            out float markerAngle,
+                            out float markerCursorWorld))
                     {
-                        hasReservationRejection |= reservationReason == "rift reservation due";
-                        if (reservationReason == "rift outside reservation" &&
-                            riftReservations.TryGetNextReservationCursorWorld(
-                                lowerOrbit,
-                                upperOrbit,
-                                cursorWorld,
-                                bandPhaseDegree,
-                                writableOrbitIndices,
-                                out float reservationCursorWorld))
+                        hasMarkerRejection |= markerReason == "rift marker due";
+                        if (firstRejectedMarkerOrbitIndex < 0 && markerOrbitIndex >= 0)
                         {
-                            nearestNextCursorWorld = Math.Min(nearestNextCursorWorld, reservationCursorWorld);
+                            firstRejectedMarkerOrbitIndex = markerOrbitIndex;
+                            firstRejectedMarkerAngle = markerAngle;
                         }
 
-                        rejectionLog.Add(reservationReason);
+                        if (markerCursorWorld < float.PositiveInfinity)
+                        {
+                            nearestNextCursorWorld = Math.Min(nearestNextCursorWorld, markerCursorWorld);
+                        }
+
+                        rejectionLog.Add(markerReason);
                         return;
                     }
 
@@ -302,10 +328,106 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 }
             }
 
-            rejectedByReservation = hasReservationRejection;
-            reservationDemands = reservationDemandLog;
+            rejectedByMarker = hasMarkerRejection;
+            rejectedMarkerOrbitIndex = firstRejectedMarkerOrbitIndex;
+            rejectedMarkerAngle = firstRejectedMarkerAngle;
             reachedOrbitEnd = hasOrbitEndRejection;
             nextCursorWorld = nearestNextCursorWorld;
+            return candidates;
+        }
+
+        private List<WeightedPatternCandidate> BuildForcedRiftCandidates(
+            Orbit lowerOrbit,
+            Orbit upperOrbit,
+            float cursorWorld,
+            float bandPhaseDegree,
+            PatternDifficultyStageSnapshot stage,
+            IReadOnlyList<ObstaclePatternSnapshot> history,
+            LevelBuildContext context,
+            PatternRejectionLog rejectionLog,
+            HashSet<int> writableOrbitIndices,
+            int requiredOrbitIndex)
+        {
+            PatternGenerationSettings settings = context.Settings.Patterns;
+            Orbit requiredOrbit = requiredOrbitIndex == lowerOrbit.Index
+                ? lowerOrbit
+                : requiredOrbitIndex == upperOrbit.Index
+                    ? upperOrbit
+                    : null;
+            List<WeightedPatternCandidate> candidates = new List<WeightedPatternCandidate>();
+            if (requiredOrbit == null)
+            {
+                rejectionLog.Add("rift marker orbit is outside current band");
+                return candidates;
+            }
+
+            for (int i = 0; i < settings.Patterns.Count && candidates.Count < settings.MaxSelectionAttempts; i++)
+            {
+                ObstaclePatternSnapshot pattern = settings.Patterns[i];
+                if (!IsEligibleByContext(pattern, stage, lowerOrbit.Index, out string contextReason))
+                {
+                    rejectionLog.Add(contextReason);
+                    continue;
+                }
+
+                TryAddCandidate(false);
+
+                if (pattern.AllowFlip)
+                {
+                    TryAddCandidate(true);
+                }
+
+                void TryAddCandidate(bool flipped)
+                {
+                    if (cursorWorld >= lowerOrbit.Circumference ||
+                        cursorWorld + pattern.Length > lowerOrbit.Circumference + OrbitBoundaryTolerance)
+                    {
+                        rejectionLog.Add("forced rift pattern exceeds remaining orbit span");
+                        return;
+                    }
+
+                    PatternPlacement placement = CreatePlacement(
+                        pattern,
+                        flipped,
+                        lowerOrbit,
+                        upperOrbit,
+                        cursorWorld,
+                        bandPhaseDegree,
+                        context,
+                        randomizeSpikeHeight: false);
+
+                    if (CountPlacedRifts(placement, requiredOrbit) <= 0)
+                    {
+                        rejectionLog.Add("forced rift pattern has no rift on marker orbit");
+                        return;
+                    }
+
+                    float weight = PatternWeightCalculator.GetEffectiveWeight(pattern, stage, history) *
+                                   GetNeighborRiftWeightModifier(
+                                       placement,
+                                       context,
+                                       writableOrbitIndices);
+                    if (weight <= 0.0f)
+                    {
+                        rejectionLog.Add("forced rift weight reduced to zero");
+                        return;
+                    }
+
+                    if (!IsPlacementCompatibleWithExistingObjects(
+                            placement,
+                            context,
+                            writableOrbitIndices,
+                            out string placementReason,
+                            out _))
+                    {
+                        rejectionLog.Add($"forced rift {placementReason}");
+                        return;
+                    }
+
+                    candidates.Add(new WeightedPatternCandidate(placement, weight));
+                }
+            }
+
             return candidates;
         }
 
@@ -485,6 +607,10 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     context.Settings.GravityWell.ReturnDuration,
                     context.Settings.GravityWell.VisualAlpha),
                 PatternSlotType.Rift => new Rift(context.Settings.Rift.RiftPadding),
+                PatternSlotType.LaserGate => new LaserGate(
+                    context.Settings.LaserGate.PassTime,
+                    context.Settings.LaserGate.ChargingTime,
+                    context.Settings.LaserGate.ActiveTime),
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unsupported obstacle pattern slot type.")
             };
         }
@@ -574,31 +700,34 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             out string reason,
             out float nextCursorWorld)
         {
-            float nearestNextCursorWorld = float.PositiveInfinity;
-            for (int i = 0; i < placement.Objects.Count; i++)
+            List<PatternPlacedObject> blockingObjects = CreateBlockingObjects(placement, context);
+            if (HasInternalBlockingConflict(blockingObjects, writableOrbitIndices))
             {
-                PatternPlacedObject placedObject = placement.Objects[i];
+                reason = "placement has internal obstacle overlap";
+                nextCursorWorld = float.PositiveInfinity;
+                return false;
+            }
+
+            float nearestNextCursorWorld = float.PositiveInfinity;
+            for (int i = 0; i < blockingObjects.Count; i++)
+            {
+                PatternPlacedObject placedObject = blockingObjects[i];
                 if (!writableOrbitIndices.Contains(placedObject.Orbit.Index))
                 {
                     continue;
                 }
 
-                bool blockedByOrbit = IsBlockedBy(
+                List<ArcObject> existingObjects = GetExistingBlockingObjects(
                     placedObject.Orbit,
-                    placedObject.ArcObject,
-                    placedObject.Orbit.OrbitObjects,
-                    context.Settings.Rift,
-                    out float orbitShiftDegrees);
-                bool blockedByStaged = IsBlockedBy(
-                    placedObject.Orbit,
-                    placedObject.ArcObject,
-                    context.GetStagedExistingOrbitObjects(placedObject.Orbit),
-                    context.Settings.Rift,
-                    out float stagedShiftDegrees);
+                    context);
 
-                if (blockedByOrbit || blockedByStaged)
+                if (IsBlockedBy(
+                        placedObject.Orbit,
+                        placedObject.ArcObject,
+                        existingObjects,
+                        context.Settings.Rift,
+                        out float shiftDegrees))
                 {
-                    float shiftDegrees = Math.Min(orbitShiftDegrees, stagedShiftDegrees);
                     float shiftedCursorWorld = placement.StartWorld +
                                                DegreesToWorld(shiftDegrees, placement.LowerOrbit.Radius);
                     nearestNextCursorWorld = Math.Min(nearestNextCursorWorld, shiftedCursorWorld);
@@ -615,6 +744,156 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             reason = string.Empty;
             nextCursorWorld = float.PositiveInfinity;
             return true;
+        }
+
+        private static List<PatternPlacedObject> CreateBlockingObjects(
+            PatternPlacement placement,
+            LevelBuildContext context)
+        {
+            List<PatternPlacedObject> blockingObjects = new List<PatternPlacedObject>(placement.Objects.Count);
+            for (int i = 0; i < placement.Objects.Count; i++)
+            {
+                PatternPlacedObject placedObject = placement.Objects[i];
+                blockingObjects.Add(placedObject);
+
+                if (TryCreateLaserGateTargetOccupancy(
+                        placedObject.Orbit,
+                        placedObject.ArcObject,
+                        context,
+                        out PatternPlacedObject targetOccupancy))
+                {
+                    blockingObjects.Add(targetOccupancy);
+                }
+            }
+
+            return blockingObjects;
+        }
+
+        private static bool HasInternalBlockingConflict(
+            IReadOnlyList<PatternPlacedObject> objects,
+            HashSet<int> writableOrbitIndices)
+        {
+            for (int i = 0; i < objects.Count; i++)
+            {
+                PatternPlacedObject candidate = objects[i];
+                if (!writableOrbitIndices.Contains(candidate.Orbit.Index))
+                {
+                    continue;
+                }
+
+                for (int j = 0; j < i; j++)
+                {
+                    PatternPlacedObject existing = objects[j];
+                    if (!ReferenceEquals(candidate.Orbit, existing.Orbit) ||
+                        !BlocksPlacement(candidate.ArcObject, existing.ArcObject))
+                    {
+                        continue;
+                    }
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static List<ArcObject> GetExistingBlockingObjects(
+            Orbit orbit,
+            LevelBuildContext context)
+        {
+            List<ArcObject> objects = new List<ArcObject>();
+            objects.AddRange(orbit.OrbitObjects);
+            objects.AddRange(context.GetStagedExistingOrbitObjects(orbit));
+            AddAdjacentLaserGateOccupancies(orbit, context, objects);
+            return objects;
+        }
+
+        private static void AddAdjacentLaserGateOccupancies(
+            Orbit targetOrbit,
+            LevelBuildContext context,
+            List<ArcObject> objects)
+        {
+            TryAddFromSource(targetOrbit.Index - 1, ArcType.Outer, ArcType.Inner);
+            TryAddFromSource(targetOrbit.Index + 1, ArcType.Inner, ArcType.Outer);
+
+            void TryAddFromSource(int sourceIndex, ArcType sourceSide, ArcType targetSide)
+            {
+                Orbit sourceOrbit = FindOrbit(context, sourceIndex);
+                if (sourceOrbit == null)
+                {
+                    return;
+                }
+
+                AddSourceObjects(sourceOrbit.OrbitObjects);
+                AddSourceObjects(context.GetStagedExistingOrbitObjects(sourceOrbit));
+
+                void AddSourceObjects(IReadOnlyList<ArcObject> sourceObjects)
+                {
+                    for (int i = 0; i < sourceObjects.Count; i++)
+                    {
+                        ArcObject sourceObject = sourceObjects[i];
+                        if (sourceObject.Object.Type != ArcObjectType.LaserGate ||
+                            sourceObject.Type != sourceSide)
+                        {
+                            continue;
+                        }
+
+                        objects.Add(CreateLaserGateTargetArcObject(targetOrbit, sourceObject, targetSide));
+                    }
+                }
+            }
+        }
+
+        private static bool TryCreateLaserGateTargetOccupancy(
+            Orbit sourceOrbit,
+            ArcObject sourceObject,
+            LevelBuildContext context,
+            out PatternPlacedObject targetOccupancy)
+        {
+            targetOccupancy = default;
+            if (sourceObject.Object.Type != ArcObjectType.LaserGate)
+            {
+                return false;
+            }
+
+            int targetIndex;
+            ArcType targetSide;
+            switch (sourceObject.Type)
+            {
+                case ArcType.Outer:
+                    targetIndex = sourceOrbit.Index + 1;
+                    targetSide = ArcType.Inner;
+                    break;
+                case ArcType.Inner:
+                    targetIndex = sourceOrbit.Index - 1;
+                    targetSide = ArcType.Outer;
+                    break;
+                default:
+                    return false;
+            }
+
+            Orbit targetOrbit = FindOrbit(context, targetIndex);
+            if (targetOrbit == null)
+            {
+                return false;
+            }
+
+            targetOccupancy = new PatternPlacedObject(
+                targetOrbit,
+                CreateLaserGateTargetArcObject(targetOrbit, sourceObject, targetSide));
+            return true;
+        }
+
+        private static ArcObject CreateLaserGateTargetArcObject(
+            Orbit targetOrbit,
+            ArcObject sourceObject,
+            ArcType targetSide)
+        {
+            Arc targetArc = new Arc(
+                sourceObject.Arc.StartAngleDegree,
+                sourceObject.Arc.EndAngleDegree,
+                targetOrbit.Radius);
+            return new ArcObject(targetArc, sourceObject.Object, targetSide);
         }
 
         private static bool IsBlockedBy(
@@ -670,11 +949,35 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         {
             if (candidate.Type == ArcType.TwoSide || existing.Type == ArcType.TwoSide)
             {
-                return candidate.Arc.IsOverlapping(existing.Arc);
+                return HasPositiveOverlap(candidate.Arc, existing.Arc);
             }
 
             return candidate.Type == existing.Type &&
-                   candidate.Arc.IsOverlapping(existing.Arc);
+                   HasPositiveOverlap(candidate.Arc, existing.Arc);
+        }
+
+        private static bool HasPositiveOverlap(Arc first, Arc second)
+        {
+            (float firstStart, float firstEnd) = OrbitMath.NormalizeInterval(
+                first.StartAngleDegree,
+                first.EndAngleDegree);
+            (float secondStart, float secondEnd) = OrbitMath.NormalizeInterval(
+                second.StartAngleDegree,
+                second.EndAngleDegree);
+
+            for (int turn = -1; turn <= 1; turn++)
+            {
+                float shiftedSecondStart = secondStart + turn * 360.0f;
+                float shiftedSecondEnd = secondEnd + turn * 360.0f;
+                float overlapStart = Math.Max(firstStart, shiftedSecondStart);
+                float overlapEnd = Math.Min(firstEnd, shiftedSecondEnd);
+                if (overlapEnd - overlapStart > ArcOverlapToleranceDegrees)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static float GetRequiredRiftCenterDistance(
@@ -752,6 +1055,490 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             return nearestShift;
         }
 
+        private static Dictionary<int, List<float>> CreateRiftMarkerAngles(
+            LevelBuildContext context,
+            HashSet<int> writableOrbitIndices,
+            int seed)
+        {
+            Dictionary<int, List<float>> markers = new Dictionary<int, List<float>>();
+            foreach (int orbitIndex in writableOrbitIndices)
+            {
+                Orbit orbit = FindOrbit(context, orbitIndex);
+                if (orbit == null || !context.Settings.ShouldGenerateContent(orbit))
+                {
+                    continue;
+                }
+
+                IReadOnlyList<ArcObject> existingRifts = orbit.GetOrbitObjectsByType(ArcObjectType.Rift);
+                int targetCount = context.Settings.Rift.GetTargetCount(orbit);
+                int markerCount = Math.Max(0, targetCount - existingRifts.Count);
+                List<float> angles = CreateRiftMarkerAngles(
+                    context,
+                    orbit,
+                    existingRifts,
+                    markerCount,
+                    seed);
+                if (angles.Count > 0)
+                {
+                    markers[orbit.Index] = angles;
+                }
+            }
+
+            return markers;
+        }
+
+        private static List<float> CreateRiftMarkerAngles(
+            LevelBuildContext context,
+            Orbit orbit,
+            IReadOnlyList<ArcObject> existingRifts,
+            int targetCount,
+            int seed)
+        {
+            List<float> markers = new List<float>();
+            if (targetCount <= 0)
+            {
+                return markers;
+            }
+
+            List<float> occupiedAngles = GetExistingRiftAngles(existingRifts);
+            LevelRandom random = new LevelRandom(CreateRiftMarkerSeed(seed, orbit.Index));
+            int attempts = 0;
+            int maxAttempts = Math.Max(context.Settings.Rift.MaxPlacementAttempts, targetCount);
+            float minCenterDistance = context.Settings.Rift.GetEffectiveMinCenterDistanceBetweenRifts(orbit);
+
+            while (markers.Count < targetCount && attempts < maxAttempts)
+            {
+                attempts++;
+                float angle = random.Range(0.0f, 360.0f);
+                if (IsTooCloseToExistingAngle(angle, occupiedAngles, orbit.Radius, minCenterDistance))
+                {
+                    continue;
+                }
+
+                markers.Add(angle);
+                occupiedAngles.Add(angle);
+            }
+
+            markers.Sort();
+            if (markers.Count < targetCount)
+            {
+                context.AddWarning(
+                    $"Created {markers.Count}/{targetCount} random rift markers for orbit {orbit.Index} " +
+                    $"after {attempts} attempts. Adjust rift count, length, spacing, or max attempts.");
+            }
+
+            return markers;
+        }
+
+        private static bool SatisfiesRiftMarkers(
+            PatternPlacement placement,
+            Orbit lowerOrbit,
+            Orbit upperOrbit,
+            float cursorWorld,
+            float bandPhaseDegree,
+            Dictionary<int, List<float>> riftMarkerAngles,
+            HashSet<int> writableOrbitIndices,
+            out string reason,
+            out int markerOrbitIndex,
+            out float markerAngle,
+            out float markerCursorWorld)
+        {
+            string resultReason = string.Empty;
+            int resultMarkerOrbitIndex = -1;
+            float resultMarkerAngle = 0.0f;
+            float resultMarkerCursorWorld = float.PositiveInfinity;
+
+            (int OrbitIndex, int CrossedMarkers, int PlacedRifts, float FirstMarkerAngle) lowerState =
+                GetOrbitMarkerState(lowerOrbit);
+            (int OrbitIndex, int CrossedMarkers, int PlacedRifts, float FirstMarkerAngle) upperState =
+                GetOrbitMarkerState(upperOrbit);
+            bool hasCrossedMarker = lowerState.CrossedMarkers > 0 || upperState.CrossedMarkers > 0;
+            bool placesRift = lowerState.PlacedRifts > 0 || upperState.PlacedRifts > 0;
+            bool satisfiesCrossedMarker = (lowerState.CrossedMarkers > 0 && lowerState.PlacedRifts > 0) ||
+                                          (upperState.CrossedMarkers > 0 && upperState.PlacedRifts > 0);
+            bool placesRiftOutsideMarker = (lowerState.PlacedRifts > lowerState.CrossedMarkers) ||
+                                           (upperState.PlacedRifts > upperState.CrossedMarkers);
+            bool result = true;
+
+            if (placesRiftOutsideMarker)
+            {
+                resultReason = "rift outside marker";
+                TryGetNextRiftMarkerCursorWorld(
+                    lowerOrbit,
+                    upperOrbit,
+                    cursorWorld,
+                    bandPhaseDegree,
+                    riftMarkerAngles,
+                    writableOrbitIndices,
+                    out resultMarkerCursorWorld);
+                result = false;
+            }
+            else if (hasCrossedMarker && !satisfiesCrossedMarker)
+            {
+                (int OrbitIndex, int CrossedMarkers, int PlacedRifts, float FirstMarkerAngle) firstDueState =
+                    lowerState.CrossedMarkers > 0 ? lowerState : upperState;
+                resultReason = "rift marker due";
+                resultMarkerOrbitIndex = firstDueState.OrbitIndex;
+                resultMarkerAngle = firstDueState.FirstMarkerAngle;
+                result = false;
+            }
+            else if (!hasCrossedMarker && placesRift)
+            {
+                resultReason = "rift outside marker";
+                TryGetNextRiftMarkerCursorWorld(
+                    lowerOrbit,
+                    upperOrbit,
+                    cursorWorld,
+                    bandPhaseDegree,
+                    riftMarkerAngles,
+                    writableOrbitIndices,
+                    out resultMarkerCursorWorld);
+                result = false;
+            }
+
+            reason = resultReason;
+            markerOrbitIndex = resultMarkerOrbitIndex;
+            markerAngle = resultMarkerAngle;
+            markerCursorWorld = resultMarkerCursorWorld;
+            return result;
+
+            (int OrbitIndex, int CrossedMarkers, int PlacedRifts, float FirstMarkerAngle) GetOrbitMarkerState(Orbit orbit)
+            {
+                if (!writableOrbitIndices.Contains(orbit.Index))
+                {
+                    return (orbit.Index, 0, 0, 0.0f);
+                }
+
+                int placedRifts = CountPlacedRifts(placement, orbit);
+                int crossedMarkers = CountCrossedRiftMarkers(
+                    orbit,
+                    placement,
+                    riftMarkerAngles,
+                    out float firstMarkerAngle);
+
+                return (
+                    orbit.Index,
+                    crossedMarkers,
+                    placedRifts,
+                    firstMarkerAngle);
+            }
+        }
+
+        private static float GetNeighborRiftWeightModifier(
+            PatternPlacement placement,
+            LevelBuildContext context,
+            HashSet<int> writableOrbitIndices)
+        {
+            bool containsRift = false;
+            float neighborMultiplier = 1.0f;
+            for (int i = 0; i < placement.Objects.Count; i++)
+            {
+                PatternPlacedObject placedObject = placement.Objects[i];
+                if (placedObject.ArcObject.Object.Type != ArcObjectType.Rift ||
+                    !writableOrbitIndices.Contains(placedObject.Orbit.Index))
+                {
+                    continue;
+                }
+
+                containsRift = true;
+                neighborMultiplier = Math.Min(
+                    neighborMultiplier,
+                    GetNeighborRiftWeightMultiplier(placedObject, context));
+            }
+
+            return containsRift ? neighborMultiplier : 1.0f;
+        }
+
+        private static float GetNeighborRiftWeightMultiplier(
+            PatternPlacedObject candidate,
+            LevelBuildContext context)
+        {
+            Orbit previousOrbit = FindOrbit(context, candidate.Orbit.Index - 1);
+            if (previousOrbit == null)
+            {
+                return 1.0f;
+            }
+
+            float candidateAngle = candidate.ArcObject.Arc.MidAngleDegree();
+            float nearestDistance = float.PositiveInfinity;
+            UpdateNearestDistance(previousOrbit.OrbitObjects);
+            UpdateNearestDistance(context.GetStagedExistingOrbitObjects(previousOrbit));
+
+            return nearestDistance < float.PositiveInfinity
+                ? context.Settings.Rift.GetNeighborWeightMultiplier(nearestDistance)
+                : 1.0f;
+
+            void UpdateNearestDistance(IReadOnlyList<ArcObject> objects)
+            {
+                for (int i = 0; i < objects.Count; i++)
+                {
+                    ArcObject existing = objects[i];
+                    if (existing.Object.Type != ArcObjectType.Rift)
+                    {
+                        continue;
+                    }
+
+                    float distance = CircularAngleDistance(
+                        candidateAngle,
+                        existing.Arc.MidAngleDegree());
+                    nearestDistance = Math.Min(
+                        nearestDistance,
+                        DegreesToWorld(distance, candidate.ArcObject.Arc.Radius));
+                }
+            }
+        }
+
+        private static void FulfillRiftMarkers(
+            PatternPlacement placement,
+            Dictionary<int, List<float>> riftMarkerAngles,
+            HashSet<int> writableOrbitIndices)
+        {
+            FulfillOrbit(placement.LowerOrbit);
+            FulfillOrbit(placement.UpperOrbit);
+
+            void FulfillOrbit(Orbit orbit)
+            {
+                if (!writableOrbitIndices.Contains(orbit.Index) ||
+                    !riftMarkerAngles.TryGetValue(orbit.Index, out List<float> markers))
+                {
+                    return;
+                }
+
+                int placedRifts = CountPlacedRifts(placement, orbit);
+                if (placedRifts <= 0)
+                {
+                    return;
+                }
+
+                List<float> crossedAngles = GetCrossedRiftMarkerAngles(orbit, placement, riftMarkerAngles);
+                for (int i = 0; i < crossedAngles.Count && i < placedRifts; i++)
+                {
+                    markers.Remove(crossedAngles[i]);
+                }
+            }
+        }
+
+        private static void FulfillSpecificRiftMarker(
+            PatternPlacement placement,
+            Dictionary<int, List<float>> riftMarkerAngles,
+            int orbitIndex,
+            float angle)
+        {
+            if (!riftMarkerAngles.TryGetValue(orbitIndex, out List<float> markers))
+            {
+                return;
+            }
+
+            Orbit orbit = placement.LowerOrbit.Index == orbitIndex
+                ? placement.LowerOrbit
+                : placement.UpperOrbit.Index == orbitIndex
+                    ? placement.UpperOrbit
+                    : null;
+            if (orbit == null || CountPlacedRifts(placement, orbit) <= 0)
+            {
+                return;
+            }
+
+            int markerIndex = markers.IndexOf(angle);
+            if (markerIndex >= 0)
+            {
+                markers.RemoveAt(markerIndex);
+            }
+        }
+
+        private static void WarnAndSkipRiftMarker(
+            LevelBuildContext context,
+            Dictionary<int, List<float>> riftMarkerAngles,
+            HashSet<string> skippedMarkerWarnings,
+            int orbitIndex,
+            float angle,
+            string rejectionSummary)
+        {
+            if (!riftMarkerAngles.TryGetValue(orbitIndex, out List<float> markers))
+            {
+                return;
+            }
+
+            int markerIndex = markers.IndexOf(angle);
+            if (markerIndex < 0)
+            {
+                return;
+            }
+
+            Orbit orbit = FindOrbit(context, orbitIndex);
+            string key = $"{orbitIndex}:{angle:F3}";
+            if (skippedMarkerWarnings.Add(key))
+            {
+                string circumference = orbit != null ? orbit.Circumference.ToString("F2") : "unknown";
+                context.AddWarning(
+                    $"No authored rift pattern could cover rift marker {angle:F2} on orbit {orbitIndex} " +
+                    $"(circumference {circumference}). Skipping that marker. Rejections: {rejectionSummary}.");
+            }
+
+            markers.RemoveAt(markerIndex);
+        }
+
+        private static bool TryGetNextRiftMarkerCursorWorld(
+            Orbit lowerOrbit,
+            Orbit upperOrbit,
+            float cursorWorld,
+            float bandPhaseDegree,
+            Dictionary<int, List<float>> riftMarkerAngles,
+            HashSet<int> writableOrbitIndices,
+            out float nextCursorWorld)
+        {
+            float next = float.PositiveInfinity;
+            TryUpdateNext(lowerOrbit);
+            TryUpdateNext(upperOrbit);
+            nextCursorWorld = next;
+            return nextCursorWorld < float.PositiveInfinity;
+
+            void TryUpdateNext(Orbit orbit)
+            {
+                if (!writableOrbitIndices.Contains(orbit.Index) ||
+                    !riftMarkerAngles.TryGetValue(orbit.Index, out List<float> markers))
+                {
+                    return;
+                }
+
+                for (int i = 0; i < markers.Count; i++)
+                {
+                    float cursorAtMarker = DegreesToWorld(
+                        OrbitMath.NormalizeDegrees360(markers[i] - bandPhaseDegree),
+                        lowerOrbit.Radius);
+                    if (cursorAtMarker > cursorWorld + PatternSlot.MinimumSpaceLength)
+                    {
+                        next = Math.Min(next, cursorAtMarker);
+                    }
+                }
+            }
+        }
+
+        private static int CountPlacedRifts(PatternPlacement placement, Orbit orbit)
+        {
+            int count = 0;
+            for (int i = 0; i < placement.Objects.Count; i++)
+            {
+                PatternPlacedObject placedObject = placement.Objects[i];
+                if (ReferenceEquals(placedObject.Orbit, orbit) &&
+                    placedObject.ArcObject.Object.Type == ArcObjectType.Rift)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private static int CountCrossedRiftMarkers(
+            Orbit orbit,
+            PatternPlacement placement,
+            Dictionary<int, List<float>> riftMarkerAngles,
+            out float firstAngle)
+        {
+            firstAngle = 0.0f;
+            int count = 0;
+            if (!riftMarkerAngles.TryGetValue(orbit.Index, out List<float> markers))
+            {
+                return count;
+            }
+
+            for (int i = 0; i < markers.Count; i++)
+            {
+                float angle = markers[i];
+                if (!IsAngleInPlacementSpan(angle, orbit, placement))
+                {
+                    continue;
+                }
+
+                if (count == 0)
+                {
+                    firstAngle = angle;
+                }
+
+                count++;
+            }
+
+            return count;
+        }
+
+        private static List<float> GetCrossedRiftMarkerAngles(
+            Orbit orbit,
+            PatternPlacement placement,
+            Dictionary<int, List<float>> riftMarkerAngles)
+        {
+            List<float> crossedAngles = new List<float>();
+            if (!riftMarkerAngles.TryGetValue(orbit.Index, out List<float> markers))
+            {
+                return crossedAngles;
+            }
+
+            for (int i = 0; i < markers.Count; i++)
+            {
+                float angle = markers[i];
+                if (IsAngleInPlacementSpan(angle, orbit, placement))
+                {
+                    crossedAngles.Add(angle);
+                }
+            }
+
+            return crossedAngles;
+        }
+
+        private static bool IsAngleInPlacementSpan(
+            float angle,
+            Orbit orbit,
+            PatternPlacement placement)
+        {
+            float start = OrbitMath.NormalizeDegrees360(placement.StartAngleDegree);
+            float delta = OrbitMath.DeltaDegrees(placement.StartAngleDegree, placement.EndAngleDegree);
+            float angleDelta = OrbitMath.NormalizeDegrees360(angle - start);
+            float tolerance = WorldToDegrees(PatternSlot.MinimumSpaceLength, orbit.Radius);
+            return angleDelta <= delta + tolerance;
+        }
+
+        private static List<float> GetExistingRiftAngles(IReadOnlyList<ArcObject> existingRifts)
+        {
+            List<float> angles = new List<float>(existingRifts.Count);
+            for (int i = 0; i < existingRifts.Count; i++)
+            {
+                angles.Add(OrbitMath.NormalizeDegrees360(existingRifts[i].Arc.MidAngleDegree()));
+            }
+
+            return angles;
+        }
+
+        private static bool IsTooCloseToExistingAngle(
+            float candidateAngle,
+            IReadOnlyList<float> existingAngles,
+            float radius,
+            float minDistance)
+        {
+            for (int i = 0; i < existingAngles.Count; i++)
+            {
+                float distance = DegreesToWorld(
+                    CircularAngleDistance(candidateAngle, existingAngles[i]),
+                    radius);
+                if (distance < minDistance)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static int CreateRiftMarkerSeed(int seed, int orbitIndex)
+        {
+            unchecked
+            {
+                int hash = seed;
+                hash = (hash * 397) ^ orbitIndex;
+                hash = (hash * 397) ^ 0x52F74A3D;
+                return hash;
+            }
+        }
+
         private static IReadOnlyList<PatternSlotSnapshot> GetLane(
             ObstaclePatternSnapshot pattern,
             bool flipped,
@@ -805,29 +1592,27 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             return indices;
         }
 
-        private static void WarnForUnmetRiftReservations(
-            IReadOnlyList<Orbit> generatedOrbits,
+        private static void WarnForUnmetRiftMarkers(
             LevelBuildContext context,
-            RiftReservationTracker riftReservations)
+            Dictionary<int, List<float>> riftMarkerAngles)
         {
-            for (int i = 0; i < generatedOrbits.Count; i++)
+            foreach (KeyValuePair<int, List<float>> marker in riftMarkerAngles)
             {
-                Orbit orbit = generatedOrbits[i];
-                if (!context.Settings.ShouldGenerateContent(orbit))
+                if (marker.Value.Count == 0)
                 {
                     continue;
                 }
 
-                int target = riftReservations.GetTarget(orbit);
-                int count = riftReservations.GetCount(orbit);
-                if (count == target)
+                Orbit orbit = FindOrbit(context, marker.Key);
+                if (orbit == null || !context.Settings.ShouldGenerateContent(orbit))
                 {
                     continue;
                 }
 
                 context.AddWarning(
-                    $"Rift reservation mismatch for orbit {orbit.Index}: generated {count}/{target} rifts " +
-                    $"at radius {orbit.Radius:F2}. Add or adjust authored rift patterns to cover reserved rift positions.");
+                    $"Rift marker mismatch for orbit {orbit.Index}: {marker.Value.Count} rift marker(s) " +
+                    $"were not fulfilled " +
+                    $"at radius {orbit.Radius:F2}. Add or adjust authored rift patterns to cover marker positions.");
             }
         }
 
@@ -849,626 +1634,5 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             return Math.Min(delta, 360.0f - delta);
         }
 
-        private sealed class RiftReservationDemand
-        {
-            public Orbit Orbit { get; }
-            public string Lane { get; }
-            public int PlacedRifts { get; }
-            public IReadOnlyList<RiftReservation> Reservations { get; }
-            public bool HasMissingRifts => PlacedRifts < Reservations.Count;
-
-            public RiftReservationDemand(
-                Orbit orbit,
-                string lane,
-                int placedRifts,
-                IReadOnlyList<RiftReservation> reservations)
-            {
-                Orbit = orbit;
-                Lane = lane;
-                PlacedRifts = placedRifts;
-                Reservations = reservations;
-            }
-        }
-
-        private sealed class RiftReservation
-        {
-            public float PositionWorld { get; }
-            public bool Fulfilled { get; private set; }
-            public bool Skipped { get; private set; }
-            public bool Active => !Fulfilled && !Skipped;
-
-            public RiftReservation(float positionWorld)
-            {
-                PositionWorld = positionWorld;
-            }
-
-            public void Fulfill()
-            {
-                Fulfilled = true;
-            }
-
-            public void Skip()
-            {
-                Skipped = true;
-            }
-        }
-
-        private sealed class RiftReservationTracker
-        {
-            private readonly LevelBuildContext _context;
-            private readonly RiftGenerationSettings _settings;
-            private readonly Dictionary<int, Orbit> _orbits = new Dictionary<int, Orbit>();
-            private readonly Dictionary<int, int> _initialCounts = new Dictionary<int, int>();
-            private readonly Dictionary<int, int> _counts = new Dictionary<int, int>();
-            private readonly Dictionary<int, List<RiftReservation>> _reservations =
-                new Dictionary<int, List<RiftReservation>>();
-            private readonly HashSet<string> _missingReservationWarnings = new HashSet<string>();
-            private readonly int _seed;
-
-            public RiftReservationTracker(
-                LevelBuildContext context,
-                IReadOnlyList<Orbit> orbits,
-                RiftGenerationSettings settings,
-                int seed)
-            {
-                _context = context;
-                _settings = settings;
-                _seed = seed;
-                for (int i = 0; i < orbits.Count; i++)
-                {
-                    _orbits[orbits[i].Index] = orbits[i];
-                }
-            }
-
-            public int GetTarget(Orbit orbit)
-            {
-                EnsureOrbit(orbit);
-                return Math.Max(_settings.GetTargetCount(orbit), _initialCounts[orbit.Index]);
-            }
-
-            public int GetCount(Orbit orbit)
-            {
-                EnsureOrbit(orbit);
-                return _counts[orbit.Index];
-            }
-
-            public float GetWeightModifier(
-                PatternPlacement placement,
-                LevelBuildContext context,
-                HashSet<int> writableOrbitIndices)
-            {
-                bool containsRift = false;
-                float neighborMultiplier = 1.0f;
-
-                for (int i = 0; i < placement.Objects.Count; i++)
-                {
-                    PatternPlacedObject placedObject = placement.Objects[i];
-                    if (placedObject.ArcObject.Object.Type != ArcObjectType.Rift ||
-                        !writableOrbitIndices.Contains(placedObject.Orbit.Index))
-                    {
-                        continue;
-                    }
-
-                    containsRift = true;
-                    EnsureOrbit(placedObject.Orbit);
-                    neighborMultiplier = Math.Min(
-                        neighborMultiplier,
-                        GetNeighborWeightMultiplier(placedObject, context));
-                }
-
-                return containsRift
-                    ? neighborMultiplier
-                    : 1.0f;
-            }
-
-            public bool WouldExceed(
-                PatternPlacement placement,
-                HashSet<int> writableOrbitIndices,
-                out string reason)
-            {
-                if (WouldExceed(
-                        placement.LowerOrbit,
-                        CountPlacedRifts(placement, placement.LowerOrbit, writableOrbitIndices),
-                        out reason) ||
-                    WouldExceed(
-                        placement.UpperOrbit,
-                        CountPlacedRifts(placement, placement.UpperOrbit, writableOrbitIndices),
-                        out reason))
-                {
-                    return true;
-                }
-
-                reason = string.Empty;
-                return false;
-            }
-
-            public bool SatisfiesReservations(
-                PatternPlacement placement,
-                HashSet<int> writableOrbitIndices,
-                bool requireCoveredReservations,
-                out string reason,
-                List<RiftReservationDemand> reservationDemandLog)
-            {
-                List<RiftReservationDemand> reservationDemands = GetReservationDemands(
-                    placement,
-                    writableOrbitIndices,
-                    requireCoveredReservations);
-                if (reservationDemands.Count == 0)
-                {
-                    reason = string.Empty;
-                    return true;
-                }
-
-                bool hasExcessRifts = HasExcessRifts(reservationDemands);
-                bool satisfiesAnyReservation = SatisfiesAnyReservation(reservationDemands);
-                if (!hasExcessRifts &&
-                    (!requireCoveredReservations || satisfiesAnyReservation))
-                {
-                    reason = string.Empty;
-                    return true;
-                }
-
-                reservationDemandLog.AddRange(reservationDemands);
-                reason = hasExcessRifts ? "rift outside reservation" : "rift reservation due";
-                return false;
-            }
-
-            public void Record(PatternPlacement placement, HashSet<int> writableOrbitIndices)
-            {
-                RecordOrbit(placement, placement.LowerOrbit, writableOrbitIndices);
-                RecordOrbit(placement, placement.UpperOrbit, writableOrbitIndices);
-            }
-
-            public void WarnMissingReservationPatterns(
-                LevelBuildContext context,
-                IReadOnlyList<RiftReservationDemand> demands)
-            {
-                for (int i = 0; i < demands.Count; i++)
-                {
-                    RiftReservationDemand demand = demands[i];
-                    if (!demand.HasMissingRifts)
-                    {
-                        continue;
-                    }
-
-                    for (int j = 0; j < demand.Reservations.Count; j++)
-                    {
-                        RiftReservation reservation = demand.Reservations[j];
-                        if (!reservation.Active)
-                        {
-                            continue;
-                        }
-
-                        string key = $"{demand.Orbit.Index}:{demand.Lane}:{reservation.PositionWorld:F3}";
-                        if (_missingReservationWarnings.Add(key))
-                        {
-                            context.AddWarning(
-                                $"No authored rift pattern could cover reserved rift position " +
-                                $"{reservation.PositionWorld:F2}/{demand.Orbit.Circumference:F2} on orbit " +
-                                $"{demand.Orbit.Index} ({demand.Lane} lane). Skipping that reservation.");
-                        }
-
-                        reservation.Skip();
-                    }
-                }
-            }
-
-            public bool TryGetNextReservationCursorWorld(
-                Orbit lowerOrbit,
-                Orbit upperOrbit,
-                float cursorWorld,
-                float bandPhaseDegree,
-                HashSet<int> writableOrbitIndices,
-                out float nextCursorWorld)
-            {
-                float next = float.PositiveInfinity;
-                TryUpdateNext(lowerOrbit);
-                TryUpdateNext(upperOrbit);
-                nextCursorWorld = next;
-                return nextCursorWorld < float.PositiveInfinity;
-
-                void TryUpdateNext(Orbit orbit)
-                {
-                    if (!writableOrbitIndices.Contains(orbit.Index))
-                    {
-                        return;
-                    }
-
-                    EnsureOrbit(orbit);
-                    List<RiftReservation> reservations = _reservations[orbit.Index];
-                    for (int i = 0; i < reservations.Count; i++)
-                    {
-                        RiftReservation reservation = reservations[i];
-                        if (!reservation.Active)
-                        {
-                            continue;
-                        }
-
-                        float markerAngle = WorldToDegrees(
-                            NormalizeWorldPosition(reservation.PositionWorld, orbit.Circumference),
-                            orbit.Radius);
-                        float cursorAtMarker = DegreesToWorld(
-                            OrbitMath.NormalizeDegrees360(markerAngle - bandPhaseDegree),
-                            lowerOrbit.Radius);
-                        if (cursorAtMarker > cursorWorld + PatternSlot.MinimumSpaceLength)
-                        {
-                            next = Math.Min(next, cursorAtMarker);
-                        }
-                    }
-                }
-            }
-
-            private bool WouldExceed(Orbit orbit, int addedRifts, out string reason)
-            {
-                if (addedRifts <= 0)
-                {
-                    reason = string.Empty;
-                    return false;
-                }
-
-                int target = GetTarget(orbit);
-                int count = GetCount(orbit);
-                if (count + addedRifts > target)
-                {
-                    reason = $"rift reservation exceeded for orbit {orbit.Index}";
-                    return true;
-                }
-
-                reason = string.Empty;
-                return false;
-            }
-
-            private List<RiftReservationDemand> GetReservationDemands(
-                PatternPlacement placement,
-                HashSet<int> writableOrbitIndices,
-                bool requireCoveredReservations)
-            {
-                List<RiftReservationDemand> demands = new List<RiftReservationDemand>();
-                if (writableOrbitIndices.Contains(placement.LowerOrbit.Index))
-                {
-                    AddReservationDemand(placement, placement.LowerOrbit, "lower", requireCoveredReservations, demands);
-                }
-
-                if (writableOrbitIndices.Contains(placement.UpperOrbit.Index))
-                {
-                    AddReservationDemand(placement, placement.UpperOrbit, "upper", requireCoveredReservations, demands);
-                }
-
-                return demands;
-            }
-
-            private void AddReservationDemand(
-                PatternPlacement placement,
-                Orbit orbit,
-                string lane,
-                bool requireCoveredReservations,
-                List<RiftReservationDemand> demands)
-            {
-                List<RiftReservation> reservations = GetActiveReservationsInSpan(orbit, placement);
-                int placedRifts = CountPlacedRifts(placement, orbit, new HashSet<int> { orbit.Index });
-
-                if (placedRifts > 0 ||
-                    (requireCoveredReservations && reservations.Count > 0))
-                {
-                    demands.Add(new RiftReservationDemand(orbit, lane, placedRifts, reservations));
-                }
-            }
-
-            private List<RiftReservation> GetActiveReservationsInSpan(Orbit orbit, PatternPlacement placement)
-            {
-                EnsureOrbit(orbit);
-                List<RiftReservation> reservations = _reservations[orbit.Index];
-                List<RiftReservation> result = new List<RiftReservation>();
-                for (int i = 0; i < reservations.Count; i++)
-                {
-                    RiftReservation reservation = reservations[i];
-                    if (reservation.Active &&
-                        IsWorldPositionInPlacementSpan(reservation.PositionWorld, orbit, placement))
-                    {
-                        result.Add(reservation);
-                    }
-                }
-
-                return result;
-            }
-
-            private float GetNeighborWeightMultiplier(
-                PatternPlacedObject candidate,
-                LevelBuildContext context)
-            {
-                if (!_orbits.TryGetValue(candidate.Orbit.Index - 1, out Orbit previousOrbit))
-                {
-                    return 1.0f;
-                }
-
-                float candidateAngle = candidate.ArcObject.Arc.MidAngleDegree();
-                float nearestDistance = float.PositiveInfinity;
-                UpdateNearestDistance(previousOrbit.OrbitObjects);
-                UpdateNearestDistance(context.GetStagedExistingOrbitObjects(previousOrbit));
-
-                return nearestDistance < float.PositiveInfinity
-                    ? _settings.GetNeighborWeightMultiplier(nearestDistance)
-                    : 1.0f;
-
-                void UpdateNearestDistance(IReadOnlyList<ArcObject> objects)
-                {
-                    for (int i = 0; i < objects.Count; i++)
-                    {
-                        ArcObject existing = objects[i];
-                        if (existing.Object.Type != ArcObjectType.Rift)
-                        {
-                            continue;
-                        }
-
-                        float distance = CircularAngleDistance(
-                            candidateAngle,
-                            existing.Arc.MidAngleDegree());
-                        nearestDistance = Math.Min(
-                            nearestDistance,
-                            DegreesToWorld(distance, candidate.ArcObject.Arc.Radius));
-                    }
-                }
-            }
-
-            private void RecordOrbit(
-                PatternPlacement placement,
-                Orbit orbit,
-                HashSet<int> writableOrbitIndices)
-            {
-                if (!writableOrbitIndices.Contains(orbit.Index))
-                {
-                    return;
-                }
-
-                EnsureOrbit(orbit);
-                int addedRifts = CountPlacedRifts(placement, orbit, writableOrbitIndices);
-                if (addedRifts > 0)
-                {
-                    _counts[orbit.Index] += addedRifts;
-                    FulfillReservationsInSpan(orbit, placement, addedRifts);
-                }
-            }
-
-            private static int CountPlacedRifts(
-                PatternPlacement placement,
-                Orbit orbit,
-                HashSet<int> writableOrbitIndices)
-            {
-                if (!writableOrbitIndices.Contains(orbit.Index))
-                {
-                    return 0;
-                }
-
-                int count = 0;
-                for (int i = 0; i < placement.Objects.Count; i++)
-                {
-                    PatternPlacedObject placedObject = placement.Objects[i];
-                    if (!ReferenceEquals(placedObject.Orbit, orbit) ||
-                        placedObject.ArcObject.Object.Type != ArcObjectType.Rift)
-                    {
-                        continue;
-                    }
-
-                    count++;
-                }
-
-                return count;
-            }
-
-            private void EnsureOrbit(Orbit orbit)
-            {
-                if (_reservations.ContainsKey(orbit.Index))
-                {
-                    return;
-                }
-
-                RegisterOrbit(orbit);
-            }
-
-            private void RegisterOrbit(Orbit orbit)
-            {
-                _orbits[orbit.Index] = orbit;
-                IReadOnlyList<ArcObject> existingRifts = orbit.GetOrbitObjectsByType(ArcObjectType.Rift);
-                int existingCount = existingRifts.Count;
-                int configuredTarget = _settings.GetTargetCount(orbit);
-                int reservationTarget = Math.Max(0, configuredTarget - existingCount);
-
-                _initialCounts[orbit.Index] = existingCount;
-                _counts[orbit.Index] = existingCount;
-                _reservations[orbit.Index] = CreateReservations(orbit, existingRifts, reservationTarget);
-            }
-
-            private List<RiftReservation> CreateReservations(
-                Orbit orbit,
-                IReadOnlyList<ArcObject> existingRifts,
-                int target)
-            {
-                List<RiftReservation> reservations = new List<RiftReservation>();
-                if (target <= 0)
-                {
-                    return reservations;
-                }
-
-                List<float> occupiedPositions = GetExistingRiftPositions(orbit, existingRifts);
-                LevelRandom random = new LevelRandom(CreateReservationSeed(orbit.Index));
-                int attempts = 0;
-                int maxAttempts = Math.Max(_settings.MaxPlacementAttempts, target);
-                float minCenterDistance = _settings.GetEffectiveMinCenterDistanceBetweenRifts(orbit);
-
-                while (reservations.Count < target && attempts < maxAttempts)
-                {
-                    attempts++;
-                    float positionWorld = random.Range(0.0f, orbit.Circumference);
-                    if (IsTooCloseToExistingPosition(
-                            positionWorld,
-                            occupiedPositions,
-                            orbit.Circumference,
-                            minCenterDistance))
-                    {
-                        continue;
-                    }
-
-                    reservations.Add(new RiftReservation(positionWorld));
-                    occupiedPositions.Add(positionWorld);
-                }
-
-                reservations.Sort((first, second) => first.PositionWorld.CompareTo(second.PositionWorld));
-                if (reservations.Count < target)
-                {
-                    _context.AddWarning(
-                        $"Reserved {reservations.Count}/{target} random rift positions for orbit {orbit.Index} " +
-                        $"after {attempts} attempts. Adjust rift count, length, spacing, or max attempts.");
-                }
-
-                return reservations;
-            }
-
-            private void FulfillReservationsInSpan(Orbit orbit, PatternPlacement placement, int maxCount)
-            {
-                List<RiftReservation> reservations = GetActiveReservationsInSpan(orbit, placement);
-                for (int i = 0; i < reservations.Count && i < maxCount; i++)
-                {
-                    reservations[i].Fulfill();
-                }
-            }
-
-            private int CreateReservationSeed(int orbitIndex)
-            {
-                unchecked
-                {
-                    int hash = _seed;
-                    hash = (hash * 397) ^ orbitIndex;
-                    hash = (hash * 397) ^ 0x52F74A3D;
-                    return hash;
-                }
-            }
-
-            private static List<float> GetExistingRiftPositions(Orbit orbit, IReadOnlyList<ArcObject> existingRifts)
-            {
-                List<float> positions = new List<float>(existingRifts.Count);
-                for (int i = 0; i < existingRifts.Count; i++)
-                {
-                    positions.Add(NormalizeWorldPosition(
-                        DegreesToWorld(existingRifts[i].Arc.MidAngleDegree(), orbit.Radius),
-                        orbit.Circumference));
-                }
-
-                return positions;
-            }
-
-            private static bool IsTooCloseToExistingPosition(
-                float candidate,
-                IReadOnlyList<float> positions,
-                float circumference,
-                float minDistance)
-            {
-                for (int i = 0; i < positions.Count; i++)
-                {
-                    if (CircularWorldDistance(candidate, positions[i], circumference) < minDistance)
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-
-            private static bool HasExcessRifts(IReadOnlyList<RiftReservationDemand> demands)
-            {
-                for (int i = 0; i < demands.Count; i++)
-                {
-                    if (demands[i].PlacedRifts > demands[i].Reservations.Count)
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-
-            private static bool SatisfiesAnyReservation(IReadOnlyList<RiftReservationDemand> demands)
-            {
-                for (int i = 0; i < demands.Count; i++)
-                {
-                    if (demands[i].PlacedRifts > 0 &&
-                        demands[i].Reservations.Count > 0)
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-
-            private static bool IsWorldPositionInPlacementSpan(
-                float positionWorld,
-                Orbit orbit,
-                PatternPlacement placement)
-            {
-                float markerAngle = WorldToDegrees(NormalizeWorldPosition(positionWorld, orbit.Circumference), orbit.Radius);
-                float start = OrbitMath.NormalizeDegrees360(placement.StartAngleDegree);
-                float delta = OrbitMath.DeltaDegrees(placement.StartAngleDegree, placement.EndAngleDegree);
-                float markerDelta = OrbitMath.NormalizeDegrees360(markerAngle - start);
-                float tolerance = WorldToDegrees(PatternSlot.MinimumSpaceLength, orbit.Radius);
-                return markerDelta <= delta + tolerance;
-            }
-
-            private static float CircularWorldDistance(float first, float second, float circumference)
-            {
-                float delta = Math.Abs(NormalizeWorldPosition(first, circumference) - NormalizeWorldPosition(second, circumference));
-                return Math.Min(delta, Math.Max(0.0f, circumference - delta));
-            }
-
-            private static float NormalizeWorldPosition(float position, float circumference)
-            {
-                if (circumference <= 0.0f)
-                {
-                    return 0.0f;
-                }
-
-                float normalized = position % circumference;
-                return normalized < 0.0f ? normalized + circumference : normalized;
-            }
-        }
-
-        private sealed class PatternRejectionLog
-        {
-            private readonly Dictionary<string, int> _counts = new Dictionary<string, int>();
-            private readonly List<string> _orderedReasons = new List<string>();
-
-            public string Summary
-            {
-                get
-                {
-                    if (_orderedReasons.Count == 0)
-                    {
-                        return "none";
-                    }
-
-                    return string.Join("; ", _orderedReasons.Select(FormatReason));
-                }
-            }
-
-            public void Add(string reason)
-            {
-                if (string.IsNullOrWhiteSpace(reason))
-                {
-                    return;
-                }
-
-                if (!_counts.ContainsKey(reason))
-                {
-                    _counts.Add(reason, 0);
-                    _orderedReasons.Add(reason);
-                }
-
-                _counts[reason]++;
-            }
-
-            private string FormatReason(string reason)
-            {
-                return $"{reason} x{_counts[reason]}";
-            }
-        }
     }
 }

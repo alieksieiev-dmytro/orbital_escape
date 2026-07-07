@@ -5,28 +5,6 @@ using Zenject;
 
 namespace OrbitalEscape.Movement
 {
-    public readonly struct OrbitJumpStep
-    {
-        public float TargetRadius { get; }
-        public float Duration { get; }
-        public Ease Ease { get; }
-
-        public OrbitJumpStep(float targetRadius, float duration, Ease ease)
-        {
-            TargetRadius = targetRadius;
-            Duration = duration;
-            Ease = ease;
-        }
-    }
-
-    public interface IOrbitJumpTransitionService
-    {
-        bool IsTransitioning { get; }
-        void Play(OrbitJumpStep step, Action onComplete = null);
-        void Play(IReadOnlyList<OrbitJumpStep> steps, Action onComplete = null);
-        void Stop();
-    }
-
     public sealed class OrbitJumpTransitionService : IOrbitJumpTransitionService, IDisposable
     {
         private readonly IMovementModel _movementModel;

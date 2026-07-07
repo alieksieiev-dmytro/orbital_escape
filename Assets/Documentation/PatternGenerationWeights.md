@@ -15,7 +15,7 @@ Open `Orbital Escape > Generation > Pattern Probabilities` in the Unity Editor.
 
 The window calculates next-placement probability for the selected orbit index, difficulty, previous-pattern streak, and rift context. Lower/upper nearest inward-neighbor rift distances can be entered independently. It shows every configured pattern, its effective weight, flip-orientation count, normalized probability, and any reason it is currently unavailable.
 
-The displayed probability is the configured candidate probability before live cursor-space, overlap, and rift-reservation filtering. Those runtime constraints can remove candidates and renormalize the final choice.
+The displayed probability is the configured candidate probability before live cursor-space, overlap, and rift-marker filtering. Those runtime constraints can remove candidates and renormalize the final choice.
 
 ## Selection Overview
 
@@ -25,7 +25,7 @@ For every pattern position in an orbit band, generation follows this order:
 2. Reject patterns that are disabled, outside their orbit-index range, contain locked slot types, have zero weight, or do not fit the orbit.
 3. Create one candidate for the normal orientation.
 4. Create a second candidate when `Allow Flip` is enabled.
-5. Reject candidates that conflict with existing orbit objects or rift reservations.
+5. Reject candidates that conflict with existing orbit objects or rift markers.
 6. Calculate the effective weight of every remaining candidate.
 7. Select one candidate through weighted random selection.
 
@@ -239,11 +239,11 @@ A candidate can be removed because of:
 - A slot type locked by the active difficulty stage.
 - Pattern length exceeding the orbit circumference.
 - Collision with an existing object or a two-sided rift.
-- Rift reservation count or spacing rules.
-- A random rift reservation temporarily requiring a rift-containing candidate.
+- Rift marker count or spacing rules.
+- A random rift marker temporarily requiring a rift-containing candidate.
 - The candidate selection limit being reached.
 
-Rift reservations can substantially change observed frequencies. At the beginning of a build, each writable orbit receives random rift marker positions from `0` to its circumference, respecting the configured same-orbit center distance. When a pattern span reaches an unfulfilled marker, non-rift patterns are temporarily filtered out. Weights then choose among valid rift candidates. If no authored rift pattern can cover a marker, that reservation is skipped and a warning is logged. Candidates that would add rifts without a reservation are removed.
+Rift markers can substantially change observed frequencies. At the beginning of a build, each writable orbit receives random rift marker positions from `0` to its circumference, respecting the configured same-orbit center distance. When a pattern span reaches an unfulfilled marker, non-rift patterns are temporarily filtered out. Weights then choose among valid rift candidates. If no authored rift pattern can cover a marker, that marker is skipped and a warning is logged. Candidates that would add rifts without crossing a marker are removed.
 
 Each orbit band also receives one seeded random angular phase. Both lanes rotate together, preserving the authored layout while preventing every band from beginning visually at `0 degrees`.
 
@@ -290,7 +290,7 @@ The examples below assume no inward-neighbor rift within `26.18` units, so the n
 
 ### Fresh selection
 
-At orbit index `0`, all four patterns are eligible. With no history and no reservation or placement restrictions:
+At orbit index `0`, all four patterns are eligible. With no history and no marker or placement restrictions:
 
 ```text
 Rift:                 1 * 2 orientations = 2
@@ -307,7 +307,7 @@ Total: 20
 | Recovery | `20.00%` |
 | Rift | `10.00%` |
 
-These percentages apply only when every candidate is valid and no rift reservation is currently forcing a rift pattern.
+These percentages apply only when every candidate is valid and no rift marker is currently forcing a rift pattern.
 
 ### After Zigzag Two Jumps was selected once
 
@@ -379,7 +379,7 @@ Suggested tuning workflow:
 3. Add difficulty modifiers for difficulty-specific balance.
 4. Tune Same Pattern to control exact repetition.
 5. Tune Same Tag to control thematic repetition.
-6. Test with rift reservations active because they intentionally override the normal candidate pool.
+6. Test with rift markers active because they intentionally override the normal candidate pool.
 7. Disable Fixed Seed when finished.
 
 ## Common Mistakes
@@ -390,6 +390,6 @@ Suggested tuning workflow:
 - Using `Max Orbit Index = 0` to mean orbit index zero only. It actually means unlimited.
 - Overlapping stage boundaries and expecting the later stage to win.
 - Giving every pattern many tags, causing frequent same-tag penalties.
-- Expecting weights to override rift reservations, locked slots, or placement conflicts.
+- Expecting weights to override rift markers, locked slots, or placement conflicts.
 - Comparing results across different random seeds while tuning small weight changes.
 - Expecting changes to update already generated orbits. Config snapshots are captured before each level build, so edits affect subsequent builds only.

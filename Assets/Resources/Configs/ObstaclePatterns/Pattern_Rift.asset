@@ -31,8 +31,8 @@ MonoBehaviour:
     _length: 0
   - _type: 0
     _length: 1
-  _tags: 16
-  _baseWeight: 1.5
+  _tags: 0
+  _baseWeight: 100
   _minOrbitIndex: 0
   _maxOrbitIndex: 0
   _difficultyWeightModifiers: []

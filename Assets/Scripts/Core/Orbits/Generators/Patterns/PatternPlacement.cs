@@ -35,28 +35,4 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             _objects = objects ?? new List<PatternPlacedObject>();
         }
     }
-
-    public readonly struct PatternPlacedObject
-    {
-        public Orbit Orbit { get; }
-        public ArcObject ArcObject { get; }
-
-        public PatternPlacedObject(Orbit orbit, ArcObject arcObject)
-        {
-            Orbit = orbit;
-            ArcObject = arcObject;
-        }
-    }
-
-    public readonly struct WeightedPatternCandidate
-    {
-        public PatternPlacement Placement { get; }
-        public float Weight { get; }
-
-        public WeightedPatternCandidate(PatternPlacement placement, float weight)
-        {
-            Placement = placement;
-            Weight = weight;
-        }
-    }
 }

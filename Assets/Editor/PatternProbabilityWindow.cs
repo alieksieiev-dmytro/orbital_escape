@@ -29,6 +29,7 @@ namespace OrbitalEscape.Editor
         private MiniSpikeConfig _miniSpikeConfig;
         private ImpulseTrapConfig _impulseTrapConfig;
         private GravityWellConfig _gravityWellConfig;
+        private LaserGateConfig _laserGateConfig;
         private RiftConfig _riftConfig;
 
         [MenuItem("Orbital Escape/Generation/Pattern Probabilities")]
@@ -129,7 +130,8 @@ namespace OrbitalEscape.Editor
                 _miniSpikeConfig.SpikeArcLength,
                 _impulseTrapConfig.TrapArcLength,
                 _gravityWellConfig.FieldArcLength,
-                _riftConfig.RiftLength);
+                _riftConfig.RiftLength,
+                _laserGateConfig.Width);
 
             PatternGenerationSettings generationSettings = _patternConfig.CreateSettings(
                 _difficulty,
@@ -156,7 +158,7 @@ namespace OrbitalEscape.Editor
 
             EditorGUILayout.HelpBox(
                 "Probabilities include the configured neighbor-rift distance for each physical lane. " +
-                "Runtime cursor space, object overlaps, band phase, and rift reservations can still remove candidates " +
+                "Runtime cursor space, object overlaps, band phase, and rift marker crossings can still remove candidates " +
                 "and renormalize the final selection.",
                 MessageType.Info);
 
@@ -368,6 +370,7 @@ namespace OrbitalEscape.Editor
             _miniSpikeConfig = LoadConfig<MiniSpikeConfig>("MiniSpikeConfig.asset");
             _impulseTrapConfig = LoadConfig<ImpulseTrapConfig>("ImpulseTrapConfig.asset");
             _gravityWellConfig = LoadConfig<GravityWellConfig>("GravityWellConfig.asset");
+            _laserGateConfig = LoadConfig<LaserGateConfig>("LaserGateConfig.asset");
             _riftConfig = LoadConfig<RiftConfig>("RiftConfig.asset");
 
             _patternDefinitions.Clear();
@@ -395,6 +398,7 @@ namespace OrbitalEscape.Editor
                    _miniSpikeConfig != null &&
                    _impulseTrapConfig != null &&
                    _gravityWellConfig != null &&
+                   _laserGateConfig != null &&
                    _riftConfig != null;
         }
 
@@ -439,33 +443,6 @@ namespace OrbitalEscape.Editor
         private static string FormatMaxOrbitIndex(int maxOrbitIndex)
         {
             return maxOrbitIndex == int.MaxValue ? "infinity" : maxOrbitIndex.ToString();
-        }
-
-        private sealed class PatternProbabilityRow
-        {
-            public string Name { get; }
-            public ObstaclePatternSnapshot Pattern { get; }
-            public int Orientations { get; }
-            public float BaseEffectiveWeight { get; }
-            public float AggregateWeight { get; }
-            public string UnavailableReason { get; }
-            public bool Available => string.IsNullOrEmpty(UnavailableReason);
-
-            public PatternProbabilityRow(
-                string name,
-                ObstaclePatternSnapshot pattern,
-                int orientations,
-                float baseEffectiveWeight,
-                float aggregateWeight,
-                string unavailableReason)
-            {
-                Name = name;
-                Pattern = pattern;
-                Orientations = orientations;
-                BaseEffectiveWeight = baseEffectiveWeight;
-                AggregateWeight = aggregateWeight;
-                UnavailableReason = unavailableReason;
-            }
         }
     }
 }

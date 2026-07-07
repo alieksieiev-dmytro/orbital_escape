@@ -13,6 +13,7 @@ namespace OrbitalEscape.Movement
         private readonly IUIManager _uiManager;
         private readonly Transform _playerTransform;
         private readonly EventBinding<ObstacleCollidedEvent> _onObstacleCollidedEvent;
+        private bool _isDead;
 
         [Inject]
         public PlayerController(Transform playerTransform, PlayerMovementController playerMovementController,
@@ -30,9 +31,15 @@ namespace OrbitalEscape.Movement
         
         private void OnObstacleCollidedEvent(ObstacleCollidedEvent @event)
         {
-            if (@event.ObstacleType != ArcObjectType.Spike || !@event.Entered)
+            if (_isDead ||
+                !@event.Entered ||
+                (@event.ObstacleType != ArcObjectType.Spike &&
+                 @event.ObstacleType != ArcObjectType.LaserGate))
+            {
                 return;
+            }
 
+            _isDead = true;
             EventBus<PlayerDiedEvent>.Raise(new PlayerDiedEvent());
             _playerTransform.gameObject.SetActive(false);
             _playerMovementController.StopMovement();

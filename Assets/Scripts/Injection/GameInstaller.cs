@@ -29,6 +29,7 @@ namespace OrbitalEscape.Injection
         [SerializeField] private GameObject _spikePrefab;
         [SerializeField] private GameObject _impulseTrapPrefab;
         [SerializeField] private GameObject _gravityWellPrefab;
+        [SerializeField] private GameObject _laserGatePrefab;
         
         private PlayerMovementController _movementController;
 
@@ -79,12 +80,14 @@ namespace OrbitalEscape.Injection
             Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.SpikeFactory).To<SpikeFactory>().AsSingle().WithArguments(_spikePrefab);
             Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.ImpulseTrapFactory).To<ImpulseTrapFactory>().AsSingle().WithArguments(_impulseTrapPrefab);
             Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.GravityWellFactory).To<GravityWellFactory>().AsSingle().WithArguments(_gravityWellPrefab);
+            Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.LaserGateFactory).To<LaserGateFactory>().AsSingle().WithArguments(_laserGatePrefab);
             Container.Bind<IGravityWellZoneRegistry>().To<GravityWellZoneRegistry>().AsSingle();
             Container.Bind<ILevelObjectSpawner>().To<LevelObjectSpawner>().AsSingle();
             Container.Bind<IOrbitObjectSpawner>().To<RiftObjectSpawner>().AsSingle();
             Container.Bind<IOrbitObjectSpawner>().To<SpikeObjectSpawner>().AsSingle();
             Container.Bind<IOrbitObjectSpawner>().To<ImpulseTrapObjectSpawner>().AsSingle();
             Container.Bind<IOrbitObjectSpawner>().To<GravityWellObjectSpawner>().AsSingle();
+            Container.Bind<IOrbitObjectSpawner>().To<LaserGateObjectSpawner>().AsSingle();
         }
 
         private void BindPalettes()
