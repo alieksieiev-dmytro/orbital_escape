@@ -11,20 +11,26 @@ namespace OrbitalEscape.UI
         private const string AddScoreButtonName = "btn-add-score";
         private const string ClearObstaclesButtonName = "btn-clear-obstacles";
         private const string GoToOrbitButtonName = "btn-go-to-orbit";
+        private const string ProfilingButtonName = "btn-start-profiling";
         private const string BackButtonName = "btn-back";
         private const string OrbitInputName = "input-orbit";
         private const string StatusTextName = "txt-status";
+        private const string StartProfilingLabel = "Start Profiling";
+        private const string StopProfilingLabel = "Stop Profiling";
 
         private Button _addScoreButton;
         private Button _clearObstaclesButton;
         private Button _goToOrbitButton;
+        private Button _profilingButton;
         private Button _backButton;
         private TMP_InputField _orbitInput;
+        private TMP_Text _profilingText;
         private TMP_Text _statusText;
 
         public event Action AddScoreClicked;
         public event Action ClearObstaclesClicked;
         public event Action<int> GoToOrbitClicked;
+        public event Action ProfilingClicked;
         public event Action BackClicked;
 
         private void Awake()
@@ -36,8 +42,10 @@ namespace OrbitalEscape.UI
             _addScoreButton = GetRequired(buttons, AddScoreButtonName);
             _clearObstaclesButton = GetRequired(buttons, ClearObstaclesButtonName);
             _goToOrbitButton = GetRequired(buttons, GoToOrbitButtonName);
+            _profilingButton = GetRequired(buttons, ProfilingButtonName);
             _backButton = GetRequired(buttons, BackButtonName);
             _orbitInput = GetRequired(inputs, OrbitInputName);
+            _profilingText = GetRequired(texts, "txt-start-profiling");
             _statusText = GetOptional(texts, StatusTextName);
         }
 
@@ -46,6 +54,7 @@ namespace OrbitalEscape.UI
             _addScoreButton.onClick.AddListener(OnAddScoreClicked);
             _clearObstaclesButton.onClick.AddListener(OnClearObstaclesClicked);
             _goToOrbitButton.onClick.AddListener(OnGoToOrbitClicked);
+            _profilingButton.onClick.AddListener(OnProfilingClicked);
             _backButton.onClick.AddListener(OnBackClicked);
         }
 
@@ -54,6 +63,7 @@ namespace OrbitalEscape.UI
             _addScoreButton.onClick.RemoveListener(OnAddScoreClicked);
             _clearObstaclesButton.onClick.RemoveListener(OnClearObstaclesClicked);
             _goToOrbitButton.onClick.RemoveListener(OnGoToOrbitClicked);
+            _profilingButton.onClick.RemoveListener(OnProfilingClicked);
             _backButton.onClick.RemoveListener(OnBackClicked);
         }
 
@@ -77,8 +87,19 @@ namespace OrbitalEscape.UI
             _addScoreButton.interactable = !busy;
             _clearObstaclesButton.interactable = !busy;
             _goToOrbitButton.interactable = !busy;
+            _profilingButton.interactable = !busy;
             _backButton.interactable = !busy;
             _orbitInput.interactable = !busy;
+        }
+
+        public void SetProfilingVisible(bool visible)
+        {
+            _profilingButton.gameObject.SetActive(visible);
+        }
+
+        public void SetProfilingActive(bool isActive)
+        {
+            _profilingText.text = isActive ? StopProfilingLabel : StartProfilingLabel;
         }
 
         private IReadOnlyDictionary<string, TComponent> ResolveComponents<TComponent>() where TComponent : Component
@@ -119,6 +140,7 @@ namespace OrbitalEscape.UI
 
         private void OnAddScoreClicked() => AddScoreClicked?.Invoke();
         private void OnClearObstaclesClicked() => ClearObstaclesClicked?.Invoke();
+        private void OnProfilingClicked() => ProfilingClicked?.Invoke();
 
         private void OnGoToOrbitClicked()
         {

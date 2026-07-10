@@ -8,6 +8,7 @@ using OrbitalEscape.Orbits;
 using OrbitalEscape.Orbits.Generators;
 using OrbitalEscape.Orbits.Generators.Patterns;
 using OrbitalEscape.Pause;
+using OrbitalEscape.Profiling;
 using OrbitalEscape.Score;
 using OrbitalEscape.Visuals.Palettes;
 using UnityEngine;
@@ -63,6 +64,7 @@ namespace OrbitalEscape.Injection
             Container.BindInterfacesAndSelfTo<PaletteSceneController>().AsSingle().NonLazy();
             Container.BindInterfacesTo<GameplayAudioController>().AsSingle().NonLazy();
             Container.Bind<ICheatCommandService>().To<CheatCommandService>().AsSingle();
+            Container.BindInterfacesAndSelfTo<ResourceProfilerService>().AsSingle().NonLazy();
         }
         
         private void BindGenerators()

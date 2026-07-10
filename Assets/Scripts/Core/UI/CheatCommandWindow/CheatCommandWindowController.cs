@@ -2,6 +2,7 @@ using System;
 using Cysharp.Threading.Tasks;
 using OrbitalEscape.Audio;
 using OrbitalEscape.Cheats;
+using OrbitalEscape.Profiling;
 using UnityEngine;
 using Zenject;
 
@@ -13,6 +14,7 @@ namespace OrbitalEscape.UI
         private readonly IUIManager _uiManager;
         private readonly CheatPanelConfig _config;
         private readonly ICheatCommandService _commandService;
+        private readonly IResourceProfilerService _profilerService;
         private readonly IAudioService _audioService;
 
         public override IConvertible Type => WindowType.CheatCommand;
@@ -23,12 +25,14 @@ namespace OrbitalEscape.UI
             IUIManager uiManager,
             CheatPanelConfig config,
             ICheatCommandService commandService,
+            IResourceProfilerService profilerService,
             IAudioService audioService)
         {
             _viewFactory = viewFactory;
             _uiManager = uiManager;
             _config = config;
             _commandService = commandService;
+            _profilerService = profilerService;
             _audioService = audioService;
         }
 
@@ -44,7 +48,11 @@ namespace OrbitalEscape.UI
             View.AddScoreClicked += OnAddScoreClicked;
             View.ClearObstaclesClicked += OnClearObstaclesClicked;
             View.GoToOrbitClicked += OnGoToOrbitClicked;
+            View.ProfilingClicked += OnProfilingClicked;
             View.BackClicked += OnBackClicked;
+            _profilerService.ProfilingStateChanged += OnProfilingStateChanged;
+            View.SetProfilingVisible(_config.ShouldShowProfiling);
+            View.SetProfilingActive(_profilerService.IsProfiling);
             View.Show();
         }
 
@@ -53,7 +61,9 @@ namespace OrbitalEscape.UI
             View.AddScoreClicked -= OnAddScoreClicked;
             View.ClearObstaclesClicked -= OnClearObstaclesClicked;
             View.GoToOrbitClicked -= OnGoToOrbitClicked;
+            View.ProfilingClicked -= OnProfilingClicked;
             View.BackClicked -= OnBackClicked;
+            _profilerService.ProfilingStateChanged -= OnProfilingStateChanged;
             View.Hide();
             _audioService.SetMusicObscured(false);
         }
@@ -71,6 +81,24 @@ namespace OrbitalEscape.UI
         private void OnClearObstaclesClicked()
         {
             View.SetStatus(_commandService.ClearAllObstacles().Message);
+        }
+
+        private void OnProfilingClicked()
+        {
+            ResourceProfilerResult result = _profilerService.IsProfiling
+                ? _profilerService.StopProfiling()
+                : _profilerService.StartProfiling();
+
+            View.SetProfilingActive(_profilerService.IsProfiling);
+            View.SetStatus(result.Message);
+        }
+
+        private void OnProfilingStateChanged(bool isProfiling)
+        {
+            if (View != null && View.Root != null)
+            {
+                View.SetProfilingActive(isProfiling);
+            }
         }
 
         private void OnGoToOrbitClicked(int orbitIndex)

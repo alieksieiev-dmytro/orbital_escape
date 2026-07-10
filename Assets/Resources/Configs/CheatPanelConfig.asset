@@ -15,3 +15,6 @@ MonoBehaviour:
   <CheatsEnabled>k__BackingField: 1
   <InfoPanelEnabled>k__BackingField: 1
   <CommandPanelEnabled>k__BackingField: 1
+  <ProfilingEnabled>k__BackingField: 1
+  <ProfilerMemorySampleIntervalSeconds>k__BackingField: 0.5
+  <ProfilerReportsFolderName>k__BackingField: ProfilingReports
