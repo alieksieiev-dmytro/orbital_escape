@@ -42,8 +42,21 @@ namespace OrbitalEscape.Visuals.Palettes
                 trail.colorGradient = BuildFadeGradient(palette.AccentColor);
             }
 
+            foreach (MonoBehaviour behaviour in player.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                if (behaviour is IPaletteTarget paletteTarget)
+                {
+                    paletteTarget.ApplyPalette(palette);
+                }
+            }
+
             foreach (ParticleSystem particles in player.GetComponentsInChildren<ParticleSystem>(true))
             {
+                if (HasPaletteTarget(particles.gameObject))
+                {
+                    continue;
+                }
+
                 ParticleSystem.MainModule main = particles.main;
                 main.startColor = palette.AccentColor;
             }
@@ -135,6 +148,19 @@ namespace OrbitalEscape.Visuals.Palettes
         {
             color.a = alpha;
             return color;
+        }
+
+        private bool HasPaletteTarget(GameObject gameObject)
+        {
+            foreach (MonoBehaviour behaviour in gameObject.GetComponents<MonoBehaviour>())
+            {
+                if (behaviour is IPaletteTarget)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private bool TryApplyPaletteTarget(SpriteRenderer renderer, PaletteSnapshot palette)

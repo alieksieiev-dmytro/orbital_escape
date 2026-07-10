@@ -7,6 +7,7 @@ namespace OrbitalEscape.Visuals.Palettes
     {
         [SerializeField] private ParticleSystem _targetParticles;
 
+        private GradientColorKey[] _colorKeys;
         private GradientAlphaKey[] _alphaKeys;
 
         private void Reset()
@@ -45,7 +46,17 @@ namespace OrbitalEscape.Visuals.Palettes
             }
 
             Gradient sourceGradient = GetSourceGradient(_targetParticles.colorOverLifetime.color);
+            _colorKeys = CloneColorKeys(sourceGradient != null ? sourceGradient.colorKeys : null);
             _alphaKeys = CloneAlphaKeys(sourceGradient != null ? sourceGradient.alphaKeys : null);
+
+            if (_colorKeys.Length == 0)
+            {
+                _colorKeys = new[]
+                {
+                    new GradientColorKey(Color.white, 0.0f),
+                    new GradientColorKey(Color.white, 1.0f)
+                };
+            }
 
             if (_alphaKeys.Length == 0)
             {
@@ -61,9 +72,20 @@ namespace OrbitalEscape.Visuals.Palettes
         {
             Gradient gradient = new Gradient();
             gradient.SetKeys(
-                new[] { new GradientColorKey(color, 0.0f), new GradientColorKey(color, 1.0f) },
+                BuildColorKeys(color),
                 CloneAlphaKeys(_alphaKeys));
             return gradient;
+        }
+
+        private GradientColorKey[] BuildColorKeys(Color color)
+        {
+            GradientColorKey[] keys = CloneColorKeys(_colorKeys);
+            for (int i = 0; i < keys.Length; i++)
+            {
+                keys[i].color = color;
+            }
+
+            return keys;
         }
 
         private Gradient GetSourceGradient(ParticleSystem.MinMaxGradient color)
@@ -79,6 +101,22 @@ namespace OrbitalEscape.Visuals.Palettes
             }
 
             return null;
+        }
+
+        private GradientColorKey[] CloneColorKeys(GradientColorKey[] keys)
+        {
+            if (keys == null)
+            {
+                return new GradientColorKey[0];
+            }
+
+            GradientColorKey[] clone = new GradientColorKey[keys.Length];
+            for (int i = 0; i < keys.Length; i++)
+            {
+                clone[i] = keys[i];
+            }
+
+            return clone;
         }
 
         private GradientAlphaKey[] CloneAlphaKeys(GradientAlphaKey[] keys)
