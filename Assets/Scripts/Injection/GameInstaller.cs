@@ -79,14 +79,14 @@ namespace OrbitalEscape.Injection
         {
             Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.OrbitFactory).To<OrbitFactory>().AsSingle().WithArguments(_orbitPrefab, _orbitRoot);
             Container.Bind(typeof(IObjectFactory<RiftObject>)).WithId(FactoryType.RiftFactory).To<RiftFactory>().AsSingle().WithArguments(_riftObject);
-            Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.SpikeFactory).To<SpikeFactory>().AsSingle().WithArguments(_spikePrefab);
+            Container.BindInterfacesAndSelfTo<SpikeFactory>().AsSingle().WithArguments(_spikePrefab).NonLazy();
             Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.ImpulseTrapFactory).To<ImpulseTrapFactory>().AsSingle().WithArguments(_impulseTrapPrefab);
             Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.GravityWellFactory).To<GravityWellFactory>().AsSingle().WithArguments(_gravityWellPrefab);
             Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.LaserGateFactory).To<LaserGateFactory>().AsSingle().WithArguments(_laserGatePrefab);
             Container.Bind<IGravityWellZoneRegistry>().To<GravityWellZoneRegistry>().AsSingle();
             Container.Bind<ILevelObjectSpawner>().To<LevelObjectSpawner>().AsSingle();
             Container.Bind<IOrbitObjectSpawner>().To<RiftObjectSpawner>().AsSingle();
-            Container.Bind<IOrbitObjectSpawner>().To<SpikeObjectSpawner>().AsSingle();
+            Container.BindInterfacesAndSelfTo<SpikeObjectSpawner>().AsSingle().NonLazy();
             Container.Bind<IOrbitObjectSpawner>().To<ImpulseTrapObjectSpawner>().AsSingle();
             Container.Bind<IOrbitObjectSpawner>().To<GravityWellObjectSpawner>().AsSingle();
             Container.Bind<IOrbitObjectSpawner>().To<LaserGateObjectSpawner>().AsSingle();

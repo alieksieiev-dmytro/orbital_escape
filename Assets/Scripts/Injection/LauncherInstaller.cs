@@ -8,6 +8,7 @@ using OrbitalEscape.Input;
 using OrbitalEscape.Movement;
 using OrbitalEscape.Orbits.Generators;
 using OrbitalEscape.Orbits.Generators.Patterns;
+using OrbitalEscape.Pooling;
 using OrbitalEscape.UI;
 using OrbitalEscape.Visuals.Palettes;
 using UnityEngine;
@@ -107,6 +108,7 @@ namespace OrbitalEscape.Injection
             Container.Bind(typeof(GameAudioConfig)).To<GameAudioConfig>().FromScriptableObjectResource("Configs/GameAudioConfig").AsSingle();
             Container.Bind(typeof(DifficultySelectionConfig)).To<DifficultySelectionConfig>().FromScriptableObjectResource("Configs/DifficultySelectionConfig").AsSingle();
             Container.Bind(typeof(CheatPanelConfig)).To<CheatPanelConfig>().FromScriptableObjectResource("Configs/CheatPanelConfig").AsSingle();
+            Container.Bind(typeof(ObjectPoolConfig)).To<ObjectPoolConfig>().FromScriptableObjectResource("Configs/ObjectPoolConfig").AsSingle();
         }
     }
 }

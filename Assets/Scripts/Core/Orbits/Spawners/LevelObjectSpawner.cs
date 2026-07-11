@@ -100,13 +100,13 @@ namespace OrbitalEscape.Orbits
 
         public void Clear()
         {
-            _orbitFactory.Clear();
-            _spawnedOrbitObjects.Clear();
-
             foreach (IOrbitObjectSpawner spawner in _objectSpawners)
             {
                 spawner.Clear();
             }
+
+            _orbitFactory.Clear();
+            _spawnedOrbitObjects.Clear();
         }
     }
 }

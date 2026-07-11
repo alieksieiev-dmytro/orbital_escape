@@ -1,30 +1,48 @@
-using System.Collections.Generic;
-using System.Linq;
+using System;
 using OrbitalEscape.Orbits;
+using OrbitalEscape.Pooling;
 using OrbitalEscape.Utils;
 using UnityEngine;
 
 namespace OrbitalEscape.Factories
 {
-    public sealed class SpikeFactory : IObjectFactory<GameObject>
+    public sealed class SpikeFactory : ISpikeFactory, IDisposable
     {
-        private readonly List<GameObject> _spikeObjects;
         private readonly GameObject _spikePrefab;
+        private readonly Transform _poolRoot;
+        private readonly IObjectPool<GameObject> _pool;
 
-        public SpikeFactory(GameObject spikePrefab)
+        public int CountAll => _pool.CountAll;
+        public int CountActive => _pool.CountActive;
+        public int CountInactive => _pool.CountInactive;
+
+        public SpikeFactory(GameObject spikePrefab, ObjectPoolConfig poolConfig)
         {
-            _spikeObjects = new List<GameObject>();
-            _spikePrefab = spikePrefab;
+            _spikePrefab = spikePrefab != null
+                ? spikePrefab
+                : throw new ArgumentNullException(nameof(spikePrefab));
+
+            _poolRoot = new GameObject("[Pool] Spikes").transform;
+            _poolRoot.gameObject.SetActive(false);
+
+            _pool = new ObjectPool<GameObject>(
+                CreatePooledSpike,
+                OnRent,
+                OnReturn,
+                UnityEngine.Object.Destroy,
+                poolConfig != null ? poolConfig.SpikePrewarmCount : 0);
         }
 
-        public GameObject Create(params object[] args)
+        public GameObject Create(Transform root, Orbit orbitData, ArcObject spikeData)
         {
-            var root = (Transform)args[0];
-            var orbitData = (Orbit)args[1];
-            var spikeData = (ArcObject)args[2];
+            if (root == null)
+            {
+                throw new ArgumentNullException(nameof(root));
+            }
 
-            var spikeObj = Object.Instantiate(_spikePrefab, Constants.Center3D, Quaternion.identity, root);
+            GameObject spikeObj = _pool.Rent();
             spikeObj.name = $"spike_{spikeData.Type}";
+            spikeObj.transform.SetParent(root, false);
 
             spikeObj.transform.localScale =
                 new Vector3(spikeData.Arc.Length() / root.lossyScale.x,
@@ -56,20 +74,58 @@ namespace OrbitalEscape.Factories
 
             spikeObj.transform.rotation = Quaternion.Euler(0f, 0f, rotation + 90.0f);
             spikeObj.transform.localPosition = new Vector3(localPosition.x, localPosition.y, 0f);
-            _spikeObjects.Add(spikeObj);
+
+            Collider2D[] colliders = spikeObj.GetComponentsInChildren<Collider2D>(true);
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                colliders[i].enabled = true;
+            }
 
             return spikeObj;
         }
 
-        public GameObject Get(int index) => _spikeObjects[index];
-        
-        public void Clear()
+        public bool Release(GameObject spike)
         {
-            foreach (var spike in _spikeObjects)
+            return _pool.Return(spike);
+        }
+
+        public void ReleaseAll()
+        {
+            _pool.ReturnAll();
+        }
+
+        public void Dispose()
+        {
+            _pool.Dispose();
+            if (_poolRoot != null)
             {
-                Object.Destroy(spike);
+                UnityEngine.Object.Destroy(_poolRoot.gameObject);
             }
-            _spikeObjects.Clear();
+        }
+
+        private GameObject CreatePooledSpike()
+        {
+            GameObject spike = UnityEngine.Object.Instantiate(
+                _spikePrefab,
+                Constants.Center3D,
+                Quaternion.identity,
+                _poolRoot);
+            spike.SetActive(false);
+            return spike;
+        }
+
+        private void OnRent(GameObject spike)
+        {
+            spike.SetActive(true);
+        }
+
+        private void OnReturn(GameObject spike)
+        {
+            spike.SetActive(false);
+            spike.transform.SetParent(_poolRoot, false);
+            spike.transform.localPosition = Vector3.zero;
+            spike.transform.localRotation = Quaternion.identity;
+            spike.transform.localScale = Vector3.one;
         }
     }
 }

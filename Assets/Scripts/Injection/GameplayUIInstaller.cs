@@ -15,6 +15,7 @@ namespace OrbitalEscape.Injection
             Container.BindInterfacesAndSelfTo<PaletteUITextController>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<MovementSpeedCheatInfoProvider>().AsSingle();
             Container.BindInterfacesAndSelfTo<DifficultyCheatInfoProvider>().AsSingle();
+            Container.BindInterfacesAndSelfTo<SpikePoolCheatInfoProvider>().AsSingle();
             Container.BindInterfacesAndSelfTo<CheatInfoHUDController>().AsSingle().NonLazy();
         }
 
