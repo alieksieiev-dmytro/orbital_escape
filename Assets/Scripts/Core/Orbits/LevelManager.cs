@@ -116,10 +116,10 @@ namespace OrbitalEscape.Orbits
 
             for (int i = 0; i < _levelState.Count; i++)
             {
-                _levelState.GetOrbit(i).OrbitObjects.Clear();
+                _levelState.GetOrbit(i).OrbitObjects.RemoveAll(
+                    orbitObject => orbitObject.Object == null || orbitObject.Object.Type != ArcObjectType.Rift);
             }
 
-            _riftClosureState.Clear();
             _levelObjectSpawner.RefreshOrbitContent(_levelState.Orbits);
         }
 

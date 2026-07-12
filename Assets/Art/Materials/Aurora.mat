@@ -46,15 +46,16 @@ Material:
     - _AuroraHeightSoftness: 0.15
     - _AuroraHeightWidth: 1
     - _AuroraMaskStrength: 0.6
+    - _AuroraRiftAlphaMultiplier: 0.25
     - _BandAmount: 0.35
     - _BandFreq: 7
     - _BandSpeed: 0.2
-    - _Emission: 3
+    - _Emission: 2
     - _EmissionFromBands: 1
     - _EnableExternalAlpha: 0
     - _FlowSpeed: 0.5
     - _GradientPower: 32
-    - _Softness: 0.005
+    - _Softness: 0
     - _StreakAmount: 0.5
     - _StreakFreq: 40
     - _StreakSharpness: 3.5

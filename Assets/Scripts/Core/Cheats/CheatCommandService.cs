@@ -66,7 +66,7 @@ namespace OrbitalEscape.Cheats
 
             _levelManager.ClearObstacleContent();
             _gravityWellInfluenceService.ClearState();
-            return new CheatCommandResult(true, "Obstacles cleared.");
+            return new CheatCommandResult(true, "Obstacles cleared. Rifts preserved.");
         }
 
         public async UniTask<CheatCommandResult> GoToOrbitAsync(int orbitIndex, CancellationToken cancellationToken)
