@@ -7,6 +7,7 @@ Shader "Custom/URP2D/SpriteRadialGradient"
         _EdgeColor("Edge Color", Color) = (1, 1, 1, 0)
         _Center("Center", Vector) = (0.5, 0.5, 0, 0)
         _Radius("Radius", Range(0.01, 1.5)) = 1
+        _GradientStart("Gradient Start", Range(0, 1)) = 0
         _Falloff("Falloff", Range(0.1, 8)) = 1
     }
 
@@ -57,6 +58,7 @@ Shader "Custom/URP2D/SpriteRadialGradient"
                 half4 _EdgeColor;
                 float4 _Center;
                 float _Radius;
+                float _GradientStart;
                 float _Falloff;
             CBUFFER_END
 
@@ -73,7 +75,11 @@ Shader "Custom/URP2D/SpriteRadialGradient"
             {
                 half4 sprite = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
                 float radialDistance = length((input.uv - _Center.xy) * 2.0);
-                float gradientPosition = pow(saturate(radialDistance / max(_Radius, 0.0001)), _Falloff);
+                float normalizedDistance = saturate(radialDistance / max(_Radius, 0.0001));
+                float gradientStart = min(saturate(_GradientStart), 0.999);
+                float gradientPosition = saturate(
+                    (normalizedDistance - gradientStart) / (1.0 - gradientStart));
+                gradientPosition = pow(gradientPosition, _Falloff);
                 half4 gradientColor = lerp(_CenterColor, _EdgeColor, gradientPosition);
 
                 half4 output = gradientColor * input.color;
