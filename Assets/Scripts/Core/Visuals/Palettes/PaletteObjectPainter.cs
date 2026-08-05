@@ -33,6 +33,11 @@ namespace OrbitalEscape.Visuals.Palettes
 
             foreach (SpriteRenderer renderer in player.GetComponentsInChildren<SpriteRenderer>(true))
             {
+                if (HasPaletteTarget(renderer.gameObject))
+                {
+                    continue;
+                }
+
                 renderer.color = WithAlpha(Color.white, renderer.color.a);
                 ApplyExistingOutlineProperties(renderer, palette.AccentColor);
             }

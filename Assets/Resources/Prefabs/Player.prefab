@@ -5058,6 +5058,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5371649171221924018}
   - component: {fileID: 3926990437958350701}
+  - component: {fileID: 6570838521296350241}
   m_Layer: 0
   m_Name: shade
   m_TagString: Untagged
@@ -5138,6 +5139,18 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &6570838521296350241
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2068798827697741467}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 107cf76ec9474808ac056176bc548ca2, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Visuals.Palettes.PreserveSpriteColorTarget
 --- !u!1 &3281691656023381391
 GameObject:
   m_ObjectHideFlags: 0
