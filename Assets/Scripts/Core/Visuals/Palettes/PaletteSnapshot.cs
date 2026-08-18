@@ -16,5 +16,15 @@ namespace OrbitalEscape.Visuals.Palettes
             AccentColor = accentColor;
             Progress = progress;
         }
+
+        public Color GetColor(PaletteColorType colorType)
+        {
+            return colorType switch
+            {
+                PaletteColorType.Background => BackgroundColor,
+                PaletteColorType.Environment => EnvironmentColor,
+                _ => AccentColor
+            };
+        }
     }
 }

@@ -1,3 +1,4 @@
+using OrbitalEscape.Events;
 using UnityEngine;
 using Zenject;
 
@@ -10,7 +11,7 @@ namespace OrbitalEscape.Movement
         private readonly Vector2 _center;
         private readonly IMovementModel _movementModel;
         
-        private MovementDirection _currentDirection;
+        private MovementDirection _currentDirection = MovementDirection.Clockwise;
         private bool _isMoving;
 
         [Inject]
@@ -53,7 +54,13 @@ namespace OrbitalEscape.Movement
         
         public void SetMovementDirection(MovementDirection direction)
         {
+            if (_currentDirection == direction)
+            {
+                return;
+            }
+
             _currentDirection = direction;
+            EventBus<MovementDirectionChangedEvent>.Raise(new MovementDirectionChangedEvent(direction));
         }
         
         public void StopMovement()

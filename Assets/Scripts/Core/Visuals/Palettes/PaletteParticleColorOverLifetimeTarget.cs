@@ -6,6 +6,8 @@ namespace OrbitalEscape.Visuals.Palettes
     public sealed class PaletteParticleColorOverLifetimeTarget : MonoBehaviour, IPaletteTarget
     {
         [SerializeField] private ParticleSystem _targetParticles;
+        [SerializeField] private PaletteColorType _colorType = PaletteColorType.Accent;
+        [SerializeField] private bool _preserveCurrentAlpha = true;
 
         private GradientColorKey[] _colorKeys;
         private GradientAlphaKey[] _alphaKeys;
@@ -35,7 +37,7 @@ namespace OrbitalEscape.Visuals.Palettes
 
             ParticleSystem.ColorOverLifetimeModule colorOverLifetime = _targetParticles.colorOverLifetime;
             colorOverLifetime.enabled = true;
-            colorOverLifetime.color = new ParticleSystem.MinMaxGradient(BuildGradient(palette.AccentColor));
+            colorOverLifetime.color = new ParticleSystem.MinMaxGradient(BuildGradient(palette.GetColor(_colorType)));
         }
 
         private void CacheAlphaKeys()
@@ -73,8 +75,24 @@ namespace OrbitalEscape.Visuals.Palettes
             Gradient gradient = new Gradient();
             gradient.SetKeys(
                 BuildColorKeys(color),
-                CloneAlphaKeys(_alphaKeys));
+                BuildAlphaKeys(color.a));
             return gradient;
+        }
+
+        private GradientAlphaKey[] BuildAlphaKeys(float paletteAlpha)
+        {
+            GradientAlphaKey[] keys = CloneAlphaKeys(_alphaKeys);
+            if (_preserveCurrentAlpha)
+            {
+                return keys;
+            }
+
+            for (int i = 0; i < keys.Length; i++)
+            {
+                keys[i].alpha *= paletteAlpha;
+            }
+
+            return keys;
         }
 
         private GradientColorKey[] BuildColorKeys(Color color)

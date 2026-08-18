@@ -4,17 +4,18 @@ namespace OrbitalEscape.Visuals.Palettes
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(SpriteRenderer))]
-    public sealed class PaletteSpriteColorTarget : MonoBehaviour, IPaletteTarget
+    public class PaletteSpriteColorTarget : MonoBehaviour, IPaletteTarget
     {
         [SerializeField] private SpriteRenderer _targetRenderer;
-        [SerializeField] private PaletteSpriteColorType _colorType = PaletteSpriteColorType.Accent;
+        [SerializeField] private PaletteColorType _colorType = PaletteColorType.Accent;
+        [SerializeField] private bool _preserveCurrentAlpha = true;
 
-        private void Reset()
+        protected virtual void Reset()
         {
             ResolveRenderer();
         }
 
-        private void Awake()
+        protected virtual void Awake()
         {
             ResolveRenderer();
         }
@@ -49,18 +50,17 @@ namespace OrbitalEscape.Visuals.Palettes
             }
 
             Color color = GetPaletteColor(palette);
-            color.a = _targetRenderer.color.a;
+            if (_preserveCurrentAlpha)
+            {
+                color.a = _targetRenderer.color.a;
+            }
+
             _targetRenderer.color = color;
         }
 
-        private Color GetPaletteColor(PaletteSnapshot palette)
+        protected virtual Color GetPaletteColor(PaletteSnapshot palette)
         {
-            return _colorType switch
-            {
-                PaletteSpriteColorType.Background => palette.BackgroundColor,
-                PaletteSpriteColorType.Environment => palette.EnvironmentColor,
-                _ => palette.AccentColor
-            };
+            return palette.GetColor(_colorType);
         }
 
         private void ResolveRenderer()

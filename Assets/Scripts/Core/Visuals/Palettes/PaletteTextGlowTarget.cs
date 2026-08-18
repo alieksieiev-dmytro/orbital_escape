@@ -8,6 +8,9 @@ namespace OrbitalEscape.Visuals.Palettes
     {
         private static readonly int GlowColorId = Shader.PropertyToID("_GlowColor");
 
+        [SerializeField] private PaletteColorType _colorType = PaletteColorType.Accent;
+        [SerializeField] private bool _preserveCurrentAlpha = true;
+
         private TMP_Text _text;
         private Material _originalMaterial;
         private Material _runtimeMaterial;
@@ -30,8 +33,12 @@ namespace OrbitalEscape.Visuals.Palettes
                 return;
             }
 
-            Color glowColor = palette.AccentColor;
-            glowColor.a = Constants.FONT_GLOW_ALPHA;
+            Color glowColor = palette.GetColor(_colorType);
+            if (_preserveCurrentAlpha)
+            {
+                glowColor.a = _runtimeMaterial.GetColor(GlowColorId).a;
+            }
+
             _runtimeMaterial.SetColor(GlowColorId, glowColor);
             _text.SetMaterialDirty();
         }

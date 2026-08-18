@@ -33,13 +33,13 @@ namespace OrbitalEscape.Visuals.Palettes
 
             foreach (SpriteRenderer renderer in player.GetComponentsInChildren<SpriteRenderer>(true))
             {
+                if (HasPaletteTarget(renderer.gameObject))
+                {
+                    continue;
+                }
+
                 renderer.color = WithAlpha(Color.white, renderer.color.a);
                 ApplyExistingOutlineProperties(renderer, palette.AccentColor);
-            }
-
-            foreach (TrailRenderer trail in player.GetComponentsInChildren<TrailRenderer>(true))
-            {
-                trail.colorGradient = BuildFadeGradient(palette.AccentColor);
             }
 
             foreach (MonoBehaviour behaviour in player.GetComponentsInChildren<MonoBehaviour>(true))
@@ -132,18 +132,6 @@ namespace OrbitalEscape.Visuals.Palettes
             return true;
         }
 
-        private Gradient BuildFadeGradient(Color color)
-        {
-            Color transparent = color;
-            transparent.a = 0.0f;
-
-            Gradient gradient = new Gradient();
-            gradient.SetKeys(
-                new[] { new GradientColorKey(color, 0.0f), new GradientColorKey(color, 1.0f) },
-                new[] { new GradientAlphaKey(color.a, 0.0f), new GradientAlphaKey(transparent.a, 1.0f) });
-            return gradient;
-        }
-
         private Color WithAlpha(Color color, float alpha)
         {
             color.a = alpha;
@@ -154,7 +142,7 @@ namespace OrbitalEscape.Visuals.Palettes
         {
             foreach (MonoBehaviour behaviour in gameObject.GetComponents<MonoBehaviour>())
             {
-                if (behaviour is IPaletteTarget)
+                if (behaviour is IPaletteTarget || behaviour is IPaletteExclusion)
                 {
                     return true;
                 }
@@ -169,6 +157,11 @@ namespace OrbitalEscape.Visuals.Palettes
 
             foreach (MonoBehaviour behaviour in renderer.GetComponents<MonoBehaviour>())
             {
+                if (behaviour is IPaletteExclusion)
+                {
+                    return true;
+                }
+
                 if (behaviour is IPaletteTarget paletteTarget)
                 {
                     paletteTarget.ApplyPalette(palette);

@@ -20,6 +20,8 @@ namespace OrbitalEscape.Visuals
         private static readonly int PullDirectionId = Shader.PropertyToID("_PullDirection");
 
         [SerializeField] private SpriteRenderer _targetRenderer;
+        [SerializeField] private PaletteColorType _colorType = PaletteColorType.Accent;
+        [SerializeField] private bool _preserveCurrentAlpha = true;
         [SerializeField, Min(0.0f)] private float _angleSoftnessRadians;
         [SerializeField, Min(0.0f)] private float _radiusSoftness;
 
@@ -77,8 +79,13 @@ namespace OrbitalEscape.Visuals
 
         public void ApplyPalette(PaletteSnapshot palette)
         {
-            _color = palette.AccentColor;
-            _color.a = 1.0f;
+            Color color = palette.GetColor(_colorType);
+            if (_preserveCurrentAlpha)
+            {
+                color.a = _color.a;
+            }
+
+            _color = color;
             Apply();
         }
 

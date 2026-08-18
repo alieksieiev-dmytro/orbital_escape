@@ -1,6 +1,6 @@
 namespace OrbitalEscape.Visuals.Palettes
 {
-    public enum PaletteSpriteColorType
+    public enum PaletteColorType
     {
         Accent = 0,
         Background = 1,

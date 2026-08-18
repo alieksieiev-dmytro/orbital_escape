@@ -8,6 +8,8 @@ namespace OrbitalEscape.Visuals.Palettes
     public sealed class PaletteTextColorTarget : MonoBehaviour, IPaletteTarget
     {
         [SerializeField] private TMP_Text _targetText;
+        [SerializeField] private PaletteColorType _colorType = PaletteColorType.Environment;
+        [SerializeField] private bool _preserveCurrentAlpha = true;
 
         private void Reset()
         {
@@ -31,8 +33,12 @@ namespace OrbitalEscape.Visuals.Palettes
                 return;
             }
 
-            Color color = palette.EnvironmentColor;
-            color.a = _targetText.color.a;
+            Color color = palette.GetColor(_colorType);
+            if (_preserveCurrentAlpha)
+            {
+                color.a = _targetText.color.a;
+            }
+
             _targetText.color = color;
         }
 

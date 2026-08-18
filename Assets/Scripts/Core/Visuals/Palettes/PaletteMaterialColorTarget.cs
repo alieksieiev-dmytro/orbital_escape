@@ -2,11 +2,12 @@ using UnityEngine;
 
 namespace OrbitalEscape.Visuals.Palettes
 {
-    [DisallowMultipleComponent]
     public sealed class PaletteMaterialColorTarget : MonoBehaviour, IPaletteTarget
     {
         [SerializeField] private Renderer _targetRenderer;
         [SerializeField] private string _colorProperty = "_Color";
+        [SerializeField] private PaletteColorType _colorType = PaletteColorType.Accent;
+        [SerializeField] private bool _preserveCurrentAlpha = true;
 
         private MaterialPropertyBlock _propertyBlock;
         private int _colorPropertyId;
@@ -50,8 +51,12 @@ namespace OrbitalEscape.Visuals.Palettes
             _propertyBlock.Clear();
             _targetRenderer.GetPropertyBlock(_propertyBlock);
 
-            Color color = palette.AccentColor;
-            color.a = material.GetColor(_colorPropertyId).a;
+            Color color = palette.GetColor(_colorType);
+            if (_preserveCurrentAlpha)
+            {
+                color.a = material.GetColor(_colorPropertyId).a;
+            }
+
             _propertyBlock.SetColor(_colorPropertyId, color);
             _targetRenderer.SetPropertyBlock(_propertyBlock);
         }
