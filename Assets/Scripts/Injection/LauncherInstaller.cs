@@ -89,6 +89,7 @@ namespace OrbitalEscape.Injection
         
         private void InstallInputController()
         {
+            Container.Bind<IInputGate>().To<InputGate>().AsSingle();
             Container.BindInterfacesTo<InputController>().AsSingle().NonLazy();
         }
         

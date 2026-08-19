@@ -11,6 +11,7 @@ using OrbitalEscape.Pause;
 using OrbitalEscape.Profiling;
 using OrbitalEscape.Score;
 using OrbitalEscape.Visuals.Palettes;
+using OrbitalEscape.Visuals;
 using UnityEngine;
 using Zenject;
 using static OrbitalEscape.Constants;
@@ -53,6 +54,11 @@ namespace OrbitalEscape.Injection
             Container.Bind<IJumpSpeedService>().To<ScoreJumpSpeedService>().AsSingle();
             Container.BindInterfacesAndSelfTo<GravityWellInfluenceService>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<PlayerMovementController>().AsSingle().WithArguments(_player);
+            Container.Bind<IPlayerLifeState>().To<PlayerLifeState>().AsSingle();
+            Container.Bind<IPlayerDeathAnimation>()
+                .FromInstance(_player.GetComponentInChildren<PlayerDeathAnimation>(true))
+                .AsSingle();
+            Container.BindInterfacesTo<PlayerDeathSequenceController>().AsSingle().NonLazy();
             Container.Bind<LevelManager>().FromComponentInHierarchy().AsSingle();
 
             Container.Bind(typeof(JumpBehaviour), typeof(IDisposable)).To<JumpBehaviour>().AsSingle().NonLazy();
