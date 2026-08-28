@@ -6,10 +6,9 @@ namespace OrbitalEscape.Orbits
     public sealed class LaserGateVisualController : MonoBehaviour
     {
         [SerializeField] private LaserGateController _controller;
-        [SerializeField] private SpriteRenderer _laserRenderer;
-        [SerializeField, Range(0.0f, 1.0f)] private float _passAlpha;
-        [SerializeField, Range(0.0f, 1.0f)] private float _chargingAlpha = 0.25f;
-        [SerializeField, Range(0.0f, 1.0f)] private float _activeAlpha = 0.75f;
+        [SerializeField] private LaserGateBaseView _baseView;
+        [SerializeField] private LaserGateParticleController _particleController;
+        [SerializeField] private LaserGateStateView[] _stateViews;
 
         private void Reset()
         {
@@ -45,31 +44,47 @@ namespace OrbitalEscape.Orbits
             ApplyState(state);
         }
 
-        private void ApplyState(LaserGateState state)
+        public void Fit(float width, float height, float centerYOffset)
         {
-            if (_laserRenderer == null)
+            ResolveReferences();
+            if (_baseView != null)
             {
-                ResolveReferences();
+                _baseView.Fit(width, height, centerYOffset);
             }
 
-            if (_laserRenderer == null)
+            if (_particleController != null)
             {
-                return;
+                _particleController.Fit(centerYOffset);
             }
 
-            Color color = _laserRenderer.color;
-            color.a = GetAlpha(state);
-            _laserRenderer.color = color;
+            foreach (LaserGateStateView stateView in _stateViews)
+            {
+                if (stateView != null)
+                {
+                    stateView.Fit(width, height, centerYOffset);
+                }
+            }
         }
 
-        private float GetAlpha(LaserGateState state)
+        private void ApplyState(LaserGateState state)
         {
-            return state switch
+            if (_particleController != null)
             {
-                LaserGateState.Charging => _chargingAlpha,
-                LaserGateState.Active => _activeAlpha,
-                _ => _passAlpha
-            };
+                _particleController.ApplyState(state);
+            }
+
+            bool stateActivated = false;
+            foreach (LaserGateStateView stateView in _stateViews)
+            {
+                if (stateView == null)
+                {
+                    continue;
+                }
+
+                bool shouldActivate = !stateActivated && stateView.State == state;
+                stateView.SetVisible(shouldActivate);
+                stateActivated |= shouldActivate;
+            }
         }
 
         private void ResolveReferences()
@@ -79,13 +94,19 @@ namespace OrbitalEscape.Orbits
                 _controller = GetComponent<LaserGateController>();
             }
 
-            if (_laserRenderer == null)
+            if (_stateViews == null || _stateViews.Length == 0)
             {
-                Transform laser = transform.Find("laser");
-                if (laser != null)
-                {
-                    _laserRenderer = laser.GetComponent<SpriteRenderer>();
-                }
+                _stateViews = GetComponentsInChildren<LaserGateStateView>(true);
+            }
+
+            if (_baseView == null)
+            {
+                _baseView = GetComponentInChildren<LaserGateBaseView>(true);
+            }
+
+            if (_particleController == null)
+            {
+                _particleController = GetComponent<LaserGateParticleController>();
             }
         }
     }

@@ -8,9 +8,6 @@ namespace OrbitalEscape.Orbits
         private const float MinimumStateDuration = 0.01f;
 
         [SerializeField] private LaserGateHitbox _hitbox;
-        [SerializeField] private Transform _laser;
-        [SerializeField] private Transform _lowerCharge;
-        [SerializeField] private Transform _upperCharge;
 
         private bool _isConfigured;
         private float _elapsed;
@@ -62,30 +59,6 @@ namespace OrbitalEscape.Orbits
             SetState(LaserGateState.Pass);
         }
 
-        public void Fit(float width, float height)
-        {
-            ResolveReferences();
-
-            if (_laser != null)
-            {
-                _laser.localPosition = Vector3.zero;
-                _laser.localScale = new Vector3(Mathf.Max(0.01f, width), Mathf.Max(0.01f, height), 1.0f);
-            }
-
-            float chargeOffset = Mathf.Max(0.01f, height) * 0.5f;
-            if (_lowerCharge != null)
-            {
-                _lowerCharge.localPosition = new Vector3(0.0f, -chargeOffset, 0.0f);
-                _lowerCharge.localScale = Vector3.one;
-            }
-
-            if (_upperCharge != null)
-            {
-                _upperCharge.localPosition = new Vector3(0.0f, chargeOffset, 0.0f);
-                _upperCharge.localScale = Vector3.one;
-            }
-        }
-
         private void SetState(LaserGateState state)
         {
             State = state;
@@ -126,21 +99,6 @@ namespace OrbitalEscape.Orbits
             if (_hitbox == null)
             {
                 _hitbox = GetComponentInChildren<LaserGateHitbox>(true);
-            }
-
-            if (_laser == null)
-            {
-                _laser = transform.Find("laser");
-            }
-
-            if (_lowerCharge == null)
-            {
-                _lowerCharge = transform.Find("charger_lower");
-            }
-
-            if (_upperCharge == null)
-            {
-                _upperCharge = transform.Find("charger_top");
             }
         }
     }

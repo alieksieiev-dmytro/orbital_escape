@@ -610,7 +610,9 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 PatternSlotType.LaserGate => new LaserGate(
                     context.Settings.LaserGate.PassTime,
                     context.Settings.LaserGate.ChargingTime,
-                    context.Settings.LaserGate.ActiveTime),
+                    context.Settings.LaserGate.ActiveTime,
+                    context.Settings.LaserGate.LowerBaseYOffset,
+                    context.Settings.LaserGate.UpperBaseYOffset),
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unsupported obstacle pattern slot type.")
             };
         }

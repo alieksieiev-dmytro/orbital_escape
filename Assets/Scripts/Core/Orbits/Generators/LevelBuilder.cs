@@ -114,7 +114,9 @@ namespace OrbitalEscape.Orbits.Generators
                     _laserGateConfig.Width,
                     _laserGateConfig.PassTime,
                     _laserGateConfig.ChargingTime,
-                    _laserGateConfig.ActiveTime),
+                    _laserGateConfig.ActiveTime,
+                    _laserGateConfig.LowerBaseYOffset,
+                    _laserGateConfig.UpperBaseYOffset),
                 _patternGenerationConfig.CreateSettings(difficulty, patternSlotLengthProvider),
                 _patternGenerationConfig.RandomizeBandPhase);
 

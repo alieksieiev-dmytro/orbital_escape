@@ -5,14 +5,23 @@ namespace OrbitalEscape.Orbits
         public float PassTime { get; }
         public float ChargingTime { get; }
         public float ActiveTime { get; }
+        public float LowerBaseYOffset { get; }
+        public float UpperBaseYOffset { get; }
 
         public ArcObjectType Type => ArcObjectType.LaserGate;
 
-        public LaserGate(float passTime, float chargingTime, float activeTime)
+        public LaserGate(
+            float passTime,
+            float chargingTime,
+            float activeTime,
+            float lowerBaseYOffset,
+            float upperBaseYOffset)
         {
             PassTime = passTime;
             ChargingTime = chargingTime;
             ActiveTime = activeTime;
+            LowerBaseYOffset = lowerBaseYOffset;
+            UpperBaseYOffset = upperBaseYOffset;
         }
     }
 }

@@ -35,6 +35,22 @@ namespace OrbitalEscape.Orbits
             }
         }
 
+        public void Fit(float width, float height, float centerYOffset)
+        {
+            ResolveReferences();
+            if (_collider == null)
+            {
+                return;
+            }
+
+            transform.localPosition = new Vector3(0.0f, centerYOffset, 0.0f);
+            transform.localScale = Vector3.one;
+            _collider.offset = Vector2.zero;
+            _collider.size = new Vector2(
+                Mathf.Max(0.01f, width),
+                Mathf.Max(0.01f, height));
+        }
+
         private void OnTriggerEnter2D(Collider2D other)
         {
             if (!other.CompareTag("Player"))

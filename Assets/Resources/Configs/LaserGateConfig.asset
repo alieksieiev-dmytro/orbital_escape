@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: LaserGateConfig
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.Generators.LaserGateConfig
   <Width>k__BackingField: 0.7
-  <PassTime>k__BackingField: 1
-  <ChargingTime>k__BackingField: 0.5
+  <PassTime>k__BackingField: 0.5
+  <ChargingTime>k__BackingField: 1
   <ActiveTime>k__BackingField: 1.25
+  <LowerBaseYOffset>k__BackingField: -0.2285
+  <UpperBaseYOffset>k__BackingField: 0.126

@@ -3,12 +3,15 @@ Shader "Custom/URP2D/SpriteRadialGradient"
     Properties
     {
         [PerRendererData] [NoScaleOffset] _MainTex("Sprite Texture", 2D) = "white" {}
+        [NoScaleOffset] _MaterialTex("Material Texture (Optional)", 2D) = "white" {}
+        [HideInInspector] _HasMaterialTex("Has Material Texture", Float) = 0
         _CenterColor("Center Color", Color) = (1, 1, 1, 1)
         _EdgeColor("Edge Color", Color) = (1, 1, 1, 0)
         _Center("Center", Vector) = (0.5, 0.5, 0, 0)
         _Radius("Radius", Range(0.01, 1.5)) = 1
         _GradientStart("Gradient Start", Range(0, 1)) = 0
         _Falloff("Falloff", Range(0.1, 8)) = 1
+        _EmissionIntensity("Emission Intensity", Range(0, 20)) = 1
     }
 
     SubShader
@@ -52,6 +55,8 @@ Shader "Custom/URP2D/SpriteRadialGradient"
 
             TEXTURE2D(_MainTex);
             SAMPLER(sampler_MainTex);
+            TEXTURE2D(_MaterialTex);
+            SAMPLER(sampler_MaterialTex);
 
             CBUFFER_START(UnityPerMaterial)
                 half4 _CenterColor;
@@ -60,6 +65,8 @@ Shader "Custom/URP2D/SpriteRadialGradient"
                 float _Radius;
                 float _GradientStart;
                 float _Falloff;
+                float _EmissionIntensity;
+                float _HasMaterialTex;
             CBUFFER_END
 
             Varyings Vert(Attributes input)
@@ -73,7 +80,9 @@ Shader "Custom/URP2D/SpriteRadialGradient"
 
             half4 Frag(Varyings input) : SV_Target
             {
-                half4 sprite = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
+                half4 rendererSprite = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
+                half4 materialSprite = SAMPLE_TEXTURE2D(_MaterialTex, sampler_MaterialTex, input.uv);
+                half4 sprite = lerp(rendererSprite, materialSprite, saturate(_HasMaterialTex));
                 float radialDistance = length((input.uv - _Center.xy) * 2.0);
                 float normalizedDistance = saturate(radialDistance / max(_Radius, 0.0001));
                 float gradientStart = min(saturate(_GradientStart), 0.999);
@@ -84,9 +93,12 @@ Shader "Custom/URP2D/SpriteRadialGradient"
 
                 half4 output = gradientColor * input.color;
                 output.a *= sprite.a;
+                output.rgb *= _EmissionIntensity;
                 return output;
             }
             ENDHLSL
         }
     }
+
+    CustomEditor "OrbitalEscape.EditorTools.SpriteRadialGradientShaderGUI"
 }

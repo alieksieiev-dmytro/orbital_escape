@@ -6,6 +6,7 @@ Shader "Custom/Player/Horizontal Gradient"
 
         [Toggle] _Vertical ("Vertical Gradient", Float) = 0
         [IntRange] _ColorCount ("Colour Count", Range(2, 8)) = 2
+        _EmissionIntensity ("Emission Intensity", Range(0, 20)) = 1
 
         [HDR] _Color0 ("Colour 1", Color) = (1, 1, 1, 1)
         _Color0Position ("Colour 1 Position", Range(0, 1)) = 0
@@ -42,10 +43,12 @@ Shader "Custom/Player/Horizontal Gradient"
 
         Pass
         {
-            Tags { "LightMode" = "Universal2D" }
+            Tags
+            {
+                "LightMode" = "Universal2D"
+            }
 
             HLSLPROGRAM
-
             #pragma vertex Vert
             #pragma fragment Frag
             #pragma multi_compile_instancing
@@ -64,7 +67,7 @@ Shader "Custom/Player/Horizontal Gradient"
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
-                half4 color : COLOR;
+                half4  color : COLOR;
                 float2 uv : TEXCOORD0;
             };
 
@@ -72,6 +75,7 @@ Shader "Custom/Player/Horizontal Gradient"
             SAMPLER(sampler_MainTex);
 
             CBUFFER_START(UnityPerMaterial)
+                float _EmissionIntensity;
                 half4 _Color0;
                 half4 _Color1;
                 half4 _Color2;
@@ -123,20 +127,13 @@ Shader "Custom/Player/Horizontal Gradient"
             {
                 half4 color = _Color0;
 
-                if (_ColorCount > 1.5)
-                    color = BlendStop(color, _Color1, _Color0Position, _Color1Position, position);
-                if (_ColorCount > 2.5)
-                    color = BlendStop(color, _Color2, _Color1Position, _Color2Position, position);
-                if (_ColorCount > 3.5)
-                    color = BlendStop(color, _Color3, _Color2Position, _Color3Position, position);
-                if (_ColorCount > 4.5)
-                    color = BlendStop(color, _Color4, _Color3Position, _Color4Position, position);
-                if (_ColorCount > 5.5)
-                    color = BlendStop(color, _Color5, _Color4Position, _Color5Position, position);
-                if (_ColorCount > 6.5)
-                    color = BlendStop(color, _Color6, _Color5Position, _Color6Position, position);
-                if (_ColorCount > 7.5)
-                    color = BlendStop(color, _Color7, _Color6Position, _Color7Position, position);
+                if(_ColorCount > 1.5) color = BlendStop(color, _Color1, _Color0Position, _Color1Position, position);
+                if(_ColorCount > 2.5) color = BlendStop(color, _Color2, _Color1Position, _Color2Position, position);
+                if(_ColorCount > 3.5) color = BlendStop(color, _Color3, _Color2Position, _Color3Position, position);
+                if(_ColorCount > 4.5) color = BlendStop(color, _Color4, _Color3Position, _Color4Position, position);
+                if(_ColorCount > 5.5) color = BlendStop(color, _Color5, _Color4Position, _Color5Position, position);
+                if(_ColorCount > 6.5) color = BlendStop(color, _Color6, _Color5Position, _Color6Position, position);
+                if(_ColorCount > 7.5) color = BlendStop(color, _Color7, _Color6Position, _Color7Position, position);
 
                 return color;
             }
@@ -144,12 +141,20 @@ Shader "Custom/Player/Horizontal Gradient"
             half4 Frag(Varyings input) : SV_Target
             {
                 half4 sprite = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
-                float gradientPosition = lerp(input.uv.x, input.uv.y, step(0.5, _Vertical));
-                half4 gradient = EvaluateGradient(saturate(gradientPosition));
 
-                return sprite * input.color * gradient;
+                float gradientPosition =
+                lerp(input.uv.x, input.uv.y, step(0.5, _Vertical));
+
+                half4 gradient =
+                EvaluateGradient(saturate(gradientPosition));
+
+                half4 result = sprite * input.color * gradient;
+
+                // Boost RGB into HDR range, but don't modify transparency.
+                result.rgb *= _EmissionIntensity;
+
+                return result;
             }
-
             ENDHLSL
         }
     }

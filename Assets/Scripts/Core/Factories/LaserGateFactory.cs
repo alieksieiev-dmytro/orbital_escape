@@ -50,9 +50,22 @@ namespace OrbitalEscape.Factories
                 ToLocalScale(1.0f, root.lossyScale.y),
                 1.0f);
 
+            float fittedHeight = height;
+            float centerYOffset = 0.0f;
+            CalculateSpan(laserGate, height, out fittedHeight, out centerYOffset);
+
+            if (laserGateObject.GetComponentInChildren<LaserGateHitbox>(true) is { } hitbox)
+            {
+                hitbox.Fit(width, fittedHeight, centerYOffset);
+            }
+
+            if (laserGateObject.GetComponent<LaserGateVisualController>() is { } visualController)
+            {
+                visualController.Fit(width, fittedHeight, centerYOffset);
+            }
+
             if (laserGateObject.GetComponent<LaserGateController>() is { } controller)
             {
-                controller.Fit(width, height);
                 controller.Configure(laserGate);
             }
 
@@ -89,6 +102,20 @@ namespace OrbitalEscape.Factories
             return Mathf.Approximately(parentScale, 0.0f)
                 ? worldSize
                 : worldSize / parentScale;
+        }
+
+        private static void CalculateSpan(
+            LaserGate laserGate,
+            float movementLaneHeight,
+            out float spanHeight,
+            out float spanCenterYOffset)
+        {
+            float halfMovementLaneHeight = movementLaneHeight * 0.5f;
+            float lowerBaseY = -halfMovementLaneHeight + laserGate.LowerBaseYOffset;
+            float upperBaseY = halfMovementLaneHeight + laserGate.UpperBaseYOffset;
+
+            spanHeight = Mathf.Max(0.01f, upperBaseY - lowerBaseY);
+            spanCenterYOffset = (lowerBaseY + upperBaseY) * 0.5f;
         }
     }
 }
