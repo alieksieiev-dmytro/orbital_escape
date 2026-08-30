@@ -9,6 +9,8 @@ namespace OrbitalEscape.Audio
     public sealed class AudioService : IAudioService, IInitializable, IDisposable
     {
         private const string RootName = "AudioService";
+        private const string MusicSourceName = "Music";
+        private const string SfxSourceName = "SFX";
         private const float NormalLowPassCutoff = 22000.0f;
 
         private readonly GameAudioConfig _config;
@@ -156,20 +158,27 @@ namespace OrbitalEscape.Audio
             _root = new GameObject(RootName);
             Object.DontDestroyOnLoad(_root);
 
-            _musicSource = _root.AddComponent<AudioSource>();
+            _musicSource = CreateAudioSource(MusicSourceName);
             _musicSource.playOnAwake = false;
             _musicSource.loop = _config == null || _config.MusicLoops;
             _musicSource.outputAudioMixerGroup = _config != null ? _config.MusicMixerGroup : null;
 
-            _musicLowPassFilter = _root.AddComponent<AudioLowPassFilter>();
+            _musicLowPassFilter = _musicSource.gameObject.AddComponent<AudioLowPassFilter>();
             _musicLowPassFilter.cutoffFrequency = TargetLowPassCutoff;
             _musicLowPassFilter.lowpassResonanceQ = TargetLowPassResonance;
 
-            _sfxSource = _root.AddComponent<AudioSource>();
+            _sfxSource = CreateAudioSource(SfxSourceName);
             _sfxSource.playOnAwake = false;
             _sfxSource.loop = false;
             _sfxSource.volume = 1.0f;
             _sfxSource.outputAudioMixerGroup = _config != null ? _config.SfxMixerGroup : null;
+        }
+
+        private AudioSource CreateAudioSource(string sourceName)
+        {
+            var sourceObject = new GameObject(sourceName);
+            sourceObject.transform.SetParent(_root.transform, false);
+            return sourceObject.AddComponent<AudioSource>();
         }
 
         private void ApplySourceVolumes()

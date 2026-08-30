@@ -15,14 +15,14 @@ MonoBehaviour:
   <MainMenuMusic>k__BackingField: {fileID: 0}
   <GameplayMusic>k__BackingField: {fileID: 8300000, guid: 31dc57f63dab46acb6b8e0e92fbf8d37, type: 3}
   <JumpSfx>k__BackingField: {fileID: 0}
-  <DeathSfx>k__BackingField: {fileID: 0}
+  <DeathSfx>k__BackingField: {fileID: 8300000, guid: 8ae34a6e24d66414ab4b9e5b3a71ad2f, type: 3}
   <RestartSfx>k__BackingField: {fileID: 0}
   <AudioMixer>k__BackingField: {fileID: 0}
   <MusicMixerGroup>k__BackingField: {fileID: 0}
   <SfxMixerGroup>k__BackingField: {fileID: 0}
   <MasterVolume>k__BackingField: 1
-  <MusicVolume>k__BackingField: 1
-  <SfxVolume>k__BackingField: 1
+  <MusicVolume>k__BackingField: 0.5
+  <SfxVolume>k__BackingField: 0.445
   <MusicFadeDuration>k__BackingField: 0.25
   <MusicLoops>k__BackingField: 1
   <ObscuredMusicVolumeMultiplier>k__BackingField: 0.22
