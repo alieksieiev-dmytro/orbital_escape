@@ -9,6 +9,7 @@ namespace OrbitalEscape.Pooling
         private readonly Action<T> _onRent;
         private readonly Action<T> _onReturn;
         private readonly Action<T> _onDestroy;
+        private readonly Func<T, bool> _isValid;
         private readonly Stack<T> _inactiveItems = new Stack<T>();
         private readonly HashSet<T> _inactiveSet = new HashSet<T>();
         private readonly HashSet<T> _activeItems = new HashSet<T>();
@@ -24,12 +25,14 @@ namespace OrbitalEscape.Pooling
             Action<T> onRent = null,
             Action<T> onReturn = null,
             Action<T> onDestroy = null,
-            int prewarmCount = 0)
+            int prewarmCount = 0,
+            Func<T, bool> isValid = null)
         {
             _create = create ?? throw new ArgumentNullException(nameof(create));
             _onRent = onRent;
             _onReturn = onReturn;
             _onDestroy = onDestroy;
+            _isValid = isValid ?? (item => item != null);
 
             Prewarm(prewarmCount);
         }
@@ -38,13 +41,19 @@ namespace OrbitalEscape.Pooling
         {
             ThrowIfDisposed();
 
-            T item;
-            if (_inactiveItems.Count > 0)
+            T item = null;
+            while (_inactiveItems.Count > 0)
             {
-                item = _inactiveItems.Pop();
-                _inactiveSet.Remove(item);
+                T candidate = _inactiveItems.Pop();
+                _inactiveSet.Remove(candidate);
+                if (_isValid(candidate))
+                {
+                    item = candidate;
+                    break;
+                }
             }
-            else
+
+            if (ReferenceEquals(item, null))
             {
                 item = CreateItem();
             }
@@ -60,7 +69,12 @@ namespace OrbitalEscape.Pooling
 
         public bool Return(T item)
         {
-            if (_isDisposed || item == null || !_activeItems.Remove(item))
+            if (_isDisposed || ReferenceEquals(item, null) || !_activeItems.Remove(item))
+            {
+                return false;
+            }
+
+            if (!_isValid(item))
             {
                 return false;
             }
@@ -108,12 +122,18 @@ namespace OrbitalEscape.Pooling
         {
             foreach (T item in _activeItems)
             {
-                _onDestroy?.Invoke(item);
+                if (_isValid(item))
+                {
+                    _onDestroy?.Invoke(item);
+                }
             }
 
             foreach (T item in _inactiveItems)
             {
-                _onDestroy?.Invoke(item);
+                if (_isValid(item))
+                {
+                    _onDestroy?.Invoke(item);
+                }
             }
 
             _activeItems.Clear();
@@ -135,9 +155,9 @@ namespace OrbitalEscape.Pooling
         private T CreateItem()
         {
             T item = _create();
-            if (item == null)
+            if (ReferenceEquals(item, null) || !_isValid(item))
             {
-                throw new InvalidOperationException("The object pool create function returned null.");
+                throw new InvalidOperationException("The object pool create function returned an invalid item.");
             }
 
             return item;

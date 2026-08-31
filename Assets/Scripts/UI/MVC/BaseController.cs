@@ -21,8 +21,6 @@ namespace OrbitalEscape.UI
         protected bool IsNullView => _view == null || _view.Root == null || _view.Root.gameObject.IsNull();
         
         public abstract IConvertible Type { get; }
-        
-        public event Action<IConvertible, ScreenData> ScreenRequested;
 
         public abstract void Initialize(ScreenData screenData);
         public abstract void Complete();

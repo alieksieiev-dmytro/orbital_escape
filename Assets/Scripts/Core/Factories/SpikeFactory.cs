@@ -30,7 +30,8 @@ namespace OrbitalEscape.Factories
                 OnRent,
                 OnReturn,
                 UnityEngine.Object.Destroy,
-                poolConfig != null ? poolConfig.SpikePrewarmCount : 0);
+                poolConfig != null ? poolConfig.SpikePrewarmCount : 0,
+                IsValidSpike);
         }
 
         public GameObject Create(Transform root, Orbit orbitData, ArcObject spikeData)
@@ -126,6 +127,11 @@ namespace OrbitalEscape.Factories
             spike.transform.localPosition = Vector3.zero;
             spike.transform.localRotation = Quaternion.identity;
             spike.transform.localScale = Vector3.one;
+        }
+
+        private static bool IsValidSpike(GameObject spike)
+        {
+            return spike != null;
         }
     }
 }
