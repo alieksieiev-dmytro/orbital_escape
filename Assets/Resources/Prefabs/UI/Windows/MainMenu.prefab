@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 463080584}
   - component: {fileID: 463080586}
   - component: {fileID: 463080585}
-  - component: {fileID: 910420000000000031}
   m_Layer: 5
   m_Name: txt-settings
   m_TagString: Untagged
@@ -56,7 +55,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -68,8 +67,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Settings
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 2e43f97d733786d42ab673104b10cdcb, type: 2}
-  m_sharedMaterial: {fileID: 2100000, guid: 0db5d44ac18cacb41b57e6aab387d216, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 59122ee4bc1eb0b4bb7b2b74db6d5144, type: 2}
+  m_sharedMaterial: {fileID: 8761686647625166408, guid: 59122ee4bc1eb0b4bb7b2b74db6d5144, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -212,7 +211,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
@@ -235,7 +234,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GraphicRaycaster
   m_IgnoreReversedGraphics: 1
   m_BlockingObjects: 0
@@ -264,7 +263,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5d723ae4f60543d0ab8658b25cd9d8b7, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.UI.MainMenuWindowView
   _root: {fileID: 0}
 --- !u!1 &858805108
@@ -278,7 +277,6 @@ GameObject:
   - component: {fileID: 858805109}
   - component: {fileID: 858805111}
   - component: {fileID: 858805110}
-  - component: {fileID: 910420000000000032}
   m_Layer: 5
   m_Name: txt-play
   m_TagString: Untagged
@@ -323,7 +321,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -335,8 +333,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Play
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 2e43f97d733786d42ab673104b10cdcb, type: 2}
-  m_sharedMaterial: {fileID: 2100000, guid: 0db5d44ac18cacb41b57e6aab387d216, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 59122ee4bc1eb0b4bb7b2b74db6d5144, type: 2}
+  m_sharedMaterial: {fileID: 8761686647625166408, guid: 59122ee4bc1eb0b4bb7b2b74db6d5144, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -454,7 +452,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
   m_HorizontalFit: 2
   m_VerticalFit: 2
@@ -468,7 +466,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
   m_Padding:
     m_Left: 0
@@ -540,7 +538,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
   m_Navigation:
     m_Mode: 3
@@ -585,7 +583,6 @@ GameObject:
   - component: {fileID: 1203158421}
   - component: {fileID: 1203158423}
   - component: {fileID: 1203158422}
-  - component: {fileID: 910420000000000033}
   m_Layer: 5
   m_Name: txt-exit
   m_TagString: Untagged
@@ -630,7 +627,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -642,8 +639,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Exit
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 2e43f97d733786d42ab673104b10cdcb, type: 2}
-  m_sharedMaterial: {fileID: 2100000, guid: 0db5d44ac18cacb41b57e6aab387d216, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 59122ee4bc1eb0b4bb7b2b74db6d5144, type: 2}
+  m_sharedMaterial: {fileID: 8761686647625166408, guid: 59122ee4bc1eb0b4bb7b2b74db6d5144, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -767,7 +764,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
   m_Navigation:
     m_Mode: 3
@@ -813,7 +810,6 @@ GameObject:
   - component: {fileID: 1830198275}
   - component: {fileID: 1830198274}
   - component: {fileID: 1830198276}
-  - component: {fileID: 910420000000000034}
   m_Layer: 5
   m_Name: txt-title
   m_TagString: Untagged
@@ -858,7 +854,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -872,8 +868,8 @@ MonoBehaviour:
 
     <space=394.5>ESCAPE'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 2e43f97d733786d42ab673104b10cdcb, type: 2}
-  m_sharedMaterial: {fileID: 2100000, guid: 0db5d44ac18cacb41b57e6aab387d216, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 59122ee4bc1eb0b4bb7b2b74db6d5144, type: 2}
+  m_sharedMaterial: {fileID: 8761686647625166408, guid: 59122ee4bc1eb0b4bb7b2b74db6d5144, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -951,7 +947,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
   m_HorizontalFit: 2
   m_VerticalFit: 2
@@ -1011,7 +1007,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
   m_Navigation:
     m_Mode: 3
@@ -1045,55 +1041,3 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &910420000000000031
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 463080583}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 84b8f3db78d546749a4c1c7d2e6c1f5d, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Visuals.Palettes.PaletteTextColorTarget
-  _targetText: {fileID: 463080585}
---- !u!114 &910420000000000032
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 858805108}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 84b8f3db78d546749a4c1c7d2e6c1f5d, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Visuals.Palettes.PaletteTextColorTarget
-  _targetText: {fileID: 858805110}
---- !u!114 &910420000000000033
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1203158420}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 84b8f3db78d546749a4c1c7d2e6c1f5d, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Visuals.Palettes.PaletteTextColorTarget
-  _targetText: {fileID: 1203158422}
---- !u!114 &910420000000000034
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1830198272}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 84b8f3db78d546749a4c1c7d2e6c1f5d, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Visuals.Palettes.PaletteTextColorTarget
-  _targetText: {fileID: 1830198274}

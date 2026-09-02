@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: be2e4b1c1209c82489e3b59438ca90a8
+guid: d32f21d55af39814d9ca801d1d15d3d2
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,13 +9,13 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - Rajdhani
+  - Unitblock
   fallbackFontReferences: []
-  customCharacters: 
+  customCharacters:
   fontRenderingMode: 0
   ascentCalculationMode: 1
   useLegacyBoundsCalculation: 0
   shouldRoundAdvanceValue: 1
-  userData: 
-  assetBundleName: 
-  assetBundleVariant: 
+  userData:
+  assetBundleName:
+  assetBundleVariant:

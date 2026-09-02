@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d4a5f48651d4e11b10a890aa82fcf74, type: 3}
+  m_Name: PaletteFontMaterialConfig
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Visuals.Palettes.PaletteFontMaterialConfig
+  _bindings:
+  - _material: {fileID: 8761686647625166408, guid: 59122ee4bc1eb0b4bb7b2b74db6d5144, type: 2}
+    _colorProperty: _FaceColor
+    _colorType: 0
+    _preserveCurrentAlpha: 1
+    _mergeColour: {r: 1, g: 1, b: 1, a: 1}
+    _mergePercent: 0.1
+  - _material: {fileID: 2100000, guid: b50edb716d5b3194fbc10110c2389af6, type: 2}
+    _colorProperty: _FaceColor
+    _colorType: 0
+    _preserveCurrentAlpha: 1
+    _mergeColour: {r: 1, g: 1, b: 1, a: 1}
+    _mergePercent: 0.6
