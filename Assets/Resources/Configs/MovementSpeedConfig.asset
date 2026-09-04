@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b658e5520bc349cd95539f53ce18a883, type: 3}
   m_Name: MovementSpeedConfig
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Movement.MovementSpeedConfig
+  _directionChangeDuration: 0.08
   _difficultyProfiles:
   - _difficulty: 0
     _baseLinearSpeed: 6

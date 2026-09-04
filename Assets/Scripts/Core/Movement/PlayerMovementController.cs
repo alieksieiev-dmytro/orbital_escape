@@ -10,8 +10,10 @@ namespace OrbitalEscape.Movement
         private readonly Transform _playerTransform;
         private readonly Vector2 _center;
         private readonly IMovementModel _movementModel;
+        private readonly MovementSpeedConfig _movementSpeedConfig;
         
-        private MovementDirection _currentDirection = MovementDirection.Clockwise;
+        private MovementDirection _requestedDirection = MovementDirection.Clockwise;
+        private float _directionFactor = (float)MovementDirection.Clockwise;
         private bool _isMoving;
 
         [Inject]
@@ -19,14 +21,15 @@ namespace OrbitalEscape.Movement
             Transform playerTransform,
             IMovementModel movementModel,
             [Inject(Id = Constants.INJECTION_ID_CENTRE)] Vector2 center,
-            IMovementSpeedService movementSpeedService)
+            IMovementSpeedService movementSpeedService,
+            MovementSpeedConfig movementSpeedConfig)
         {
             _playerTransform = playerTransform;
             _movementModel = movementModel;
             _center = center;
             _movementSpeedService = movementSpeedService;
+            _movementSpeedConfig = movementSpeedConfig;
             _isMoving = true;
-            SetMovementDirection(MovementDirection.Clockwise);
         }
 
         public void Tick()
@@ -34,7 +37,14 @@ namespace OrbitalEscape.Movement
             if (!_isMoving)
                 return;
             
-            _movementModel.Step(_movementSpeedService.CurrentLinearSpeed, Time.deltaTime, _currentDirection);
+            UpdateMovementDirection(Time.deltaTime);
+
+            MovementDirection movementDirection = _directionFactor < 0.0f
+                ? MovementDirection.Clockwise
+                : MovementDirection.CounterClockwise;
+            float linearSpeed = _movementSpeedService.CurrentLinearSpeed * Mathf.Abs(_directionFactor);
+
+            _movementModel.Step(linearSpeed, Time.deltaTime, movementDirection);
             RefreshTransform();
         }
 
@@ -44,9 +54,7 @@ namespace OrbitalEscape.Movement
             _playerTransform.position = new Vector3(newPos.x, newPos.y, _playerTransform.position.z);
             
             var radiusVector = newPos - _center;
-            var tangentDirection = _currentDirection == MovementDirection.Clockwise
-                ? new Vector2(radiusVector.y, -radiusVector.x)
-                : new Vector2(-radiusVector.y, radiusVector.x);
+            var tangentDirection = new Vector2(radiusVector.y, -radiusVector.x);
 
             float angle = Mathf.Atan2(tangentDirection.y, tangentDirection.x) * Mathf.Rad2Deg;
             _playerTransform.rotation = Quaternion.Euler(0f, 0f, angle);
@@ -54,18 +62,27 @@ namespace OrbitalEscape.Movement
         
         public void SetMovementDirection(MovementDirection direction)
         {
-            if (_currentDirection == direction)
+            if (_requestedDirection == direction)
             {
                 return;
             }
 
-            _currentDirection = direction;
+            _requestedDirection = direction;
             EventBus<MovementDirectionChangedEvent>.Raise(new MovementDirectionChangedEvent(direction));
         }
         
         public void StopMovement()
         {
             _isMoving = false;
+        }
+
+        private void UpdateMovementDirection(float deltaTime)
+        {
+            float targetFactor = (float)_requestedDirection;
+            float duration = _movementSpeedConfig.DirectionChangeDuration;
+            _directionFactor = duration <= 0.0f
+                ? targetFactor
+                : Mathf.MoveTowards(_directionFactor, targetFactor, 2.0f * deltaTime / duration);
         }
     }
 }

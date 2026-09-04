@@ -7,6 +7,9 @@ namespace OrbitalEscape.Movement
     public sealed class MovementSpeedConfig : ScriptableObject
     {
         [SerializeField] private DifficultyMovementSpeedProfile[] _difficultyProfiles;
+        [SerializeField, Min(0.0f)] private float _directionChangeDuration = 0.08f;
+
+        public float DirectionChangeDuration => _directionChangeDuration;
 
         public float Evaluate(DifficultyType difficulty, float score)
         {

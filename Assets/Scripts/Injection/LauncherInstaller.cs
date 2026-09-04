@@ -101,6 +101,7 @@ namespace OrbitalEscape.Injection
             Container.Bind(typeof(GamePaletteConfig)).To<GamePaletteConfig>().FromScriptableObjectResource("Configs/GamePaletteConfig").AsSingle();
             Container.Bind<PaletteFontMaterialConfig>().FromScriptableObjectResource("Configs/PaletteFontMaterialConfig").AsSingle();
             Container.Bind(typeof(MovementSpeedConfig)).To<MovementSpeedConfig>().FromScriptableObjectResource("Configs/MovementSpeedConfig").AsSingle();
+            Container.Bind<CameraSettingsConfig>().FromScriptableObjectResource("Configs/CameraSettingsConfig").AsSingle();
             Container.Bind(typeof(RiftConfig)).To<RiftConfig>().FromScriptableObjectResource("Configs/RiftConfig").AsSingle();
             Container.Bind(typeof(SpikeConfig)).To<SpikeConfig>().FromScriptableObjectResource("Configs/SpikeConfig").AsSingle();
             Container.Bind(typeof(MiniSpikeConfig)).To<MiniSpikeConfig>().FromScriptableObjectResource("Configs/MiniSpikeConfig").AsSingle();
