@@ -49,32 +49,35 @@ namespace OrbitalEscape.UI
 
         public override void Complete()
         {
+            _audioService.SetMusicObscured(false);
+            if (IsNullView)
+                return;
+
             View.ResumeClicked -= OnResumeClicked;
             View.RestartClicked -= OnRestartClicked;
             View.ExitClicked -= OnExitClicked;
             View.CheatsClicked -= OnCheatsClicked;
             View.Hide();
-            _audioService.SetMusicObscured(false);
         }
 
         protected override PauseWindowView CreateView() => _viewFactory.Create<PauseWindowView>(nameof(WindowType.Pause));
 
         private void OnResumeClicked()
         {
-            Complete();
             _resumeCommand.Execute();
         }
 
+        public override void RequestClose() => OnResumeClicked();
+
         private void OnRestartClicked()
         {
-            Complete();
             _resumeCommand.Execute();
             _restartCommand.Execute();
         }
 
         private void OnExitClicked()
         {
-            Complete();
+            _uiManager.CloseWindow(Type);
             _exitToMainMenuCommand.Execute();
         }
 
@@ -85,7 +88,7 @@ namespace OrbitalEscape.UI
                 return;
             }
 
-            Complete();
+            _uiManager.CloseWindow(Type);
             _uiManager.OpenWindow(WindowType.CheatCommand, null);
         }
     }

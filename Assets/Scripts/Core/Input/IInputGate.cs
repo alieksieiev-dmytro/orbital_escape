@@ -5,5 +5,6 @@ namespace OrbitalEscape.Input
         bool IsLocked { get; }
         void Lock();
         void Unlock();
+        void SuppressForCurrentFrame();
     }
 }

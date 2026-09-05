@@ -8,5 +8,6 @@ namespace OrbitalEscape.UI
 
         void Initialize(ScreenData screenData);
         void Complete();
+        void RequestClose();
     }
 }

@@ -13,7 +13,7 @@ namespace OrbitalEscape.Injection
             InstallWindows();
             InstallCommands();
 
-            Container.Bind<IUIManager>().To<UIManager>().AsSingle();
+            Container.BindInterfacesTo<UIManager>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<MainMenuStartupController>().AsSingle().NonLazy();
             Container.BindInterfacesTo<MainMenuAudioController>().AsSingle().NonLazy();
         }

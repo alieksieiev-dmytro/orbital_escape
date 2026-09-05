@@ -250,6 +250,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.UI.SelectGameModeWindowView
   _root: {fileID: 3621523675277413057}
+  _initialSelection: {fileID: 363539976994830705}
 --- !u!1 &719073555098072978
 GameObject:
   m_ObjectHideFlags: 0

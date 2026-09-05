@@ -266,6 +266,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.UI.MainMenuWindowView
   _root: {fileID: 0}
+  _initialSelection: {fileID: 2078085262}
 --- !u!1 &858805108
 GameObject:
   m_ObjectHideFlags: 0

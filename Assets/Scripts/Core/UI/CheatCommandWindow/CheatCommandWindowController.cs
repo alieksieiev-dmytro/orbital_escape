@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using OrbitalEscape.Audio;
 using OrbitalEscape.Cheats;
@@ -16,6 +17,8 @@ namespace OrbitalEscape.UI
         private readonly ICheatCommandService _commandService;
         private readonly IResourceProfilerService _profilerService;
         private readonly IAudioService _audioService;
+        private bool _isBusy;
+        private CancellationTokenSource _operationCancellation;
 
         public override IConvertible Type => WindowType.CheatCommand;
 
@@ -58,14 +61,18 @@ namespace OrbitalEscape.UI
 
         public override void Complete()
         {
+            _operationCancellation?.Cancel();
+            _profilerService.ProfilingStateChanged -= OnProfilingStateChanged;
+            _audioService.SetMusicObscured(false);
+            if (IsNullView)
+                return;
+
             View.AddScoreClicked -= OnAddScoreClicked;
             View.ClearObstaclesClicked -= OnClearObstaclesClicked;
             View.GoToOrbitClicked -= OnGoToOrbitClicked;
             View.ProfilingClicked -= OnProfilingClicked;
             View.BackClicked -= OnBackClicked;
-            _profilerService.ProfilingStateChanged -= OnProfilingStateChanged;
             View.Hide();
-            _audioService.SetMusicObscured(false);
         }
 
         protected override CheatCommandWindowView CreateView()
@@ -75,16 +82,25 @@ namespace OrbitalEscape.UI
 
         private void OnAddScoreClicked()
         {
+            if (_isBusy)
+                return;
+
             View.SetStatus(_commandService.AddScore().Message);
         }
 
         private void OnClearObstaclesClicked()
         {
+            if (_isBusy)
+                return;
+
             View.SetStatus(_commandService.ClearAllObstacles().Message);
         }
 
         private void OnProfilingClicked()
         {
+            if (_isBusy)
+                return;
+
             ResourceProfilerResult result = _profilerService.IsProfiling
                 ? _profilerService.StopProfiling()
                 : _profilerService.StartProfiling();
@@ -95,7 +111,7 @@ namespace OrbitalEscape.UI
 
         private void OnProfilingStateChanged(bool isProfiling)
         {
-            if (View != null && View.Root != null)
+            if (!IsNullView)
             {
                 View.SetProfilingActive(isProfiling);
             }
@@ -103,11 +119,17 @@ namespace OrbitalEscape.UI
 
         private void OnGoToOrbitClicked(int orbitIndex)
         {
+            if (_isBusy)
+                return;
+
             GoToOrbitAsync(View, orbitIndex).Forget();
         }
 
         private async UniTaskVoid GoToOrbitAsync(CheatCommandWindowView view, int orbitIndex)
         {
+            _isBusy = true;
+            var cancellation = CancellationTokenSource.CreateLinkedTokenSource(view.destroyCancellationToken);
+            _operationCancellation = cancellation;
             view.SetBusy(true);
             view.SetStatus($"Moving to orbit {orbitIndex}...");
 
@@ -115,14 +137,18 @@ namespace OrbitalEscape.UI
             {
                 CheatCommandResult result = await _commandService.GoToOrbitAsync(
                     orbitIndex,
-                    ((MonoBehaviour)view).destroyCancellationToken);
-                view.SetStatus(result.Message);
+                    cancellation.Token);
+                if (!cancellation.IsCancellationRequested)
+                    view.SetStatus(result.Message);
             }
             catch (OperationCanceledException)
             {
             }
             finally
             {
+                _operationCancellation = null;
+                _isBusy = false;
+                cancellation.Dispose();
                 if (view != null && view.Root != null)
                 {
                     view.SetBusy(false);
@@ -130,10 +156,15 @@ namespace OrbitalEscape.UI
             }
         }
 
-        private void OnBackClicked()
+        public override void RequestClose()
         {
-            Complete();
+            if (_isBusy)
+                return;
+
+            _uiManager.CloseWindow(Type);
             _uiManager.OpenWindow(WindowType.Pause, null);
         }
+
+        private void OnBackClicked() => RequestClose();
     }
 }

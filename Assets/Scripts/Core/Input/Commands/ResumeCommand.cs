@@ -21,8 +21,8 @@ namespace OrbitalEscape.Input
 
         public override void Execute()
         {
-            _pauseService.Resume();
             _uiManager.CloseWindow(WindowType.Pause);
+            _pauseService.Resume();
         }
     }
 }

@@ -130,6 +130,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.UI.CheatCommandWindowView
   _root: {fileID: 100002}
+  _initialSelection: {fileID: 500002}
 --- !u!1 &200000
 GameObject:
   m_ObjectHideFlags: 0

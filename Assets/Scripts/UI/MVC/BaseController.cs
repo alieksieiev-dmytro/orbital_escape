@@ -1,11 +1,13 @@
 using System;
 using OrbitalEscape.Extensions;
+using Zenject;
 
 namespace OrbitalEscape.UI
 {
     public abstract class BaseController<TView> : IController where TView : IView
     {
         private TView _view;
+        [Inject] private IUIManager _uiManager;
 
         protected TView View
         {
@@ -24,6 +26,7 @@ namespace OrbitalEscape.UI
 
         public abstract void Initialize(ScreenData screenData);
         public abstract void Complete();
+        public virtual void RequestClose() => _uiManager.CloseWindow(Type);
         protected abstract TView CreateView();
     }
 }

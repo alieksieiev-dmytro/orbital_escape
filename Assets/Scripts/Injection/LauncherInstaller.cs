@@ -82,9 +82,6 @@ namespace OrbitalEscape.Injection
                 .FromInstance(new KeyBinding(nameof(KeyCode.A).ToLowerInvariant(), nameof(CommandType.MoveCounterClockwise)))
                 .AsCached();
 
-            Container.Bind<KeyBinding>()
-                .FromInstance(new KeyBinding(nameof(KeyCode.Escape).ToLowerInvariant(), nameof(CommandType.Pause)))
-                .AsCached();
         }
         
         private void InstallInputController()

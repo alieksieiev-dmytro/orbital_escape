@@ -90,6 +90,7 @@ namespace OrbitalEscape.UI
             _profilingButton.interactable = !busy;
             _backButton.interactable = !busy;
             _orbitInput.interactable = !busy;
+            RestoreNavigationSelection();
         }
 
         public void SetProfilingVisible(bool visible)

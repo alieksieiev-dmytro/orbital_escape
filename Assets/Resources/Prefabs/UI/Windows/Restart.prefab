@@ -394,6 +394,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.UI.RestartWindowView
   _root: {fileID: 7193921044370310359}
+  _initialSelection: {fileID: 7109521991915480953}
   _restartButton: {fileID: 7109521991915480953}
   _fadeDuration: 0.1
 --- !u!1 &8035479192902301958

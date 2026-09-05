@@ -49,6 +49,9 @@ namespace OrbitalEscape.UI
 
         public override void Complete()
         {
+            if (IsNullView)
+                return;
+
             View.PreviousClicked -= OnPreviousClicked;
             View.NextClicked -= OnNextClicked;
             View.BackClicked -= OnBackClicked;
@@ -100,11 +103,13 @@ namespace OrbitalEscape.UI
             MoveSelection(1);
         }
 
-        private void OnBackClicked()
+        public override void RequestClose()
         {
-            Complete();
+            _uiManager.CloseWindow(Type);
             _uiManager.OpenWindow(WindowType.MainMenu, null);
         }
+
+        private void OnBackClicked() => RequestClose();
 
         private void OnPlayClicked()
         {
@@ -113,7 +118,7 @@ namespace OrbitalEscape.UI
                 _difficultyService.SetDifficulty(_options[_currentIndex].Difficulty);
             }
 
-            Complete();
+            _uiManager.CloseWindow(Type);
             _playCommand.Execute();
         }
 

@@ -25,15 +25,15 @@ namespace OrbitalEscape.Input
 
         public override void Execute()
         {
-            if (!_lifeState.IsAlive)
+            if (!_lifeState.IsAlive || _uiManager.HasOpenWindow)
             {
                 return;
             }
 
             if (_pauseService.IsPaused)
             {
-                _pauseService.Resume();
                 _uiManager.CloseWindow(WindowType.Pause);
+                _pauseService.Resume();
                 return;
             }
 

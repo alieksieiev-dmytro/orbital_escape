@@ -18,6 +18,13 @@ namespace OrbitalEscape.Input
 
         public void Tick()
         {
+            if (UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.Escape))
+            {
+                EventBus<EscapeRequestedEvent>.Raise(new EscapeRequestedEvent());
+                _inputGate.SuppressForCurrentFrame();
+                return;
+            }
+
             if (_inputGate.IsLocked)
             {
                 return;
@@ -25,6 +32,11 @@ namespace OrbitalEscape.Input
 
             foreach (var keyBinding in _keyBindings)
             {
+                if (_inputGate.IsLocked)
+                {
+                    return;
+                }
+
                 if (!UnityEngine.Input.GetKeyDown(keyBinding.Key))
                     continue;
                 

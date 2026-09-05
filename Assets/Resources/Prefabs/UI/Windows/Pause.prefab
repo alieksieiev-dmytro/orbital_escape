@@ -267,6 +267,7 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.UI.PauseWindowView
   _root: {fileID: 0}
+  _initialSelection: {fileID: 2078085262}
   _fadeDuration: 0.1
   _sortingOrder: 100
 --- !u!1 &858805108

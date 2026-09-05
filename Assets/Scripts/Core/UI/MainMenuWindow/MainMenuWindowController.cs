@@ -32,6 +32,9 @@ namespace OrbitalEscape.UI
 
         public override void Complete()
         {
+            if (IsNullView)
+                return;
+
             View.PlayClicked -= OnPlayClicked;
             View.SettingsClicked -= OnSettingsClicked;
             View.ExitClicked -= OnExitClicked;
@@ -40,7 +43,7 @@ namespace OrbitalEscape.UI
 
         private void OnPlayClicked()
         {
-            Complete();
+            _uiManager.CloseWindow(Type);
             _uiManager.OpenWindow(WindowType.SelectGameMode, null);
         }
 
@@ -51,8 +54,11 @@ namespace OrbitalEscape.UI
 
         private void OnExitClicked()
         {
+            _uiManager.CloseWindow(Type);
             _exitCommand.Execute();
         }
+
+        public override void RequestClose() { }
 
         protected override MainMenuWindowView CreateView() => _viewFactory.Create<MainMenuWindowView>(nameof(WindowType.MainMenu));
     }
