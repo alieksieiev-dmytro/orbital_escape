@@ -7,7 +7,7 @@ This document describes the audio system currently used by Orbital Escape. It co
 The audio flow is intentionally split into three layers:
 
 1. Gameplay and UI code raise domain events or request a high-level audio operation.
-2. Scene audio controllers translate those events into `MusicTrackType` or `SfxType` values.
+2. Scene audio controllers translate those events into music or `SfxType` requests.
 3. The global `AudioService` resolves the configured clip and controls the runtime audio sources.
 
 ```text
@@ -16,8 +16,8 @@ PlayerDiedEvent        ->      GameplayAudioController   ->     PlaySfx(Death)
 PlayerJumpedEvent      ->      GameplayAudioController   ->     PlaySfx(Jump)
 RestartRequestedEvent ->      GameplayAudioController   ->     PlaySfx(Restart)
 
-MainMenu scene         ->      MainMenuAudioController   ->     PlayMusic(MainMenu)
-Gameplay scene         ->      GameplayAudioController   ->     PlayMusic(Gameplay)
+MainMenu scene         ->      MainMenuAudioController   ->     PlayMainMenuMusic()
+Gameplay scene         ->      GameplayAudioController   ->     PlayGameplayMusic(Difficulty)
 ```
 
 Gameplay systems must not create or control `AudioSource` components directly. They should expose gameplay facts as events and let an audio controller decide how those facts sound.
@@ -27,9 +27,13 @@ Gameplay systems must not create or control `AudioSource` components directly. T
 | Type | Responsibility |
 |---|---|
 | `GameAudioConfig` | ScriptableObject containing clips, mixer references, volumes, fades, and obscured-music settings. |
+| `MusicProvider` | Extensible ScriptableObject strategy that chooses a clip and playback start time. |
+| `RandomTrackMusicProvider` | Chooses one non-null clip uniformly from a freely sized track list. |
+| `RandomTimestampMusicProvider` | Plays one configured clip from a randomly selected millisecond timestamp. |
+| `MusicPlaybackSelection` | Immutable provider result containing the selected clip and start time. |
+| `DifficultyMusicProfile` | Maps one difficulty to a `MusicProvider`. |
 | `IAudioService` | Public high-level API for music, SFX, music obscuring, and runtime volume changes. |
 | `AudioService` | Persistent implementation that owns the runtime music and SFX sources. |
-| `MusicTrackType` | Identifies configured music tracks. Currently `MainMenu` and `Gameplay`. |
 | `SfxType` | Identifies configured one-shot effects. Currently `Jump`, `Death`, and `Restart`. |
 | `MainMenuAudioController` | Starts Main Menu music when the Main Menu scene is initialized. |
 | `GameplayAudioController` | Starts Gameplay music and maps gameplay events to SFX. |
@@ -65,15 +69,19 @@ Open `Assets/Resources/Configs/GameAudioConfig.asset` in the Inspector to config
 
 | Property | Used by | Current state |
 |---|---|---|
-| `MainMenuMusic` | `MusicTrackType.MainMenu` | Unassigned. |
-| `GameplayMusic` | `MusicTrackType.Gameplay` | Assigned to `gameplay_bgm_fight_looped.wav`. |
+| `Main Menu Music Provider` | `PlayMainMenuMusic` | Unassigned. |
+| `Gameplay Music Profiles` | `PlayGameplayMusic` | Easy and Medium reference their respective random-timestamp providers; Hard, Impossible, and Nightmare have no provider assigned. |
 | `JumpSfx` | `SfxType.Jump` | Unassigned. |
 | `DeathSfx` | `SfxType.Death` | Assigned to `death_sound_1.wav`. |
 | `RestartSfx` | `SfxType.Restart` | Unassigned. |
 
 An unassigned SFX slot is valid. `PlaySfx` returns without playing anything and does not log a warning. This allows audio hooks to be implemented before final sound assets exist.
 
-An unassigned music slot behaves differently: requesting that track calls `StopMusic`, fading out and clearing the currently playing music.
+Each gameplay difficulty references one provider asset. A missing provider or a provider that cannot produce a clip calls `StopMusic`, fading out and clearing the currently playing music. Providers contain their own selection data and strategy, so difficulties are not coupled to one selection algorithm.
+
+`RandomTrackMusicProvider` accepts any number of clips, including zero. Null entries are ignored. Every request selects one available clip uniformly at random; selecting the same clip on consecutive runs is allowed.
+
+`RandomTimestampMusicProvider` contains one clip and any number of start timestamps in milliseconds. Every request selects one timestamp uniformly at random. An empty timestamp list starts at `0 ms`. Negative timestamps are clamped to zero, while timestamps beyond the clip duration are clamped to its final playable sample.
 
 ### Mixer And Volume
 
@@ -100,18 +108,20 @@ The runtime setters on `IAudioService` change the active session only. They do n
 
 ### Music Transitions
 
-`MusicFadeDuration` controls fade-in and fade-out time. Music tweens use DOTween with unscaled updates, so transitions continue while `Time.timeScale` is zero.
+`MusicStartFadeDuration` controls the fade from silence when a track starts or restarts, including playback from a random timestamp. It defaults to `0.6 s` with gentle sine easing; set it to `0` for immediate playback. Tune it in `GameAudioConfig` independently of `MusicFadeDuration`, which controls stopping and volume transitions. Music tweens use DOTween with unscaled updates, so transitions continue while `Time.timeScale` is zero.
 
-`PlayMusic(trackType, restart)` behaves as follows:
+`PlayMainMenuMusic(restart)` behaves as follows:
 
-- Resolves the clip through `GameAudioConfig.GetMusicClip`.
+- Requests a selection from the configured Main Menu provider.
 - Stops music when the selected clip is unassigned.
 - Keeps the current track untouched when the same clip is already playing and `restart` is `false`.
-- Restarts from time zero when `restart` is `true`.
-- Starts a different or stopped clip from time zero and fades it to the target volume.
+- Restarts from the provider-selected timestamp when `restart` is `true`.
+- Starts a different or stopped clip from the selected timestamp and fades it to the target volume.
 - Applies the current low-pass state before playback begins.
 
-`MainMenuAudioController` and `GameplayAudioController` currently pass `restart: true`, so each scene starts its track from the beginning.
+`MainMenuAudioController` and `GameplayAudioController` currently pass `restart: true`, so each scene applies a fresh provider selection instead of preserving the previous playback position.
+
+`PlayGameplayMusic(difficulty, restart)` requests a selection from that difficulty's provider and then follows the same playback rules. The selected start time is converted from milliseconds to audio samples before playback. Provider selection has no history, so immediate repetition is possible.
 
 ## Music Behind Modal Windows
 
@@ -213,13 +223,25 @@ Do not inject `AudioSource`, `AudioClip`, or `GameAudioConfig` into gameplay mec
 
 If a sound needs spatial positioning, looping ownership, random variants, pitch variation, or concurrency limits, extend `IAudioService` with a high-level operation rather than bypassing it from gameplay code.
 
-## Adding A New Music Track
+## Configuring Music Providers
 
-1. Add a value to `MusicTrackType`.
-2. Add the clip property and `GetMusicClip` mapping to `GameAudioConfig`.
-3. Import the track under the appropriate `Assets/Audio/Music` folder.
-4. Assign the clip in `GameAudioConfig.asset`.
-5. Request the track from a scene-level controller with the desired restart behavior.
+### Random Track List
+
+1. Import tracks under the appropriate `Assets/Audio/Music` folder.
+2. Create `Scriptable Objects > Audio > Random Track Music Provider`.
+3. Add any number of clips to its Tracks array.
+4. Assign the provider to the target difficulty in `GameAudioConfig.asset`.
+
+### Random Start Timestamp
+
+1. Create `Scriptable Objects > Audio > Random Timestamp Music Provider`.
+2. Assign its Track.
+3. Add start positions to Start Timestamps Milliseconds, for example `0`, `30000`, and `62500`.
+4. Assign the provider to the target difficulty or the Main Menu provider slot in `GameAudioConfig.asset`.
+
+The provider Inspector includes an Editor-only Audio Preview section. Select one configured timestamp, optionally adjust the Preview Timestamp field, then use Play From Timestamp and Stop to audition the track without entering Play Mode. The preview position is expressed in milliseconds and does not modify the provider's configured timestamp unless the array itself is edited.
+
+No code change is needed when switching between existing provider strategies. New selection behavior should be implemented as another `MusicProvider` ScriptableObject; `AudioService` remains responsible for playback details.
 
 Music should be selected at scene or game-flow boundaries. Avoid requesting tracks from individual views or gameplay obstacles.
 
@@ -237,7 +259,7 @@ An empty clip does not produce a warning by design.
 
 ### Music stops when changing scenes
 
-Confirm the destination scene's track slot is assigned. Requesting an unassigned music type intentionally calls `StopMusic`.
+Confirm the destination scene has a provider assigned and that provider can produce a clip. A missing or empty provider intentionally calls `StopMusic`.
 
 ### Music stays muffled
 

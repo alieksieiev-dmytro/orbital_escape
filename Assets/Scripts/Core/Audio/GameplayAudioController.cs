@@ -1,4 +1,5 @@
 using System;
+using OrbitalEscape.Difficulty;
 using OrbitalEscape.Events;
 using Zenject;
 
@@ -7,19 +8,21 @@ namespace OrbitalEscape.Audio
     public sealed class GameplayAudioController : IInitializable, IDisposable
     {
         private readonly IAudioService _audioService;
+        private readonly IDifficultyService _difficultyService;
         private EventBinding<PlayerJumpedEvent> _playerJumpedBinding;
         private EventBinding<PlayerDiedEvent> _playerDiedBinding;
         private EventBinding<RestartRequestedEvent> _restartRequestedBinding;
 
-        public GameplayAudioController(IAudioService audioService)
+        public GameplayAudioController(IAudioService audioService, IDifficultyService difficultyService)
         {
             _audioService = audioService;
+            _difficultyService = difficultyService;
         }
 
         public void Initialize()
         {
             _audioService.SetMusicObscured(false);
-            _audioService.PlayMusic(MusicTrackType.Gameplay, true);
+            _audioService.PlayGameplayMusic(_difficultyService.CurrentDifficulty, true);
 
             _playerJumpedBinding = new EventBinding<PlayerJumpedEvent>(_ => _audioService.PlaySfx(SfxType.Jump));
             _playerDiedBinding = new EventBinding<PlayerDiedEvent>(_ => _audioService.PlaySfx(SfxType.Death));

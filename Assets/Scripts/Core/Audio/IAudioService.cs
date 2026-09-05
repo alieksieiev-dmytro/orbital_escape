@@ -1,8 +1,11 @@
+using OrbitalEscape.Difficulty;
+
 namespace OrbitalEscape.Audio
 {
     public interface IAudioService
     {
-        void PlayMusic(MusicTrackType trackType, bool restart);
+        void PlayMainMenuMusic(bool restart);
+        void PlayGameplayMusic(DifficultyType difficulty, bool restart);
         void StopMusic();
         void PlaySfx(SfxType sfxType);
         void SetMusicObscured(bool obscured);

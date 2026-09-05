@@ -14,7 +14,7 @@ namespace OrbitalEscape.Audio
         public void Initialize()
         {
             _audioService.SetMusicObscured(false);
-            _audioService.PlayMusic(MusicTrackType.MainMenu, true);
+            _audioService.PlayMainMenuMusic(true);
         }
     }
 }

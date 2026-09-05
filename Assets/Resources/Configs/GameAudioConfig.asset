@@ -12,8 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7e30ae04aa04bb5addb853457dfaf92, type: 3}
   m_Name: GameAudioConfig
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Audio.GameAudioConfig
-  <MainMenuMusic>k__BackingField: {fileID: 0}
-  <GameplayMusic>k__BackingField: {fileID: 8300000, guid: 31dc57f63dab46acb6b8e0e92fbf8d37, type: 3}
+  _mainMenuMusicProvider: {fileID: 0}
+  _gameplayMusicProfiles:
+  - _difficulty: 0
+    _provider: {fileID: 11400000, guid: f985098df9bdae74781c483560068d50, type: 2}
+  - _difficulty: 1
+    _provider: {fileID: 11400000, guid: 9377c22d136780c4c813513e654a6138, type: 2}
+  - _difficulty: 2
+    _provider: {fileID: 0}
+  - _difficulty: 3
+    _provider: {fileID: 0}
+  - _difficulty: 4
+    _provider: {fileID: 0}
   <JumpSfx>k__BackingField: {fileID: 0}
   <DeathSfx>k__BackingField: {fileID: 8300000, guid: 8ae34a6e24d66414ab4b9e5b3a71ad2f, type: 3}
   <RestartSfx>k__BackingField: {fileID: 0}
@@ -24,6 +34,7 @@ MonoBehaviour:
   <MusicVolume>k__BackingField: 0.5
   <SfxVolume>k__BackingField: 0.445
   <MusicFadeDuration>k__BackingField: 0.25
+  <MusicStartFadeDuration>k__BackingField: 0.6
   <MusicLoops>k__BackingField: 1
   <ObscuredMusicVolumeMultiplier>k__BackingField: 0.22
   <ObscuredMusicLowPassCutoff>k__BackingField: 850

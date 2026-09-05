@@ -1,5 +1,6 @@
 using System;
 using DG.Tweening;
+using OrbitalEscape.Difficulty;
 using UnityEngine;
 using Zenject;
 using Object = UnityEngine.Object;
@@ -40,11 +41,25 @@ namespace OrbitalEscape.Audio
             ApplySourceVolumes();
         }
 
-        public void PlayMusic(MusicTrackType trackType, bool restart)
+        public void PlayMainMenuMusic(bool restart)
         {
             EnsureRuntime();
 
-            AudioClip clip = _config != null ? _config.GetMusicClip(trackType) : null;
+            MusicPlaybackSelection selection = _config != null ? _config.GetMainMenuMusic() : default;
+            PlayMusic(selection, restart);
+        }
+
+        public void PlayGameplayMusic(DifficultyType difficulty, bool restart)
+        {
+            EnsureRuntime();
+
+            MusicPlaybackSelection selection = _config != null ? _config.GetGameplayMusic(difficulty) : default;
+            PlayMusic(selection, restart);
+        }
+
+        private void PlayMusic(MusicPlaybackSelection selection, bool restart)
+        {
+            AudioClip clip = selection.Clip;
             if (clip == null)
             {
                 StopMusic();
@@ -60,11 +75,12 @@ namespace OrbitalEscape.Audio
             _musicVolumeTween?.Kill();
             _musicSource.clip = clip;
             _musicSource.loop = _config == null || _config.MusicLoops;
-            _musicSource.time = 0.0f;
             _musicSource.volume = 0.0f;
             ApplyLowPassInstantly();
             _musicSource.Play();
-            FadeMusicTo(TargetMusicVolume);
+            _musicSource.timeSamples = GetStartTimeSamples(clip, selection.StartTimeMilliseconds);
+            float startFadeDuration = _config != null ? Mathf.Max(0.0f, _config.MusicStartFadeDuration) : 0.6f;
+            FadeMusicTo(TargetMusicVolume, startFadeDuration, Ease.InOutSine);
         }
 
         public void StopMusic()
@@ -110,7 +126,7 @@ namespace OrbitalEscape.Audio
 
             _musicObscured = obscured;
             EnsureRuntime();
-            FadeMusicTo(TargetMusicVolume);
+            FadeMusicTo(TargetMusicVolume, GetMusicFadeDuration());
             FadeLowPassTo(TargetLowPassCutoff);
         }
 
@@ -194,9 +210,9 @@ namespace OrbitalEscape.Audio
             }
         }
 
-        private void FadeMusicTo(float volume)
+        private void FadeMusicTo(float volume, float fadeDuration, Ease ease = Ease.OutQuad)
         {
-            float fadeDuration = GetMusicFadeDuration();
+            _musicVolumeTween?.Kill();
             if (fadeDuration <= 0.0f)
             {
                 _musicSource.volume = volume;
@@ -204,9 +220,9 @@ namespace OrbitalEscape.Audio
                 return;
             }
 
-            _musicVolumeTween?.Kill();
             _musicVolumeTween = _musicSource
                 .DOFade(volume, fadeDuration)
+                .SetEase(ease)
                 .SetUpdate(true)
                 .OnComplete(() => _musicVolumeTween = null);
         }
@@ -276,6 +292,17 @@ namespace OrbitalEscape.Audio
         private static float ClampVolume(float volume)
         {
             return Mathf.Clamp01(volume);
+        }
+
+        private static int GetStartTimeSamples(AudioClip clip, int startTimeMilliseconds)
+        {
+            if (clip == null || clip.samples <= 0 || clip.frequency <= 0)
+            {
+                return 0;
+            }
+
+            long requestedSample = (long)Mathf.Max(0, startTimeMilliseconds) * clip.frequency / 1000L;
+            return (int)Math.Min(requestedSample, clip.samples - 1L);
         }
 
         private float TargetMusicVolume => EffectiveMusicVolume * ObscuredMusicVolumeMultiplier;
