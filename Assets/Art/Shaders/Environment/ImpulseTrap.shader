@@ -77,7 +77,7 @@ Shader "Custom/ImpulseTrap"
                 float pulse = sin(time * _GlowSpeed) * 0.5 + 0.5;
 
                 float alphaExponent = lerp(2.0, 4.0, pulse);
-                float alpha = pow(1.0 - y, alphaExponent);
+                float alpha = pow(saturate(1.0 - y), alphaExponent);
 
                 float localY = saturate(y / _NeonZoneHeight);
 
