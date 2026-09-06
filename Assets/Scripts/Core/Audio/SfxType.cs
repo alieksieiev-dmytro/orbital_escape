@@ -4,6 +4,8 @@ namespace OrbitalEscape.Audio
     {
         Jump = 0,
         Death = 1,
-        Restart = 2
+        Restart = 2,
+        UIFocus = 3,
+        UIClick = 4
     }
 }

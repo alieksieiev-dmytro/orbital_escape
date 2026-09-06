@@ -81,7 +81,11 @@ namespace OrbitalEscape.UI
                 }
             }
 
-            eventSystem.SetSelectedGameObject(next != null ? next.gameObject : null);
+            if (selected == null && next == null)
+                return;
+
+            eventSystem.SetSelectedGameObject(next != null ? next.gameObject : null,
+                new AutomaticUISelectionEventData(eventSystem));
         }
 
         private bool IsAvailable(Selectable selectable)

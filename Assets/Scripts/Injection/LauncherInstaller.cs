@@ -55,6 +55,7 @@ namespace OrbitalEscape.Injection
         private void InstallAudio()
         {
             Container.BindInterfacesAndSelfTo<AudioService>().AsSingle().NonLazy();
+            Container.BindInterfacesTo<UIAudioController>().AsSingle().NonLazy();
         }
 
         private void InstallDifficulty()

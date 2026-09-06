@@ -15,6 +15,7 @@ Gameplay event                 Scene controller                 Global service
 PlayerDiedEvent        ->      GameplayAudioController   ->     PlaySfx(Death)
 PlayerJumpedEvent      ->      GameplayAudioController   ->     PlaySfx(Jump)
 RestartRequestedEvent ->      GameplayAudioController   ->     PlaySfx(Restart)
+UIButtonSoundRequestedEvent -> UIAudioController         ->     PlaySfx(UIFocus/UIClick)
 
 MainMenu scene         ->      MainMenuAudioController   ->     PlayMainMenuMusic()
 Gameplay scene         ->      GameplayAudioController   ->     PlayGameplayMusic(Difficulty)
@@ -34,9 +35,12 @@ Gameplay systems must not create or control `AudioSource` components directly. T
 | `DifficultyMusicProfile` | Maps one difficulty to a `MusicProvider`. |
 | `IAudioService` | Public high-level API for music, SFX, music obscuring, and runtime volume changes. |
 | `AudioService` | Persistent implementation that owns the runtime music and SFX sources. |
-| `SfxType` | Identifies configured one-shot effects. Currently `Jump`, `Death`, and `Restart`. |
+| `SfxType` | Identifies configured one-shot effects: `Jump`, `Death`, `Restart`, `UIFocus`, and `UIClick`. |
 | `MainMenuAudioController` | Starts Main Menu music when the Main Menu scene is initialized. |
 | `GameplayAudioController` | Starts Gameplay music and maps gameplay events to SFX. |
+| `UIAudioController` | Globally subscribes to button sound requests and forwards them to the persistent SFX service. |
+| `UIButtonAudioBehaviour` | Shared button component that requests focus/click sounds without owning an audio source. |
+| `AutomaticUISelectionEventData` | Marks initial/restored window selection so it remains silent. |
 
 The runtime implementation is under `Assets/Scripts/Core/Audio`. The config asset is `Assets/Resources/Configs/GameAudioConfig.asset`.
 
@@ -74,6 +78,8 @@ Open `Assets/Resources/Configs/GameAudioConfig.asset` in the Inspector to config
 | `JumpSfx` | `SfxType.Jump` | Unassigned. |
 | `DeathSfx` | `SfxType.Death` | Assigned to `death_sound_1.wav`. |
 | `RestartSfx` | `SfxType.Restart` | Unassigned. |
+| `UIFocusSfx` | Mouse hover and keyboard/controller button selection | Unassigned by default; assign the desired focus clip. |
+| `UIClickSfx` | Button click or navigation submit | Unassigned by default; assign the desired click clip. |
 
 An unassigned SFX slot is valid. `PlaySfx` returns without playing anything and does not log a warning. This allows audio hooks to be implemented before final sound assets exist.
 
@@ -158,6 +164,22 @@ All SFX use `AudioSource.PlayOneShot`. Multiple effects may overlap on the same 
 | `RestartRequestedEvent` | `RestartCommand`, before scene reload | `SfxType.Restart` |
 
 `GameplayAudioController` registers all three bindings during initialization and deregisters them during disposal.
+
+### Shared UI Buttons
+
+All 17 buttons in Main Menu, Difficulty Selection, Pause, Restart, and Cheat Command are nested instances of `Assets/Resources/Prefabs/UI/Controls/button.prefab`. Label text, Unitblock font/material, dimensions, background, and other appearance differences remain instance overrides. Preserve the instance names: window views use them to resolve their controls.
+
+Assign `UIFocusSfx` and `UIClickSfx` in `GameAudioConfig` to enable sounds for every shared button. No per-button clip reference or `AudioSource` is needed. Empty slots are supported silently.
+
+`UIButtonAudioBehaviour` automatically resolves its local `Button`:
+
+- Mouse enter or navigation selection requests `UIFocus`. Notifications in the same frame are coalesced.
+- Pointer-click selection does not request another focus sound.
+- `BaseView` passes `AutomaticUISelectionEventData` when selecting or restoring a default control, including after Pause blur capture and Cheats busy operations. These selections are silent.
+- The shared prefab has one persistent `Button.onClick` listener for `PlayClickSound`. It runs before runtime window actions, including actions that close the window or change scenes. Mouse click and navigation submit both use this same listener; do not add another pointer-click or submit audio handler.
+- Disabled, hidden, or non-interactable controls do not request sound.
+
+Requests travel through `UIButtonSoundRequestedEvent` to `UIAudioController`, bound globally by `LauncherInstaller`. It subscribes during initialization and unsubscribes during disposal. UI sounds use the existing persistent SFX source, continue while paused, survive window/scene changes, and are not affected by the music low-pass filter.
 
 ### Death Sound Flow
 

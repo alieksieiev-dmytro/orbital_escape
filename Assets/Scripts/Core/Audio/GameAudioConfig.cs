@@ -12,6 +12,8 @@ namespace OrbitalEscape.Audio
         [field: SerializeField] public AudioClip JumpSfx { get; private set; }
         [field: SerializeField] public AudioClip DeathSfx { get; private set; }
         [field: SerializeField] public AudioClip RestartSfx { get; private set; }
+        [field: SerializeField] public AudioClip UIFocusSfx { get; private set; }
+        [field: SerializeField] public AudioClip UIClickSfx { get; private set; }
         [field: SerializeField] public AudioMixer AudioMixer { get; private set; }
         [field: SerializeField] public AudioMixerGroup MusicMixerGroup { get; private set; }
         [field: SerializeField] public AudioMixerGroup SfxMixerGroup { get; private set; }
@@ -57,6 +59,8 @@ namespace OrbitalEscape.Audio
                 SfxType.Jump => JumpSfx,
                 SfxType.Death => DeathSfx,
                 SfxType.Restart => RestartSfx,
+                SfxType.UIFocus => UIFocusSfx,
+                SfxType.UIClick => UIClickSfx,
                 _ => null
             };
         }
