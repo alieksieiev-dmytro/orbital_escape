@@ -451,6 +451,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ffac7ec87264f49819d8c98c39f8c5a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.UI.PauseBlurBackground
+  _blurShader: {fileID: 4800000, guid: 28b6ccf718994b1fbd8ff7eb00861ad0, type: 3}
   _downsampleFactor: 2
   _blurIterations: 9
   _blurRadius: 2

@@ -7,9 +7,9 @@ namespace OrbitalEscape.UI
     [RequireComponent(typeof(RawImage))]
     public sealed class PauseBlurBackground : MonoBehaviour
     {
-        private const string BlurShaderName = "Hidden/OrbitalEscape/UI/PauseSnapshotBlur";
         private static readonly int DirectionId = Shader.PropertyToID("_Direction");
 
+        [SerializeField] private Shader _blurShader;
         [SerializeField, Min(1)] private int _downsampleFactor = 4;
         [SerializeField, Min(1)] private int _blurIterations = 3;
         [SerializeField, Min(0.1f)] private float _blurRadius = 2f;
@@ -113,15 +113,13 @@ namespace OrbitalEscape.UI
                 return true;
             }
 
-            Shader blurShader = Shader.Find(BlurShaderName);
-
-            if (blurShader == null)
+            if (_blurShader == null || !_blurShader.isSupported)
             {
-                Debug.LogWarning($"Shader '{BlurShaderName}' was not found. Pause background blur will be skipped.", this);
+                Debug.LogWarning("Pause background blur shader is missing or unsupported.", this);
                 return false;
             }
 
-            _blurMaterial = new Material(blurShader)
+            _blurMaterial = new Material(_blurShader)
             {
                 hideFlags = HideFlags.HideAndDontSave
             };
