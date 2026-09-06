@@ -46,7 +46,6 @@ Shader "Custom/GravityWellArc"
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
-            #define TWO_PI 6.28318530718
 
             struct Attributes
             {
