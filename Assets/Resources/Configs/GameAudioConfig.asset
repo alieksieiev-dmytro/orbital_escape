@@ -27,8 +27,8 @@ MonoBehaviour:
   <JumpSfx>k__BackingField: {fileID: 0}
   <DeathSfx>k__BackingField: {fileID: 8300000, guid: 8ae34a6e24d66414ab4b9e5b3a71ad2f, type: 3}
   <RestartSfx>k__BackingField: {fileID: 0}
-  <UIFocusSfx>k__BackingField: {fileID: 0}
-  <UIClickSfx>k__BackingField: {fileID: 0}
+  <UIFocusSfx>k__BackingField: {fileID: 8300000, guid: bd6ed3d225682b345a06703c5accadc8, type: 3}
+  <UIClickSfx>k__BackingField: {fileID: 8300000, guid: 6e0c7e64b84016b4e8a47eee2ac50196, type: 3}
   <AudioMixer>k__BackingField: {fileID: 0}
   <MusicMixerGroup>k__BackingField: {fileID: 0}
   <SfxMixerGroup>k__BackingField: {fileID: 0}
