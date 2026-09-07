@@ -37,7 +37,7 @@ namespace OrbitalEscape.Movement
             _scoreService.ScoreChanged -= OnScoreChanged;
         }
 
-        private void OnScoreChanged(float score)
+        private void OnScoreChanged(int score)
         {
             ApplyScore(score);
         }

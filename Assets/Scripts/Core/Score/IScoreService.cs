@@ -4,12 +4,12 @@ namespace OrbitalEscape.Score
 {
     public interface IScoreService : IDisposable
     {
-        float Score { get; }
-        float PreviousBestScore { get; }
+        int Score { get; }
+        int PreviousBestScore { get; }
         
-        event Action<float> ScoreChanged;
+        event Action<int> ScoreChanged;
         
-        void UpdateScore(float delta);
+        void UpdateScore(int delta);
         void ResetForRun();
     }
 }

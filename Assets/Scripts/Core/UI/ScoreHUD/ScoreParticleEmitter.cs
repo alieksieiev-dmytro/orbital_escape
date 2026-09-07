@@ -22,7 +22,7 @@ namespace OrbitalEscape.UI
         private Sequence[] _sequences;
         private ulong[] _activationOrders;
         private ulong _nextActivationOrder;
-        private float _previousScore;
+        private int _previousScore;
         private bool _isSubscribed;
 
         [Inject]
@@ -109,15 +109,15 @@ namespace OrbitalEscape.UI
             _isSubscribed = false;
         }
 
-        private void OnScoreChanged(float score)
+        private void OnScoreChanged(int score)
         {
-            float scoreDelta = score - _previousScore;
+            int scoreDelta = score - _previousScore;
             _previousScore = score;
 
-            if (score <= 0f)
+            if (score <= 0)
                 ResetParticles();
 
-            if (scoreDelta <= 0f || _particles.Length == 0)
+            if (scoreDelta <= 0 || _particles.Length == 0)
             {
                 return;
             }
@@ -125,7 +125,7 @@ namespace OrbitalEscape.UI
             Emit(scoreDelta);
         }
 
-        private void Emit(float scoreDelta)
+        private void Emit(int scoreDelta)
         {
             int particleIndex = GetAvailableParticleIndex();
             TMP_Text particle = _particles[particleIndex];
@@ -138,7 +138,7 @@ namespace OrbitalEscape.UI
                 UnityEngine.Random.Range(-_spawnMargins.x, _spawnMargins.x),
                 UnityEngine.Random.Range(-_spawnMargins.y, _spawnMargins.y));
 
-            particle.SetText($"+{scoreDelta:0.#}");
+            particle.SetText($"+{scoreDelta}");
             particleTransform.anchoredPosition = spawnPosition;
             canvasGroup.alpha = 1f;
             particle.gameObject.SetActive(true);

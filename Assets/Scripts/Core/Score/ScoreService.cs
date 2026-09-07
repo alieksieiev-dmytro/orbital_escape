@@ -11,10 +11,10 @@ namespace OrbitalEscape.Score
         private readonly EventBinding<PassedThroughOrbitEvent> _passedThroughOrbitEvent;
         private readonly List<int> _passedOrbitsIds;
         
-        public float Score { get; private set; }
-        public float PreviousBestScore { get; private set; }
+        public int Score { get; private set; }
+        public int PreviousBestScore { get; private set; }
 
-        public event Action<float> ScoreChanged;
+        public event Action<int> ScoreChanged;
 
         public ScoreService(IDataService dataService)
         {
@@ -31,7 +31,7 @@ namespace OrbitalEscape.Score
             EventBus<PassedThroughOrbitEvent>.Deregister(_passedThroughOrbitEvent);
         }
 
-        public void UpdateScore(float delta)
+        public void UpdateScore(int delta)
         {
             Score += delta;
             
@@ -46,7 +46,7 @@ namespace OrbitalEscape.Score
         {
             PreviousBestScore = _dataService.Load<ScoreData>().BestScore;
             _passedOrbitsIds.Clear();
-            Score = 0f;
+            Score = 0;
             ScoreChanged?.Invoke(Score);
         }
 

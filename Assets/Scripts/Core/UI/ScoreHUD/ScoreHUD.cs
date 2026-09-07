@@ -16,17 +16,10 @@ namespace OrbitalEscape.UI
         [Inject]
         public void Construct(IScoreService scoreService) => _scoreService = scoreService;
 
-        private void OnScoreChanged(float score)
+        private void OnScoreChanged(int score)
         {
-            var scoreString = _scoreService.Score.ToString("F1");
-
             _newRecordText.gameObject.SetActive(score > _scoreService.PreviousBestScore);
-
-            int dotIndex = scoreString.IndexOf('.');
-            if (dotIndex != -1 && dotIndex < scoreString.Length - 1 && scoreString[dotIndex + 1] == '0')
-                _scoreText.SetText(scoreString.Substring(0, dotIndex));
-            else                
-                _scoreText.SetText(scoreString);
+            _scoreText.SetText(score.ToString());
         }
 
         private void OnEnable()
@@ -35,7 +28,7 @@ namespace OrbitalEscape.UI
                 return;
             
             _scoreService.ScoreChanged += OnScoreChanged;
-            _scoreText.SetText("0");
+            OnScoreChanged(_scoreService.Score);
         }
 
         private void OnDestroy()

@@ -53,7 +53,7 @@ namespace OrbitalEscape.Cheats
                 return new CheatCommandResult(false, "Cheats are disabled.");
             }
 
-            _scoreService.UpdateScore(1.0f);
+            _scoreService.UpdateScore(1);
             return new CheatCommandResult(true, "Score +1");
         }
 

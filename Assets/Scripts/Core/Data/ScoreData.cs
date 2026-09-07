@@ -2,9 +2,9 @@ namespace OrbitalEscape.Data
 {
     public class ScoreData : IDataSection
     {
-        private float _bestScore;
+        private int _bestScore;
         
-        public float BestScore
+        public int BestScore
         {
             get => _bestScore;
             set
