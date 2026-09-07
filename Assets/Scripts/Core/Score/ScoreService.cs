@@ -12,6 +12,7 @@ namespace OrbitalEscape.Score
         private readonly List<int> _passedOrbitsIds;
         
         public int Score { get; private set; }
+        public int BestScore => Math.Max(PreviousBestScore, Score);
         public int PreviousBestScore { get; private set; }
 
         public event Action<int> ScoreChanged;

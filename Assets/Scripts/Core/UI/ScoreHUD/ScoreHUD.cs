@@ -9,6 +9,7 @@ namespace OrbitalEscape.UI
     public class ScoreHUD : MonoBehaviour
     {
         [SerializeField] private TMP_Text _scoreText;
+        [SerializeField] private TMP_Text _bestScoreText;
         [SerializeField] private TMP_Text _newRecordText;
         
         private IScoreService _scoreService;
@@ -20,6 +21,7 @@ namespace OrbitalEscape.UI
         {
             _newRecordText.gameObject.SetActive(score > _scoreService.PreviousBestScore);
             _scoreText.SetText(score.ToString());
+            _bestScoreText.SetText($"[{_scoreService.BestScore}]");
         }
 
         private void OnEnable()
