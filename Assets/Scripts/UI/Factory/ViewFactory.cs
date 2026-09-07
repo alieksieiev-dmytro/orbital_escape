@@ -6,6 +6,8 @@ namespace OrbitalEscape.UI
 {
     public class ViewFactory : IViewFactory
     {
+        private const string WINDOW = "Window";
+
         private readonly List<IView> _loadedViews;
         private readonly Transform _root;
         private readonly string _prefabPath;
@@ -26,7 +28,7 @@ namespace OrbitalEscape.UI
             if (_loadedViews.Find(view => view.GetType() == typeof(TView)) is TView existingView)
                 return existingView;
             
-            string prefabPath = _prefabPath + key;
+            string prefabPath = _prefabPath + key + WINDOW;
             var prefab = Resources.Load<GameObject>(prefabPath);
             
             if (prefab == null)
