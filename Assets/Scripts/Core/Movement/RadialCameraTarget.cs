@@ -110,6 +110,11 @@ namespace OrbitalEscape.Movement
 
         private void ApplyPose(float cameraAngle)
         {
+            if (this == null || _center == null)
+            {
+                return;
+            }
+
             Vector3 centerPosition = _center.position;
             transform.SetPositionAndRotation(
                 new Vector3(centerPosition.x, centerPosition.y, transform.position.z),

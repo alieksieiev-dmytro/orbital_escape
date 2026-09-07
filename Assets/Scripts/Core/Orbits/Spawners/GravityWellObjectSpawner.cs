@@ -54,7 +54,7 @@ namespace OrbitalEscape.Orbits
             }
         }
 
-        public void Clear()
+        public void Clear(bool retainVisibility = false)
         {
             _gravityWellFactory.Clear();
             _zoneRegistry.Clear();

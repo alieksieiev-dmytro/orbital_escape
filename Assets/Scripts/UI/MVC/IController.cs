@@ -9,5 +9,6 @@ namespace OrbitalEscape.UI
         void Initialize(ScreenData screenData);
         void Complete();
         void RequestClose();
+        void SetInteractionSuspended(bool suspended);
     }
 }

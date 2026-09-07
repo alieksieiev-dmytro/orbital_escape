@@ -10,19 +10,17 @@ namespace OrbitalEscape.UI
         private readonly IViewFactory _viewFactory;
         private readonly Command _restartCommand;
         private readonly IAudioService _audioService;
-        private readonly IUIManager _uiManager;
         
         public override IConvertible Type => WindowType.Restart;
 
         [Inject]
         public RestartWindowController(IViewFactory viewFactory,
             [Inject(Id = nameof(CommandType.Restart))] Command restartCommand,
-            IAudioService audioService, IUIManager uiManager)
+            IAudioService audioService)
         {
             _viewFactory = viewFactory;
             _restartCommand = restartCommand;
             _audioService = audioService;
-            _uiManager = uiManager;
         }
 
         public override void Initialize(ScreenData screenData)
@@ -46,7 +44,6 @@ namespace OrbitalEscape.UI
 
         private void OnRestartClicked()
         {
-            _uiManager.CloseWindow(Type);
             _restartCommand.Execute();
         }
         

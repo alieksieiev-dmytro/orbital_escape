@@ -17,9 +17,14 @@ namespace OrbitalEscape.Movement
         private EventBinding<PassedThroughOrbitEvent> _passedThroughOrbitEventBinding;
         private EventBinding<OrbitFocusRequestedEvent> _orbitFocusRequestedEventBinding;
         private Tween _radiusTween;
+        private float _initialRadius;
+        private EventBinding<GameplayRunRestartedEvent> _runRestartedBinding;
 
         private void Awake()
         {
+            _initialRadius = _radius;
+            _runRestartedBinding = new EventBinding<GameplayRunRestartedEvent>(() =>
+                EventBus<OrbitFocusRequestedEvent>.Raise(new OrbitFocusRequestedEvent(_initialRadius)));
             _passedThroughOrbitEventBinding = new EventBinding<PassedThroughOrbitEvent>(OnPassedThroughOrbit);
             _orbitFocusRequestedEventBinding = new EventBinding<OrbitFocusRequestedEvent>(OnOrbitFocusRequested);
             ApplyRadius(_radius);
@@ -27,12 +32,14 @@ namespace OrbitalEscape.Movement
 
         private void OnEnable()
         {
+            EventBus<GameplayRunRestartedEvent>.Register(_runRestartedBinding);
             EventBus<PassedThroughOrbitEvent>.Register(_passedThroughOrbitEventBinding);
             EventBus<OrbitFocusRequestedEvent>.Register(_orbitFocusRequestedEventBinding);
         }
 
         private void OnDisable()
         {
+            EventBus<GameplayRunRestartedEvent>.Deregister(_runRestartedBinding);
             EventBus<PassedThroughOrbitEvent>.Deregister(_passedThroughOrbitEventBinding);
             EventBus<OrbitFocusRequestedEvent>.Deregister(_orbitFocusRequestedEventBinding);
             StopRadiusTween();

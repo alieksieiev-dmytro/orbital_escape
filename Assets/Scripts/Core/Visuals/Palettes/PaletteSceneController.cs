@@ -35,6 +35,8 @@ namespace OrbitalEscape.Visuals.Palettes
             _paletteService.PaletteChanged -= ApplyPalette;
         }
 
+        public void Refresh() => ApplyPalette(_paletteService.CurrentPalette);
+
         private void ApplyPalette(PaletteSnapshot palette)
         {
             _painter.ApplyEnvironment(_sceneReferences.Background, _sceneReferences.Accent, palette);

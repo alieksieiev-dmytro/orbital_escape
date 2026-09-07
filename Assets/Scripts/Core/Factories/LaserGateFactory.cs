@@ -79,6 +79,9 @@ namespace OrbitalEscape.Factories
         {
             foreach (GameObject laserGateObject in _laserGateObjects)
             {
+                if (laserGateObject == null)
+                    continue;
+                laserGateObject.SetActive(false);
                 Object.Destroy(laserGateObject);
             }
 

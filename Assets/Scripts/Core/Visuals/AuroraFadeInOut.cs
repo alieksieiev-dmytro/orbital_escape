@@ -19,16 +19,44 @@ namespace OrbitalEscape.Visuals
 
         private Orbit _data;
         private Tween _tween;
+        private float _initialInnerAlpha;
+        private float _initialOuterAlpha;
+        private bool _initialInnerActive;
+        private bool _initialOuterActive;
         private EventBinding<PassedThroughOrbitEvent> _passedThroughOrbitEventBinding;
 
         private void Awake()
         {
+            _initialInnerAlpha = _innerAurora.material.GetColor(AuroraInnerColour).a;
+            _initialOuterAlpha = _outerAurora.material.GetColor(AuroraOuterColour).a;
+            _initialInnerActive = _innerAurora.gameObject.activeSelf;
+            _initialOuterActive = _outerAurora.gameObject.activeSelf;
             _passedThroughOrbitEventBinding = new EventBinding<PassedThroughOrbitEvent>(OnPassedThroughOrbitEvent);
         }
 
         private void OnEnable() => EventBus<PassedThroughOrbitEvent>.Register(_passedThroughOrbitEventBinding);
         
-        private void OnDisable() => EventBus<PassedThroughOrbitEvent>.Deregister(_passedThroughOrbitEventBinding);
+        private void OnDisable()
+        {
+            EventBus<PassedThroughOrbitEvent>.Deregister(_passedThroughOrbitEventBinding);
+            _tween?.Kill();
+            _tween = null;
+        }
+
+        public void ResetForRun(Orbit orbit)
+        {
+            _tween?.Kill();
+            _tween = null;
+            InitAurora(orbit);
+            _innerAurora.gameObject.SetActive(_initialInnerActive);
+            _outerAurora.gameObject.SetActive(_initialOuterActive);
+            Color inner = _innerAurora.material.GetColor(AuroraInnerColour);
+            Color outer = _outerAurora.material.GetColor(AuroraOuterColour);
+            inner.a = _initialInnerAlpha;
+            outer.a = _initialOuterAlpha;
+            _innerAurora.material.SetColor(AuroraInnerColour, inner);
+            _outerAurora.material.SetColor(AuroraOuterColour, outer);
+        }
 
         public void InitAurora(Orbit orbit)
         {

@@ -76,6 +76,16 @@ namespace OrbitalEscape.Movement
             _isMoving = false;
         }
 
+        public void ResetForRun(float radius)
+        {
+            _movementModel.Reset(0f, radius);
+            _requestedDirection = MovementDirection.Clockwise;
+            _directionFactor = (float)_requestedDirection;
+            _isMoving = true;
+            RefreshTransform();
+            EventBus<MovementDirectionChangedEvent>.Raise(new MovementDirectionChangedEvent(_requestedDirection));
+        }
+
         private void UpdateMovementDirection(float deltaTime)
         {
             float targetFactor = (float)_requestedDirection;

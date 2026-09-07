@@ -1,35 +1,25 @@
 using System;
-using OrbitalEscape.Events;
-using OrbitalEscape.Pause;
+using Cysharp.Threading.Tasks;
+using OrbitalEscape.Restart;
 using Zenject;
 
 namespace OrbitalEscape.Input
 {
     public sealed class RestartCommand : Command
     {
-        private readonly string _sceneName;
-        private readonly IGamePauseService _pauseService;
-        private readonly ZenjectSceneLoader _zenjectSceneLoader;
+        private readonly IGameRestartService _restartService;
 
         public override IConvertible Type => CommandType.Restart;
 
         [Inject]
-        public RestartCommand(ZenjectSceneLoader zenjectSceneLoader, IGamePauseService pauseService, string sceneName)
+        public RestartCommand(IGameRestartService restartService)
         {
-            _zenjectSceneLoader = zenjectSceneLoader;
-            _pauseService = pauseService;
-            _sceneName = sceneName;
+            _restartService = restartService;
         }
         
         public override void Execute()
         {
-            if (_pauseService.IsPaused)
-            {
-                return;
-            }
-
-            EventBus<RestartRequestedEvent>.Raise(new RestartRequestedEvent());
-            _zenjectSceneLoader.LoadScene(_sceneName);
+            _restartService.RestartAsync().Forget();
         }
     }
 }

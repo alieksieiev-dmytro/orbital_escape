@@ -70,6 +70,9 @@ namespace OrbitalEscape.Factories
         {
             foreach (GameObject gravityWellObject in _gravityWellObjects)
             {
+                if (gravityWellObject == null)
+                    continue;
+                gravityWellObject.SetActive(false);
                 Object.Destroy(gravityWellObject);
             }
 

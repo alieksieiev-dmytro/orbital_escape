@@ -11,6 +11,7 @@ namespace OrbitalEscape.UI
         private CanvasGroup _canvasGroup;
         private Selectable[] _selectables;
         private bool _isShown;
+        private bool _interactionSuspended;
 
         public Canvas Root => _root != null ? _root : _root = GetComponent<Canvas>();
 
@@ -59,6 +60,8 @@ namespace OrbitalEscape.UI
 
         protected void RestoreNavigationSelection()
         {
+            if (_interactionSuspended)
+                return;
             EventSystem eventSystem = EventSystem.current;
             if (!_isShown || Root == null || !Root.enabled || eventSystem == null || eventSystem.alreadySelecting)
                 return;
@@ -112,7 +115,17 @@ namespace OrbitalEscape.UI
                 return;
 
             CanvasGroup.blocksRaycasts = enable;
-            CanvasGroup.interactable = enable;
+            CanvasGroup.interactable = enable && !_interactionSuspended;
+        }
+
+        public void SetInteractionSuspended(bool suspended)
+        {
+            _interactionSuspended = suspended;
+            EnableInteraction(_isShown);
+            if (suspended)
+                ClearNavigationSelection();
+            else
+                RestoreNavigationSelection();
         }
     }
 }

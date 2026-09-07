@@ -26,6 +26,7 @@ namespace OrbitalEscape.Audio
         private float _musicVolume;
         private float _sfxVolume;
         private bool _musicObscured;
+        private bool _disposed;
 
         public AudioService(GameAudioConfig config)
         {
@@ -34,6 +35,11 @@ namespace OrbitalEscape.Audio
 
         public void Initialize()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             _masterVolume = ClampVolume(_config != null ? _config.MasterVolume : 1.0f);
             _musicVolume = ClampVolume(_config != null ? _config.MusicVolume : 1.0f);
             _sfxVolume = ClampVolume(_config != null ? _config.SfxVolume : 1.0f);
@@ -43,6 +49,11 @@ namespace OrbitalEscape.Audio
 
         public void PlayMainMenuMusic(bool restart)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             EnsureRuntime();
 
             MusicPlaybackSelection selection = _config != null ? _config.GetMainMenuMusic() : default;
@@ -51,6 +62,11 @@ namespace OrbitalEscape.Audio
 
         public void PlayGameplayMusic(DifficultyType difficulty, bool restart)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             EnsureRuntime();
 
             MusicPlaybackSelection selection = _config != null ? _config.GetGameplayMusic(difficulty) : default;
@@ -106,6 +122,11 @@ namespace OrbitalEscape.Audio
 
         public void PlaySfx(SfxType sfxType)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             EnsureRuntime();
 
             AudioClip clip = _config != null ? _config.GetSfxClip(sfxType) : null;
@@ -119,7 +140,7 @@ namespace OrbitalEscape.Audio
 
         public void SetMusicObscured(bool obscured)
         {
-            if (_musicObscured == obscured)
+            if (_disposed || _musicObscured == obscured)
             {
                 return;
             }
@@ -150,12 +171,31 @@ namespace OrbitalEscape.Audio
 
         public void Dispose()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
             _musicVolumeTween?.Kill();
             _musicLowPassTween?.Kill();
+            _musicVolumeTween = null;
+            _musicLowPassTween = null;
 
             if (_root != null)
             {
+#if UNITY_EDITOR
+                if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+                {
+                    Object.Destroy(_root);
+                }
+                else
+                {
+                    Object.DestroyImmediate(_root);
+                }
+#else
                 Object.Destroy(_root);
+#endif
             }
 
             _root = null;
@@ -166,7 +206,7 @@ namespace OrbitalEscape.Audio
 
         private void EnsureRuntime()
         {
-            if (_root != null)
+            if (_disposed || _root != null)
             {
                 return;
             }

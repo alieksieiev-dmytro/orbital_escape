@@ -9,7 +9,7 @@ namespace OrbitalEscape.Orbits
 {
     public sealed class LevelObjectSpawner : ILevelObjectSpawner
     {
-        private readonly IObjectFactory<GameObject> _orbitFactory;
+        private readonly IOrbitFactory _orbitFactory;
         private readonly List<IOrbitObjectSpawner> _objectSpawners;
         private readonly IPaletteService _paletteService;
         private readonly IPaletteObjectPainter _paletteObjectPainter;
@@ -19,7 +19,7 @@ namespace OrbitalEscape.Orbits
 
         [Inject]
         public LevelObjectSpawner(
-            [Inject(Id = FactoryType.OrbitFactory)] IObjectFactory<GameObject> orbitFactory,
+            IOrbitFactory orbitFactory,
             List<IOrbitObjectSpawner> objectSpawners,
             IPaletteService paletteService,
             IPaletteObjectPainter paletteObjectPainter)
@@ -35,7 +35,7 @@ namespace OrbitalEscape.Orbits
 
         public GameObject SpawnOrbit(Orbit orbit)
         {
-            GameObject orbitObject = _orbitFactory.Create(orbit);
+            GameObject orbitObject = _orbitFactory.GetOrCreate(orbit);
 
             foreach (IOrbitObjectSpawner spawner in _objectSpawners)
             {
@@ -67,7 +67,7 @@ namespace OrbitalEscape.Orbits
         {
             foreach (IOrbitObjectSpawner spawner in _objectSpawners)
             {
-                spawner.Clear();
+                spawner.Clear(retainVisibility: true);
             }
 
             if (orbits == null)
@@ -105,7 +105,7 @@ namespace OrbitalEscape.Orbits
                 spawner.Clear();
             }
 
-            _orbitFactory.Clear();
+            _orbitFactory.DeactivateAll();
             _spawnedOrbitObjects.Clear();
         }
     }

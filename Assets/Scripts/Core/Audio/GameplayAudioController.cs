@@ -12,6 +12,7 @@ namespace OrbitalEscape.Audio
         private EventBinding<PlayerJumpedEvent> _playerJumpedBinding;
         private EventBinding<PlayerDiedEvent> _playerDiedBinding;
         private EventBinding<RestartRequestedEvent> _restartRequestedBinding;
+        private EventBinding<GameplayRunRestartedEvent> _runRestartedBinding;
 
         public GameplayAudioController(IAudioService audioService, IDifficultyService difficultyService)
         {
@@ -31,10 +32,20 @@ namespace OrbitalEscape.Audio
             EventBus<PlayerJumpedEvent>.Register(_playerJumpedBinding);
             EventBus<PlayerDiedEvent>.Register(_playerDiedBinding);
             EventBus<RestartRequestedEvent>.Register(_restartRequestedBinding);
+            _runRestartedBinding = new EventBinding<GameplayRunRestartedEvent>(OnRunRestarted);
+            EventBus<GameplayRunRestartedEvent>.Register(_runRestartedBinding);
+        }
+
+        private void OnRunRestarted()
+        {
+            _audioService.SetMusicObscured(false);
+            _audioService.PlayGameplayMusic(_difficultyService.CurrentDifficulty, true);
         }
 
         public void Dispose()
         {
+            if (_runRestartedBinding != null)
+                EventBus<GameplayRunRestartedEvent>.Deregister(_runRestartedBinding);
             if (_playerJumpedBinding != null)
             {
                 EventBus<PlayerJumpedEvent>.Deregister(_playerJumpedBinding);

@@ -8,5 +8,6 @@ namespace OrbitalEscape.UI
         
         void Show();
         void Hide();
+        void SetInteractionSuspended(bool suspended);
     }
 }

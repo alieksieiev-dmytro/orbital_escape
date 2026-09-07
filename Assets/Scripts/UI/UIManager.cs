@@ -18,6 +18,7 @@ namespace OrbitalEscape.UI
         private IController _activeWindow;
         private bool _ownsInputLock;
         private bool _disposed;
+        private int _interactionLocks;
         private EventSystem _suppressedEventSystem;
         private bool _previousNavigationEnabled;
         private int _navigationSuppressedFrame = -1;
@@ -67,6 +68,7 @@ namespace OrbitalEscape.UI
             try
             {
                 controller.Initialize(screenData);
+                controller.SetInteractionSuspended(_interactionLocks > 0);
             }
             catch
             {
@@ -80,6 +82,18 @@ namespace OrbitalEscape.UI
         {
             if (_activeWindow != null && _activeWindow.Type.Equals(windowKey))
                 CloseActiveWindow();
+        }
+
+        public IDisposable SuspendInteraction()
+        {
+            _interactionLocks++;
+            _activeWindow?.SetInteractionSuspended(true);
+            return new WindowInteractionScope(() =>
+            {
+                _interactionLocks--;
+                if (!_disposed && _interactionLocks == 0)
+                    _activeWindow?.SetInteractionSuspended(false);
+            });
         }
 
         public void Dispose()
@@ -101,7 +115,7 @@ namespace OrbitalEscape.UI
 
         private void OnEscapeRequested(EscapeRequestedEvent unused)
         {
-            if (_disposed)
+            if (_disposed || _interactionLocks > 0)
                 return;
 
             SuppressNavigationForCurrentFrame();
@@ -115,7 +129,7 @@ namespace OrbitalEscape.UI
                 EventBus<CommandCalledEvent>.Raise(new CommandCalledEvent(nameof(CommandType.Pause)));
         }
 
-        private void CloseActiveWindow()
+        public void CloseActiveWindow()
         {
             if (_activeWindow == null)
                 return;
@@ -124,6 +138,7 @@ namespace OrbitalEscape.UI
             _activeWindow = null;
             SuppressNavigationForCurrentFrame();
             _inputGate.SuppressForCurrentFrame();
+            controller.SetInteractionSuspended(false);
             try
             {
                 controller.Complete();

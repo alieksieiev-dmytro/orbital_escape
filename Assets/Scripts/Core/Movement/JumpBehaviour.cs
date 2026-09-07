@@ -51,6 +51,13 @@ namespace OrbitalEscape.Movement
             JumpInternal();
         }
 
+        public void ResetForRun()
+        {
+            _jumpTransitionService.Stop();
+            _canGoThroughRift = false;
+            _jumpInputUnlockTime = 0f;
+        }
+
         public void JumpFromImpulseTrap(float inputLockDuration)
         {
             if (!JumpInternal())

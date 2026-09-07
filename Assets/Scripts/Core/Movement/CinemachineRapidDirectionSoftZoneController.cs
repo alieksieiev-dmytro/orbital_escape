@@ -41,7 +41,7 @@ namespace OrbitalEscape.Movement
         {
             EventBus<MovementDirectionChangedEvent>.Deregister(_directionChangedEventBinding);
             EventBus<OrbitFocusRequestedEvent>.Deregister(_orbitFocusRequestedEventBinding);
-            ResetImmediately();
+            ResetState();
         }
 
         private void Update()
@@ -58,7 +58,10 @@ namespace OrbitalEscape.Movement
 
             if (_isSoftZoneActive)
             {
-                _horizontalFraming?.SetSoftZoneWidth(_settings.SoftZoneWidth);
+                if (_horizontalFraming != null)
+                {
+                    _horizontalFraming.SetSoftZoneWidth(_settings.SoftZoneWidth);
+                }
                 if (Time.time - _lastDirectionChangeTime >= _settings.DirectionChangeWindow)
                 {
                     BeginRecentering();
@@ -113,8 +116,15 @@ namespace OrbitalEscape.Movement
             _isRecentering = false;
             _isSoftZoneActive = true;
 
-            _radialCameraTarget?.SetAngularDampingStrength(1.0f);
-            _horizontalFraming?.SetSoftZoneWidth(_settings.SoftZoneWidth);
+            if (_radialCameraTarget != null)
+            {
+                _radialCameraTarget.SetAngularDampingStrength(1.0f);
+            }
+
+            if (_horizontalFraming != null)
+            {
+                _horizontalFraming.SetSoftZoneWidth(_settings.SoftZoneWidth);
+            }
         }
 
         private void BeginRecentering()
@@ -137,7 +147,10 @@ namespace OrbitalEscape.Movement
             float progress = _settings.RecenterDuration <= 0.0f
                 ? 1.0f
                 : Mathf.Clamp01(_recenterElapsed / _settings.RecenterDuration);
-            _radialCameraTarget?.SetAngularDampingStrength(1.0f - progress);
+            if (_radialCameraTarget != null)
+            {
+                _radialCameraTarget.SetAngularDampingStrength(1.0f - progress);
+            }
 
             if (progress < 1.0f)
             {
@@ -145,7 +158,10 @@ namespace OrbitalEscape.Movement
             }
 
             _isRecentering = false;
-            _horizontalFraming?.SetSoftZoneWidth(0.0f);
+            if (_horizontalFraming != null)
+            {
+                _horizontalFraming.SetSoftZoneWidth(0.0f);
+            }
         }
 
         private void OnOrbitFocusRequested(OrbitFocusRequestedEvent _)
@@ -155,14 +171,26 @@ namespace OrbitalEscape.Movement
 
         private void ResetImmediately()
         {
+            ResetState();
+
+            if (_horizontalFraming != null)
+            {
+                _horizontalFraming.SetSoftZoneWidth(0.0f);
+            }
+
+            if (_radialCameraTarget != null)
+            {
+                _radialCameraTarget.SetAngularDampingStrength(0.0f);
+            }
+        }
+
+        private void ResetState()
+        {
             _lastDirectionChangeTime = float.NegativeInfinity;
             _recenterElapsed = 0.0f;
             _hasPendingDirectionChange = false;
             _isSoftZoneActive = false;
             _isRecentering = false;
-
-            _horizontalFraming?.SetSoftZoneWidth(0.0f);
-            _radialCameraTarget?.SetAngularDampingStrength(0.0f);
         }
     }
 }

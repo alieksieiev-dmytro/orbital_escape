@@ -33,6 +33,12 @@ namespace OrbitalEscape.Movement
             _angleRadians = WrapAngle(_angleRadians + signedAngularSpeed * deltaTime);
         }
 
+        public void Reset(float angleRadians, float radius)
+        {
+            _angleRadians = WrapAngle(angleRadians);
+            Radius = radius;
+        }
+
         public Vector2 GetPosition(Vector2 center)
         {
             float x = Mathf.Cos(_angleRadians);

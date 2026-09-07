@@ -37,6 +37,9 @@ namespace OrbitalEscape.Factories
         {
             for (int i = _riftObjects.Count - 1; i >= 0; i--)
             {
+                if (_riftObjects[i] == null)
+                    continue;
+                _riftObjects[i].gameObject.SetActive(false);
                 Object.Destroy(_riftObjects[i].gameObject);
             }
             _riftObjects.Clear();

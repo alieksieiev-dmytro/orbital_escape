@@ -71,7 +71,6 @@ namespace OrbitalEscape.UI
 
         private void OnRestartClicked()
         {
-            _resumeCommand.Execute();
             _restartCommand.Execute();
         }
 

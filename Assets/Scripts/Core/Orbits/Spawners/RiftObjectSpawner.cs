@@ -57,7 +57,7 @@ namespace OrbitalEscape.Orbits
             }
         }
 
-        public void Clear()
+        public void Clear(bool retainVisibility = false)
         {
             _riftFactory.Clear();
         }

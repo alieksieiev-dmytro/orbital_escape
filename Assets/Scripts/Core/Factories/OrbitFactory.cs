@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace OrbitalEscape.Factories
 {
-    public class OrbitFactory : IObjectFactory<GameObject>
+    public class OrbitFactory : IOrbitFactory
     {
         private readonly List<GameObject> _orbitObjects;
         private readonly GameObject _orbitPrefab;
@@ -18,32 +18,34 @@ namespace OrbitalEscape.Factories
             _root = root;
         }
         
-        public GameObject Create(params object[] args)
+        public GameObject GetOrCreate(Orbit orbit)
         {
-            var orbit = (Orbit)args[0];                
-            
-            var orbitObj = Object.Instantiate(_orbitPrefab,
+            while (_orbitObjects.Count <= orbit.Index)
+                _orbitObjects.Add(null);
+
+            var orbitObj = _orbitObjects[orbit.Index];
+            if (orbitObj == null)
+            {
+                orbitObj = Object.Instantiate(_orbitPrefab,
                 new Vector3(Constants.Center.x, Constants.Center.y, 0f),
                 Quaternion.identity,
                 _root);
-            
+                _orbitObjects[orbit.Index] = orbitObj;
+            }
+
             orbitObj.transform.localScale = new Vector3(orbit.Radius * 2, orbit.Radius * 2, 1f);
-            orbitObj.GetComponent<AuroraFadeInOut>().InitAurora(orbit);
-            
-            _orbitObjects.Add(orbitObj);
+            orbitObj.GetComponent<AuroraFadeInOut>().ResetForRun(orbit);
+            orbitObj.SetActive(true);
             return orbitObj;
         }
         
         public GameObject Get(int index) => _orbitObjects[index];
         
-        public void Clear()
+        public void DeactivateAll()
         {
-            for (int i = _root.childCount - 1; i >= 0; i--)
-            {
-                Object.Destroy(_root.GetChild(i).gameObject);
-            }
-
-            _orbitObjects.Clear();
+            foreach (GameObject orbit in _orbitObjects)
+                if (orbit != null)
+                    orbit.SetActive(false);
         }
     }
 }

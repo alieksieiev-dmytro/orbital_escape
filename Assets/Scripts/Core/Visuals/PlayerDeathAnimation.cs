@@ -34,6 +34,8 @@ namespace OrbitalEscape.Visuals
         private bool[] _trailEmissionStates;
         private bool[] _ambientPlayStates;
         private Action _onCompleted;
+        private ParticleSystem[] _allParticles;
+        private bool[] _initialParticlePlayStates;
 
         private void Awake()
         {
@@ -92,6 +94,10 @@ namespace OrbitalEscape.Visuals
 
         private void CacheInitialState()
         {
+            _allParticles = GetComponentsInChildren<ParticleSystem>(true);
+            _initialParticlePlayStates = new bool[_allParticles.Length];
+            for (int i = 0; i < _allParticles.Length; i++)
+                _initialParticlePlayStates[i] = _allParticles[i].main.playOnAwake;
             if (_model != null)
             {
                 _modelInitialScale = _model.localScale;
@@ -223,6 +229,25 @@ namespace OrbitalEscape.Visuals
             PrepareBurst(_accentBurstParticles);
             PrepareBurst(_coreBurstParticles);
             PrepareBurst(_waveBurstParticles);
+        }
+
+        public void ResetForRun()
+        {
+            StopSequence();
+            RestoreInitialState();
+            if (_trails != null)
+                foreach (TrailRenderer trail in _trails)
+                    if (trail != null)
+                        trail.Clear();
+            for (int i = 0; i < _allParticles.Length; i++)
+            {
+                ParticleSystem particles = _allParticles[i];
+                if (particles == null)
+                    continue;
+                particles.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
+                if (_initialParticlePlayStates[i] && particles.gameObject.activeInHierarchy)
+                    particles.Play(false);
+            }
         }
     }
 }

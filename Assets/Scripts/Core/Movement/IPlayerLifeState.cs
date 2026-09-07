@@ -4,5 +4,6 @@ namespace OrbitalEscape.Movement
     {
         bool IsAlive { get; }
         bool TryKill();
+        void Revive();
     }
 }

@@ -7,6 +7,6 @@ namespace OrbitalEscape.Orbits
     {
         int Order { get; }
         void Spawn(GameObject orbitObject, Orbit orbit, IReadOnlyList<ArcObject> objects);
-        void Clear();
+        void Clear(bool retainVisibility = false);
     }
 }

@@ -22,6 +22,7 @@ namespace OrbitalEscape.Orbits.Generators
         private readonly ObstaclePatternGenerationConfig _patternGenerationConfig;
         private readonly ILevelContentGenerator _contentGenerator;
         private readonly IDifficultyService _difficultyService;
+        private int _seedSequence;
 
         [Inject]
         public LevelBuilder(
@@ -122,10 +123,18 @@ namespace OrbitalEscape.Orbits.Generators
 
             int seedBase = _patternGenerationConfig.UseFixedSeed
                 ? _patternGenerationConfig.FixedSeed
-                : Environment.TickCount;
+                : HashCode.Combine(Environment.TickCount, Interlocked.Increment(ref _seedSequence));
             int seed = HashCode.Combine(seedBase, existingOrbits.Count, count, difficulty);
+            var orbitSnapshots = new List<Orbit>(existingOrbits.Count);
+            foreach (Orbit orbit in existingOrbits)
+            {
+                var snapshot = new Orbit(orbit.Radius, orbit.Index);
+                snapshot.OrbitObjects.AddRange(orbit.OrbitObjects);
+                orbitSnapshots.Add(snapshot);
+            }
+
             return new LevelBuildRequest(
-                new List<Orbit>(existingOrbits),
+                orbitSnapshots,
                 count,
                 seed,
                 settings);

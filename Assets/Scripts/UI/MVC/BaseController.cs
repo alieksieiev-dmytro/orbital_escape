@@ -1,5 +1,6 @@
 using System;
 using OrbitalEscape.Extensions;
+using UnityEngine;
 using Zenject;
 
 namespace OrbitalEscape.UI
@@ -20,13 +21,28 @@ namespace OrbitalEscape.UI
             set => _view = value;
         }
         
-        protected bool IsNullView => _view == null || _view.Root == null || _view.Root.gameObject.IsNull();
+        protected bool IsNullView
+        {
+            get
+            {
+                if (_view == null || _view is UnityEngine.Object viewObject && viewObject == null)
+                    return true;
+
+                Canvas root = _view.Root;
+                return root == null || root.gameObject.IsNull();
+            }
+        }
         
         public abstract IConvertible Type { get; }
 
         public abstract void Initialize(ScreenData screenData);
         public abstract void Complete();
         public virtual void RequestClose() => _uiManager.CloseWindow(Type);
+        public void SetInteractionSuspended(bool suspended)
+        {
+            if (!IsNullView)
+                View.SetInteractionSuspended(suspended);
+        }
         protected abstract TView CreateView();
     }
 }

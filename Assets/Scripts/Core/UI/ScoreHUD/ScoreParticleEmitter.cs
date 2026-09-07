@@ -114,6 +114,9 @@ namespace OrbitalEscape.UI
             float scoreDelta = score - _previousScore;
             _previousScore = score;
 
+            if (score <= 0f)
+                ResetParticles();
+
             if (scoreDelta <= 0f || _particles.Length == 0)
             {
                 return;

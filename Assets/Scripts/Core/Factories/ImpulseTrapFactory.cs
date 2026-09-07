@@ -66,6 +66,9 @@ namespace OrbitalEscape.Factories
         {
             foreach (var trapObject in _trapObjects)
             {
+                if (trapObject == null)
+                    continue;
+                trapObject.SetActive(false);
                 Object.Destroy(trapObject);
             }
 

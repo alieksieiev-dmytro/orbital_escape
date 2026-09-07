@@ -17,6 +17,8 @@ namespace OrbitalEscape.Movement
         private readonly Collider2D[] _colliders;
         private readonly EventBinding<ObstacleCollidedEvent> _onObstacleCollidedEvent;
         private bool _ownsInputLock;
+        private readonly bool[] _initialColliderStates;
+        private bool _isResetting;
 
         [Inject]
         public PlayerController(Transform playerTransform, PlayerMovementController playerMovementController,
@@ -32,6 +34,34 @@ namespace OrbitalEscape.Movement
             _gravityWellInfluenceService = gravityWellInfluenceService;
             _inputGate = inputGate;
             _colliders = playerTransform.GetComponentsInChildren<Collider2D>(true);
+            _initialColliderStates = new bool[_colliders.Length];
+            for (int i = 0; i < _colliders.Length; i++)
+                _initialColliderStates[i] = _colliders[i].enabled;
+        }
+
+        public void BeginReset()
+        {
+            _isResetting = true;
+            _playerMovementController.StopMovement();
+            _jumpTransitionService.Stop();
+            _gravityWellInfluenceService.ClearState();
+            foreach (Collider2D collider in _colliders)
+                if (collider != null)
+                    collider.enabled = false;
+        }
+
+        public void CompleteReset()
+        {
+            _lifeState.Revive();
+            for (int i = 0; i < _colliders.Length; i++)
+                if (_colliders[i] != null)
+                    _colliders[i].enabled = _initialColliderStates[i];
+            if (_ownsInputLock)
+            {
+                _inputGate.Unlock();
+                _ownsInputLock = false;
+            }
+            _isResetting = false;
         }
         
         public void Dispose()
@@ -47,7 +77,7 @@ namespace OrbitalEscape.Movement
         
         private void OnObstacleCollidedEvent(ObstacleCollidedEvent @event)
         {
-            if (!@event.Entered ||
+            if (_isResetting || !@event.Entered ||
                 (@event.ObstacleType != ArcObjectType.Spike &&
                  @event.ObstacleType != ArcObjectType.LaserGate))
             {

@@ -42,6 +42,14 @@ namespace OrbitalEscape.Score
             ScoreChanged?.Invoke(Score);
         }
 
+        public void ResetForRun()
+        {
+            PreviousBestScore = _dataService.Load<ScoreData>().BestScore;
+            _passedOrbitsIds.Clear();
+            Score = 0f;
+            ScoreChanged?.Invoke(Score);
+        }
+
         private void OnPassedThroughOrbit(PassedThroughOrbitEvent @event)
         {
             if (_passedOrbitsIds.Contains(@event.Orbit.Index))

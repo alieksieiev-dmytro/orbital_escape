@@ -10,6 +10,7 @@ using OrbitalEscape.Orbits.Generators.Patterns;
 using OrbitalEscape.Pause;
 using OrbitalEscape.Profiling;
 using OrbitalEscape.Score;
+using OrbitalEscape.Restart;
 using OrbitalEscape.Visuals.Palettes;
 using OrbitalEscape.Visuals;
 using UnityEngine;
@@ -58,7 +59,7 @@ namespace OrbitalEscape.Injection
             Container.Bind<IPlayerDeathAnimation>()
                 .FromInstance(_player.GetComponentInChildren<PlayerDeathAnimation>(true))
                 .AsSingle();
-            Container.BindInterfacesTo<PlayerDeathSequenceController>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<PlayerDeathSequenceController>().AsSingle().NonLazy();
             Container.Bind<LevelManager>().FromComponentInHierarchy().AsSingle();
 
             Container.Bind(typeof(JumpBehaviour), typeof(IDisposable)).To<JumpBehaviour>().AsSingle().NonLazy();
@@ -71,19 +72,21 @@ namespace OrbitalEscape.Injection
             Container.BindInterfacesTo<GameplayAudioController>().AsSingle().NonLazy();
             Container.Bind<ICheatCommandService>().To<CheatCommandService>().AsSingle();
             Container.BindInterfacesAndSelfTo<ResourceProfilerService>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<GameRestartService>().AsSingle().NonLazy();
         }
         
         private void BindGenerators()
         {
             Container.Bind<OrbitGenerator>().AsSingle();
             Container.Bind<ILevelBuilder>().To<LevelBuilder>().AsSingle();
+            Container.BindInterfacesAndSelfTo<NextRunPreparationService>().AsSingle();
             Container.Bind<WeightedPatternSelector>().AsSingle();
             Container.Bind<ILevelContentGenerator>().To<PatternLevelContentGenerator>().AsSingle();
         }
         
         private void BindFactories()
         {
-            Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.OrbitFactory).To<OrbitFactory>().AsSingle().WithArguments(_orbitPrefab, _orbitRoot);
+            Container.Bind<IOrbitFactory>().To<OrbitFactory>().AsSingle().WithArguments(_orbitPrefab, _orbitRoot);
             Container.Bind(typeof(IObjectFactory<RiftObject>)).WithId(FactoryType.RiftFactory).To<RiftFactory>().AsSingle().WithArguments(_riftObject);
             Container.BindInterfacesAndSelfTo<SpikeFactory>().AsSingle().WithArguments(_spikePrefab).NonLazy();
             Container.Bind(typeof(IObjectFactory<GameObject>)).WithId(FactoryType.ImpulseTrapFactory).To<ImpulseTrapFactory>().AsSingle().WithArguments(_impulseTrapPrefab);
@@ -106,7 +109,7 @@ namespace OrbitalEscape.Injection
 
         private void InstallCommands()
         {
-            InstallCommand<RestartCommand>(nameof(CommandType.Restart), Constants.SCENE_GAMEPLAY);
+            InstallCommand<RestartCommand>(nameof(CommandType.Restart));
             InstallCommand<PauseCommand>(nameof(CommandType.Pause));
             InstallCommand<ResumeCommand>(nameof(CommandType.Resume));
             InstallCommand<ExitToMainMenuCommand>(nameof(CommandType.ExitToMainMenu), Constants.SCENE_MAIN_MENU);

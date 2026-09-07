@@ -21,6 +21,12 @@ namespace OrbitalEscape.Orbits
         private CancellationToken _destroyCancellationToken;
         private bool _isBuildingLevel;
         private bool _isExtendingLevel;
+        private NextRunPreparationService _nextRun;
+        private CancellationTokenSource _runCancellation;
+        private int _runVersion;
+
+        public CancellationToken RunToken => _runCancellation.Token;
+        public int RunVersion => _runVersion;
 
         [Inject]
         public void Construct(
@@ -28,30 +34,33 @@ namespace OrbitalEscape.Orbits
             ILevelObjectSpawner levelObjectSpawner,
             LevelGenerationConfig generationConfig,
             LevelState levelState,
-            IRiftClosureState riftClosureState)
+            IRiftClosureState riftClosureState,
+            NextRunPreparationService nextRun)
         {
             _levelBuilder = levelBuilder;
             _levelObjectSpawner = levelObjectSpawner;
             _generationConfig = generationConfig;
             _levelState = levelState;
             _riftClosureState = riftClosureState;
+            _nextRun = nextRun;
         }
 
         private void Awake()
         {
             _destroyCancellationToken = this.GetCancellationTokenOnDestroy();
+            _runCancellation = CancellationTokenSource.CreateLinkedTokenSource(_destroyCancellationToken);
             _passedThroughOrbitBinding = new EventBinding<PassedThroughOrbitEvent>(OnPassedThroughOrbit);
         }
 
         private void Start()
         {
-            BuildLevelAsync(_destroyCancellationToken).Forget();
+            BuildLevelAsync(RunToken).Forget();
         }
 
         [ContextMenu("Build Level")]
         private void BuildLevel()
         {
-            BuildLevelAsync(_destroyCancellationToken).Forget();
+            BuildLevelAsync(RunToken).Forget();
         }
 
         private async UniTask BuildLevelAsync(CancellationToken cancellationToken)
@@ -62,6 +71,7 @@ namespace OrbitalEscape.Orbits
             }
 
             _isBuildingLevel = true;
+            int version = _runVersion;
 
             try
             {
@@ -72,6 +82,7 @@ namespace OrbitalEscape.Orbits
 
                 List<Orbit> newOrbits = await ExpandLevelAsync(_generationConfig.InitialOrbitCount, cancellationToken);
                 CreateLevel(newOrbits);
+                _nextRun.Prepare();
             }
             catch (OperationCanceledException)
             {
@@ -82,8 +93,38 @@ namespace OrbitalEscape.Orbits
             }
             finally
             {
+                if (version == _runVersion)
+                    _isBuildingLevel = false;
+            }
+        }
+
+        public void ApplyPreparedRun(LevelBuildResult result)
+        {
+            _runVersion++;
+            _runCancellation.Cancel();
+            _runCancellation.Dispose();
+            _runCancellation = CancellationTokenSource.CreateLinkedTokenSource(_destroyCancellationToken);
+            _isExtendingLevel = false;
+            _isBuildingLevel = true;
+            try
+            {
+                ClearLevel();
+                _levelState.Clear();
+                _riftClosureState.Clear();
+                _levelState.AddRange(result.Orbits);
+                CreateLevel(result.Orbits);
+                LogWarnings(result.Warnings);
+            }
+            finally
+            {
                 _isBuildingLevel = false;
             }
+        }
+
+        private void OnDestroy()
+        {
+            _runCancellation?.Cancel();
+            _runCancellation?.Dispose();
         }
 
         private void CreateLevel(IReadOnlyList<Orbit> orbits)
@@ -125,15 +166,19 @@ namespace OrbitalEscape.Orbits
 
         public async UniTask EnsureOrbitAvailableAsync(int orbitIndex, CancellationToken cancellationToken)
         {
+            using var operation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, RunToken);
+            cancellationToken = operation.Token;
             if (orbitIndex < 0)
             {
                 return;
             }
 
             await WaitForIdleAsync(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
 
             while (_levelState.Count <= orbitIndex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 int missingCount = orbitIndex - _levelState.Count + 1;
                 int configuredCount = _generationConfig.GetExtensionCount(_levelState.Count);
                 int extensionCount = Mathf.Max(missingCount, configuredCount);
@@ -141,6 +186,7 @@ namespace OrbitalEscape.Orbits
 
                 await ExtendLevelAsync(extensionCount, cancellationToken);
                 await WaitForIdleAsync(cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
 
                 if (_levelState.Count <= previousCount)
                 {
@@ -175,7 +221,7 @@ namespace OrbitalEscape.Orbits
             if (@event.Orbit.Index >= _levelState.Count * 0.5f && !_isExtendingLevel)
             {
                 int newOrbitsCount = _generationConfig.GetExtensionCount(_levelState.Count);
-                ExtendLevelAsync(newOrbitsCount, _destroyCancellationToken).Forget();
+                ExtendLevelAsync(newOrbitsCount, RunToken).Forget();
             }
 
             if (@event.Orbit.Index < 0 || @event.Orbit.Index >= _levelState.Count)
@@ -204,6 +250,7 @@ namespace OrbitalEscape.Orbits
             }
 
             _isExtendingLevel = true;
+            int version = _runVersion;
 
             try
             {
@@ -220,7 +267,8 @@ namespace OrbitalEscape.Orbits
             }
             finally
             {
-                _isExtendingLevel = false;
+                if (version == _runVersion)
+                    _isExtendingLevel = false;
             }
         }
 
@@ -236,6 +284,7 @@ namespace OrbitalEscape.Orbits
         private async UniTask<List<Orbit>> ExpandLevelAsync(int count, CancellationToken cancellationToken)
         {
             LevelBuildResult result = await _levelBuilder.BuildAsync(_levelState.Orbits, count, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             LogWarnings(result.Warnings);
 
             List<Orbit> newOrbits = new List<Orbit>(result.Orbits);

@@ -82,7 +82,11 @@ namespace OrbitalEscape.Cheats
             }
 
             int requiredOrbitIndex = orbitIndex + 1;
+            int runVersion = _levelManager.RunVersion;
             await _levelManager.EnsureOrbitAvailableAsync(requiredOrbitIndex, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            if (runVersion != _levelManager.RunVersion)
+                throw new System.OperationCanceledException();
 
             if (orbitIndex < 0 || requiredOrbitIndex >= _levelState.Count)
             {

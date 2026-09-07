@@ -10,5 +10,6 @@ namespace OrbitalEscape.Score
         event Action<float> ScoreChanged;
         
         void UpdateScore(float delta);
+        void ResetForRun();
     }
 }

@@ -111,7 +111,7 @@ namespace OrbitalEscape.Orbits
             }
         }
 
-        public void Clear()
+        public void Clear(bool retainVisibility = false)
         {
             var activeIndices = new List<int>(_activeOrbitIndices);
             for (int i = 0; i < activeIndices.Count; i++)
@@ -122,6 +122,8 @@ namespace OrbitalEscape.Orbits
             _orbitObjects.Clear();
             _orbits.Clear();
             _spikeData.Clear();
+            if (!retainVisibility)
+                _visibleOrbitIndices.Clear();
             _activeSpikes.Clear();
             _activeOrbitIndices.Clear();
             _pendingReleaseIndices.Clear();

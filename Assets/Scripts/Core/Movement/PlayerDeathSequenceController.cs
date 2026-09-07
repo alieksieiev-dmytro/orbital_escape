@@ -13,6 +13,7 @@ namespace OrbitalEscape.Movement
         private EventBinding<PlayerDiedEvent> _playerDiedBinding;
         private bool _isSequenceRunning;
         private bool _isDisposed;
+        private int _sequenceVersion;
 
         [Inject]
         public PlayerDeathSequenceController(IPlayerDeathAnimation deathAnimation, IUIManager uiManager)
@@ -45,7 +46,19 @@ namespace OrbitalEscape.Movement
             }
 
             _isSequenceRunning = true;
-            _deathAnimation.Play(OnAnimationCompleted);
+            int version = ++_sequenceVersion;
+            _deathAnimation.Play(() =>
+            {
+                if (version == _sequenceVersion)
+                    OnAnimationCompleted();
+            });
+        }
+
+        public void ResetForRun()
+        {
+            _sequenceVersion++;
+            _isSequenceRunning = false;
+            _deathAnimation.ResetForRun();
         }
 
         private void OnAnimationCompleted()

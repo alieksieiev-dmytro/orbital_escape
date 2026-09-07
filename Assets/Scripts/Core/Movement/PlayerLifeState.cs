@@ -3,6 +3,7 @@ namespace OrbitalEscape.Movement
     public sealed class PlayerLifeState : IPlayerLifeState
     {
         public bool IsAlive { get; private set; } = true;
+        public void Revive() => IsAlive = true;
 
         public bool TryKill()
         {
