@@ -221,6 +221,7 @@ GameObject:
   m_Component:
   - component: {fileID: 199978716}
   - component: {fileID: 199978715}
+  - component: {fileID: 199978717}
   m_Layer: 0
   m_Name: Background
   m_TagString: Untagged
@@ -301,6 +302,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &199978717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 199978714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a64b87f6e9c549178ea37dc4ae881a7a, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Visuals.Palettes.PaletteSpriteColorTarget
+  _targetRenderer: {fileID: 199978715}
+  _colorType: 1
+  _preserveCurrentAlpha: 1
 --- !u!1 &248705749
 GameObject:
   m_ObjectHideFlags: 0
@@ -569,6 +585,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 879249076d88a4444819e41f59d46d37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.MainMenuInstaller
+  _backgroundRenderer: {fileID: 199978715}
+  _environmentRoots:
+  - {fileID: 1347954666}
+  - {fileID: 634844103}
+  - {fileID: 1458990453}
 --- !u!1 &1180898510
 GameObject:
   m_ObjectHideFlags: 0

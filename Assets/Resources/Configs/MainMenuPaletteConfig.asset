@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc0a6beb9cb14c689953005d61606eac, type: 3}
+  m_Name: MainMenuPaletteConfig
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Visuals.Palettes.MainMenuPaletteConfig
+  _presets:
+  - _backgroundColor: {r: 0.05882353, g: 0, b: 0.08235294, a: 1}
+    _environmentColor: {r: 0.7607843, g: 0, b: 0.46666667, a: 1}
+    _accentColor: {r: 1, g: 0.8392157, b: 0.023529412, a: 1}
+  - _backgroundColor: {r: 0.3018868, g: 0.09806825, b: 0.092559636, a: 1}
+    _environmentColor: {r: 0.26666668, g: 0.24705882, b: 0.99215686, a: 1}
+    _accentColor: {r: 0.24705882, g: 0.99215686, b: 0.26666668, a: 1}
+  - _backgroundColor: {r: 0.9490196, g: 0.92156863, b: 0.88235295, a: 1}
+    _environmentColor: {r: 0.5647059, g: 0.5882353, b: 0.47843137, a: 1}
+    _accentColor: {r: 0.6509804, g: 0.16470589, b: 0.16470589, a: 1}
+  - _backgroundColor: {r: 0.05882353, g: 0, b: 0.08235294, a: 1}
+    _environmentColor: {r: 0.7607843, g: 0, b: 0.46666667, a: 1}
+    _accentColor: {r: 1, g: 0.8392157, b: 0.023529412, a: 1}
+  - _backgroundColor: {r: 0, g: 0, b: 0, a: 1}
+    _environmentColor: {r: 0.8773585, g: 0.8773585, b: 0.8773585, a: 1}
+    _accentColor: {r: 0.9056604, g: 0, b: 0.036202196, a: 1}
