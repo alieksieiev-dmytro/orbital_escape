@@ -26,7 +26,10 @@ namespace OrbitalEscape.UI
         public TView Create<TView>(string key, Transform root) where TView : class, IView
         {
             if (_loadedViews.Find(view => view.GetType() == typeof(TView)) is TView existingView)
+            {
+                ViewCreated?.Invoke(existingView);
                 return existingView;
+            }
             
             string prefabPath = _prefabPath + key + WINDOW;
             var prefab = Resources.Load<GameObject>(prefabPath);

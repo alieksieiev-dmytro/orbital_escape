@@ -13,6 +13,7 @@ namespace OrbitalEscape.Injection
             InstallHUDs();
             Container.BindInterfacesTo<UIManager>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<PaletteFontMaterialController>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<PaletteUIViewTargetController>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<MovementSpeedCheatInfoProvider>().AsSingle();
             Container.BindInterfacesAndSelfTo<DifficultyCheatInfoProvider>().AsSingle();
             Container.BindInterfacesAndSelfTo<SpikePoolCheatInfoProvider>().AsSingle();

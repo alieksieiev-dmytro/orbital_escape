@@ -56,7 +56,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -261,6 +261,7 @@ MonoBehaviour:
   _initialSelection: {fileID: 7703569022642280923}
   _restartButton: {fileID: 7703569022642280923}
   _fadeDuration: 0.1
+  _sortingOrder: 100
 --- !u!1 &8035479192902301958
 GameObject:
   m_ObjectHideFlags: 0
@@ -344,7 +345,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3ffac7ec87264f49819d8c98c39f8c5a, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.UI.PauseBlurBackground
   _blurShader: {fileID: 4800000, guid: 28b6ccf718994b1fbd8ff7eb00861ad0, type: 3}
   _downsampleFactor: 2
@@ -367,24 +368,12 @@ PrefabInstance:
       value: 60
       objectReference: {fileID: 0}
     - target: {fileID: 572752967126503743, guid: 690fb711d71d8554899cc821d084e282, type: 3}
-      propertyPath: m_fontColor.b
-      value: 0.19607843
-      objectReference: {fileID: 0}
-    - target: {fileID: 572752967126503743, guid: 690fb711d71d8554899cc821d084e282, type: 3}
-      propertyPath: m_fontColor.g
-      value: 0.19607843
-      objectReference: {fileID: 0}
-    - target: {fileID: 572752967126503743, guid: 690fb711d71d8554899cc821d084e282, type: 3}
-      propertyPath: m_fontColor.r
-      value: 0.19607843
-      objectReference: {fileID: 0}
-    - target: {fileID: 572752967126503743, guid: 690fb711d71d8554899cc821d084e282, type: 3}
       propertyPath: m_fontSizeBase
       value: 60
       objectReference: {fileID: 0}
     - target: {fileID: 572752967126503743, guid: 690fb711d71d8554899cc821d084e282, type: 3}
       propertyPath: m_fontColor32.rgba
-      value: 4281479730
+      value: 4294950143
       objectReference: {fileID: 0}
     - target: {fileID: 1339147041359342948, guid: 690fb711d71d8554899cc821d084e282, type: 3}
       propertyPath: m_TargetGraphic
@@ -420,7 +409,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3668951938557075485, guid: 690fb711d71d8554899cc821d084e282, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 80
+      value: 104
       objectReference: {fileID: 0}
     - target: {fileID: 3668951938557075485, guid: 690fb711d71d8554899cc821d084e282, type: 3}
       propertyPath: m_LocalPosition.x
@@ -473,18 +462,6 @@ PrefabInstance:
     - target: {fileID: 5540794272468803386, guid: 690fb711d71d8554899cc821d084e282, type: 3}
       propertyPath: m_Name
       value: btn-restart
-      objectReference: {fileID: 0}
-    - target: {fileID: 5567304333711001251, guid: 690fb711d71d8554899cc821d084e282, type: 3}
-      propertyPath: m_Type
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5567304333711001251, guid: 690fb711d71d8554899cc821d084e282, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-    - target: {fileID: 5567304333711001251, guid: 690fb711d71d8554899cc821d084e282, type: 3}
-      propertyPath: m_Enabled
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8887164469330558568, guid: 690fb711d71d8554899cc821d084e282, type: 3}
       propertyPath: m_Name

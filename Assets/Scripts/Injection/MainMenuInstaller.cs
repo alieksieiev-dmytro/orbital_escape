@@ -33,6 +33,7 @@ namespace OrbitalEscape.Injection
                 .AsSingle();
             Container.BindInterfacesAndSelfTo<MainMenuPaletteController>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<PaletteFontMaterialController>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<PaletteUIViewTargetController>().AsSingle().NonLazy();
         }
 
         private void InstallWindows()

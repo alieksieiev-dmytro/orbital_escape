@@ -1074,14 +1074,6 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5567304333711001251, guid: 690fb711d71d8554899cc821d084e282, type: 3}
-      propertyPath: m_Color.a
-      value: 0.12
-      objectReference: {fileID: 0}
-    - target: {fileID: 5567304333711001251, guid: 690fb711d71d8554899cc821d084e282, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 6025083548115741362, guid: 690fb711d71d8554899cc821d084e282, type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
@@ -1246,14 +1238,6 @@ PrefabInstance:
     - target: {fileID: 5540794272468803386, guid: 690fb711d71d8554899cc821d084e282, type: 3}
       propertyPath: m_Layer
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5567304333711001251, guid: 690fb711d71d8554899cc821d084e282, type: 3}
-      propertyPath: m_Color.a
-      value: 0.12
-      objectReference: {fileID: 0}
-    - target: {fileID: 5567304333711001251, guid: 690fb711d71d8554899cc821d084e282, type: 3}
-      propertyPath: m_Enabled
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6025083548115741362, guid: 690fb711d71d8554899cc821d084e282, type: 3}
       propertyPath: m_LocalRotation.x
@@ -1420,14 +1404,6 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5567304333711001251, guid: 690fb711d71d8554899cc821d084e282, type: 3}
-      propertyPath: m_Color.a
-      value: 0.12
-      objectReference: {fileID: 0}
-    - target: {fileID: 5567304333711001251, guid: 690fb711d71d8554899cc821d084e282, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 6025083548115741362, guid: 690fb711d71d8554899cc821d084e282, type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
@@ -1592,14 +1568,6 @@ PrefabInstance:
     - target: {fileID: 5540794272468803386, guid: 690fb711d71d8554899cc821d084e282, type: 3}
       propertyPath: m_Layer
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5567304333711001251, guid: 690fb711d71d8554899cc821d084e282, type: 3}
-      propertyPath: m_Color.a
-      value: 0.12
-      objectReference: {fileID: 0}
-    - target: {fileID: 5567304333711001251, guid: 690fb711d71d8554899cc821d084e282, type: 3}
-      propertyPath: m_Enabled
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6025083548115741362, guid: 690fb711d71d8554899cc821d084e282, type: 3}
       propertyPath: m_LocalRotation.x

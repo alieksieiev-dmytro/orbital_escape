@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 1339147041359342948}
   - component: {fileID: 5567304333711001251}
   - component: {fileID: 5846944353268651428}
+  - component: {fileID: 912304865271034552}
+  - component: {fileID: 625872306574919024}
   m_Layer: 5
   m_Name: button
   m_TagString: Untagged
@@ -38,7 +40,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 400, y: 100}
+  m_SizeDelta: {x: 400, y: 130}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &718970636054755761
 CanvasRenderer:
@@ -111,21 +113,21 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5540794272468803386}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
+  m_Sprite: {fileID: 21300000, guid: dce33c70968e0814ea9096009c681af9, type: 3}
+  m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -146,6 +148,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71f34a62e05e4da6a271f6928bf87b2b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.UI.UIButtonAudioBehaviour
+--- !u!114 &912304865271034552
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5540794272468803386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d35139b5e54c486489fd702d2ea4fb89, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.UI.UIButtonFocusVisualBehaviour
+  _focusedAlpha: 0.5
+  _fadeInDuration: 0.12
+  _fadeOutDuration: 0.15
+  _fadeEase: 6
+--- !u!114 &625872306574919024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5540794272468803386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4a60bd32dee4d3d926fe6d0597b416b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Visuals.Palettes.PaletteImageColorTarget
+  _targetImage: {fileID: 5567304333711001251}
+  _colorType: 2
+  _preserveCurrentAlpha: 1
 --- !u!1 &8887164469330558568
 GameObject:
   m_ObjectHideFlags: 0
