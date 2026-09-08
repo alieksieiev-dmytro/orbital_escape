@@ -10,6 +10,7 @@ using OrbitalEscape.Orbits.Generators;
 using OrbitalEscape.Orbits.Generators.Patterns;
 using OrbitalEscape.Pooling;
 using OrbitalEscape.UI;
+using OrbitalEscape.Visuals;
 using OrbitalEscape.Visuals.Palettes;
 using UnityEngine;
 using Zenject;
@@ -103,6 +104,7 @@ namespace OrbitalEscape.Injection
             Container.Bind<CameraSettingsConfig>().FromScriptableObjectResource("Configs/CameraSettingsConfig").AsSingle();
             Container.Bind(typeof(RiftConfig)).To<RiftConfig>().FromScriptableObjectResource("Configs/RiftConfig").AsSingle();
             Container.Bind(typeof(SpikeConfig)).To<SpikeConfig>().FromScriptableObjectResource("Configs/SpikeConfig").AsSingle();
+            Container.Bind<SpikePresentationConfig>().FromScriptableObjectResource("Configs/SpikePresentationConfig").AsSingle();
             Container.Bind(typeof(MiniSpikeConfig)).To<MiniSpikeConfig>().FromScriptableObjectResource("Configs/MiniSpikeConfig").AsSingle();
             Container.Bind(typeof(ImpulseTrapConfig)).To<ImpulseTrapConfig>().FromScriptableObjectResource("Configs/ImpulseTrapConfig").AsSingle();
             Container.Bind(typeof(GravityWellConfig)).To<GravityWellConfig>().FromScriptableObjectResource("Configs/GravityWellConfig").AsSingle();

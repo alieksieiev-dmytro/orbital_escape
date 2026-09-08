@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using OrbitalEscape.Events;
 using OrbitalEscape.Factories;
 using OrbitalEscape.Movement;
+using OrbitalEscape.Visuals;
 using OrbitalEscape.Visuals.Palettes;
 using UnityEngine;
 using Zenject;
@@ -15,15 +16,19 @@ namespace OrbitalEscape.Orbits
         private readonly IOrbitJumpTransitionService _jumpTransitionService;
         private readonly IPaletteService _paletteService;
         private readonly IPaletteObjectPainter _paletteObjectPainter;
+        private readonly SpikePresentationConfig _presentationConfig;
         private readonly Dictionary<int, GameObject> _orbitObjects = new Dictionary<int, GameObject>();
         private readonly Dictionary<int, Orbit> _orbits = new Dictionary<int, Orbit>();
         private readonly Dictionary<int, List<ArcObject>> _spikeData = new Dictionary<int, List<ArcObject>>();
         private readonly Dictionary<int, List<GameObject>> _activeSpikes = new Dictionary<int, List<GameObject>>();
+        private readonly Dictionary<GameObject, ArcType> _activeSpikeSides = new Dictionary<GameObject, ArcType>();
         private readonly HashSet<int> _visibleOrbitIndices = new HashSet<int>();
         private readonly HashSet<int> _activeOrbitIndices = new HashSet<int>();
         private readonly HashSet<int> _pendingReleaseIndices = new HashSet<int>();
 
         private EventBinding<OrbitsSetEvent> _orbitsSetBinding;
+        private int _currentOrbitIndex = -1;
+        private int _oppositeOrbitIndex = -1;
 
         public int Order => 10;
 
@@ -32,12 +37,14 @@ namespace OrbitalEscape.Orbits
             ISpikeFactory spikeFactory,
             IOrbitJumpTransitionService jumpTransitionService,
             IPaletteService paletteService,
-            IPaletteObjectPainter paletteObjectPainter)
+            IPaletteObjectPainter paletteObjectPainter,
+            SpikePresentationConfig presentationConfig)
         {
             _spikeFactory = spikeFactory;
             _jumpTransitionService = jumpTransitionService;
             _paletteService = paletteService;
             _paletteObjectPainter = paletteObjectPainter;
+            _presentationConfig = presentationConfig;
         }
 
         public void Initialize()
@@ -123,8 +130,13 @@ namespace OrbitalEscape.Orbits
             _orbits.Clear();
             _spikeData.Clear();
             if (!retainVisibility)
+            {
                 _visibleOrbitIndices.Clear();
+                _currentOrbitIndex = -1;
+                _oppositeOrbitIndex = -1;
+            }
             _activeSpikes.Clear();
+            _activeSpikeSides.Clear();
             _activeOrbitIndices.Clear();
             _pendingReleaseIndices.Clear();
         }
@@ -141,6 +153,9 @@ namespace OrbitalEscape.Orbits
 
         private void OnOrbitsSet(OrbitsSetEvent @event)
         {
+            _currentOrbitIndex = @event.CurrentOrbit != null ? @event.CurrentOrbit.Index : -1;
+            _oppositeOrbitIndex = @event.OppositeOrbit != null ? @event.OppositeOrbit.Index : -1;
+
             var nextVisibleIndices = new HashSet<int>();
             if (@event.CurrentOrbit != null)
             {
@@ -188,6 +203,8 @@ namespace OrbitalEscape.Orbits
                     _pendingReleaseIndices.Add(leavingIndices[i]);
                 }
             }
+
+            RefreshActivePresentationRoles();
         }
 
         private void ActivateOrbit(int orbitIndex)
@@ -228,10 +245,44 @@ namespace OrbitalEscape.Orbits
 
             for (int i = 0; i < spikes.Count; i++)
             {
-                GameObject spike = _spikeFactory.Create(orbitObject.transform, orbit, spikes[i]);
+                ArcObject spikeData = spikes[i];
+                GameObject spike = _spikeFactory.Create(orbitObject.transform, orbit, spikeData);
+                _activeSpikeSides[spike] = spikeData.Type;
                 _paletteObjectPainter.ApplyLevelObject(spike, _paletteService.CurrentPalette);
+                ApplyPresentationRole(spike, orbitIndex, spikeData.Type, false);
                 instances.Add(spike);
             }
+        }
+
+        private void RefreshActivePresentationRoles()
+        {
+            foreach (KeyValuePair<int, List<GameObject>> activeOrbit in _activeSpikes)
+            {
+                for (int i = 0; i < activeOrbit.Value.Count; i++)
+                {
+                    GameObject spike = activeOrbit.Value[i];
+                    if (_activeSpikeSides.TryGetValue(spike, out ArcType side))
+                    {
+                        ApplyPresentationRole(spike, activeOrbit.Key, side, true);
+                    }
+                }
+            }
+        }
+
+        private void ApplyPresentationRole(GameObject spike, int orbitIndex, ArcType side, bool animate)
+        {
+            if (spike == null || !spike.TryGetComponent(out SpikeAlphaController alphaController))
+            {
+                return;
+            }
+
+            bool isReachable = orbitIndex == _currentOrbitIndex && side == ArcType.Outer ||
+                               orbitIndex == _oppositeOrbitIndex && side == ArcType.Inner;
+
+            alphaController.SetDimmed(
+                !isReachable,
+                _presentationConfig,
+                animate);
         }
 
         private void ReleaseOrbit(int orbitIndex)
@@ -246,6 +297,7 @@ namespace OrbitalEscape.Orbits
 
             for (int i = 0; i < spikes.Count; i++)
             {
+                _activeSpikeSides.Remove(spikes[i]);
                 _spikeFactory.Release(spikes[i]);
             }
 

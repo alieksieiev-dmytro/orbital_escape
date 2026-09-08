@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8716823381283637883}
+  - component: {fileID: 832590760240255484}
   m_Layer: 0
   m_Name: spike
   m_TagString: Untagged
@@ -34,6 +35,19 @@ Transform:
   - {fileID: 466804003504504084}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &832590760240255484
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1718740138504583630}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a13feaa38a646c39310cedb8de8b341, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Visuals.SpikeAlphaController
+  _outlineRenderer: {fileID: 6150765209038975506}
 --- !u!1 &4443813374927257095
 GameObject:
   m_ObjectHideFlags: 0
@@ -235,6 +249,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Visuals.Palettes.PaletteSpriteColorTarget
   _targetRenderer: {fileID: 6150765209038975506}
   _colorType: 0
+  _preserveCurrentAlpha: 1
 --- !u!1 &7262577917052169932
 GameObject:
   m_ObjectHideFlags: 0
@@ -340,3 +355,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Visuals.Palettes.PaletteSpriteColorTarget
   _targetRenderer: {fileID: 3301158619847181054}
   _colorType: 1
+  _preserveCurrentAlpha: 1
