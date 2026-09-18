@@ -17,12 +17,10 @@ namespace OrbitalEscape.Editor
         [SerializeField] private int _orbitIndex = 1;
         [SerializeField] private int _previousPatternIndex;
         [SerializeField] private int _consecutiveRepeats = 1;
-        [SerializeField] private bool _showUnavailable = true;
-        [SerializeField] private float _lowerNeighborRiftDistance = 26.18f;
-        [SerializeField] private float _upperNeighborRiftDistance = 26.18f;
 
         private readonly List<ObstaclePatternDefinition> _patternDefinitions = new List<ObstaclePatternDefinition>();
         private Vector2 _scrollPosition;
+        private ObstaclePatternGenerationCatalog _patternCatalog;
         private ObstaclePatternGenerationConfig _patternConfig;
         private OrbitConfig _orbitConfig;
         private SpikeConfig _spikeConfig;
@@ -86,7 +84,12 @@ namespace OrbitalEscape.Editor
             EditorGUILayout.Space(6.0f);
             EditorGUILayout.LabelField("Current Orbit Context", EditorStyles.boldLabel);
 
-            _difficulty = (DifficultyType)EditorGUILayout.EnumPopup("Difficulty", _difficulty);
+            DifficultyType difficulty = (DifficultyType)EditorGUILayout.EnumPopup("Difficulty", _difficulty);
+            if (difficulty != _difficulty)
+            {
+                _difficulty = difficulty;
+                LoadPatternDefinitions();
+            }
             _orbitIndex = Mathf.Max(0, EditorGUILayout.IntField("Orbit Index", _orbitIndex));
 
             string[] patternNames = GetPatternNames();
@@ -103,20 +106,6 @@ namespace OrbitalEscape.Editor
                     1,
                     8);
             }
-
-            _showUnavailable = EditorGUILayout.Toggle("Show Unavailable", _showUnavailable);
-
-            EditorGUILayout.Space(6.0f);
-            EditorGUILayout.LabelField("Rift Weight Context", EditorStyles.boldLabel);
-            float maxNeighborDistance = Mathf.Max(1.0f, _riftConfig.NeighborRiftAvoidanceDistance * 2.0f);
-            _lowerNeighborRiftDistance = Mathf.Clamp(
-                EditorGUILayout.FloatField("Lower Neighbor Center Distance (units)", _lowerNeighborRiftDistance),
-                0.0f,
-                maxNeighborDistance);
-            _upperNeighborRiftDistance = Mathf.Clamp(
-                EditorGUILayout.FloatField("Upper Neighbor Center Distance (units)", _upperNeighborRiftDistance),
-                0.0f,
-                maxNeighborDistance);
 
             float radius = GetOrbitRadius();
             EditorGUILayout.LabelField("Radius", radius.ToString("0.##"));
@@ -137,13 +126,12 @@ namespace OrbitalEscape.Editor
                 _difficulty,
                 lengthProvider);
             PatternDifficultyStageSnapshot stage = generationSettings.GetStage(_orbitIndex);
-            RiftGenerationSettings riftSettings = CreateRiftSettings();
-            List<PatternProbabilityRow> rows = CreateRows(lengthProvider, stage, riftSettings);
+            List<PatternProbabilityRow> rows = CreateRows(lengthProvider, stage);
 
             float totalWeight = 0.0f;
             for (int i = 0; i < rows.Count; i++)
             {
-                if (rows[i].Available)
+                if (rows[i].Available && rows[i].AggregateWeight > 0.0f)
                 {
                     totalWeight += rows[i].AggregateWeight;
                 }
@@ -154,20 +142,29 @@ namespace OrbitalEscape.Editor
             EditorGUILayout.LabelField("Unlocked Slots", stage.UnlockedSlots.ToString());
             EditorGUILayout.LabelField("Same Pattern Multiplier", stage.SamePatternWeightMultiplier.ToString("0.###"));
             EditorGUILayout.LabelField("Same Tag Multiplier", stage.SameTagWeightMultiplier.ToString("0.###"));
+            EditorGUILayout.LabelField("Ignore Pattern Orbit Range", stage.IgnorePatternOrbitRange ? "Yes" : "No");
             EditorGUILayout.LabelField("Total Candidate Weight", totalWeight.ToString("0.###"));
 
             EditorGUILayout.HelpBox(
-                "Probabilities include the configured neighbor-rift distance for each physical lane. " +
-                "Runtime cursor space, object overlaps, band phase, and rift marker crossings can still remove candidates " +
+                "Rift-containing patterns are quota-driven and excluded from these probabilities. " +
+                "Runtime cursor space, conditional Safe Padding, object overlaps, band phase, and marker crossings can still remove candidates " +
                 "and renormalize the final selection.",
                 MessageType.Info);
+
+            if (totalWeight <= 0.0f)
+            {
+                EditorGUILayout.HelpBox(
+                    "No non-rift patterns have a positive probability for the current context.",
+                    MessageType.Info);
+                return;
+            }
 
             EditorGUILayout.Space(4.0f);
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
             for (int i = 0; i < rows.Count; i++)
             {
                 PatternProbabilityRow row = rows[i];
-                if (!row.Available && !_showUnavailable)
+                if (!row.Available || row.AggregateWeight <= 0.0f)
                 {
                     continue;
                 }
@@ -179,8 +176,7 @@ namespace OrbitalEscape.Editor
 
         private List<PatternProbabilityRow> CreateRows(
             PatternSlotLengthProvider lengthProvider,
-            PatternDifficultyStageSnapshot stage,
-            RiftGenerationSettings riftSettings)
+            PatternDifficultyStageSnapshot stage)
         {
             List<ObstaclePatternSnapshot> snapshots = new List<ObstaclePatternSnapshot>(_patternDefinitions.Count);
             for (int i = 0; i < _patternDefinitions.Count; i++)
@@ -195,13 +191,18 @@ namespace OrbitalEscape.Editor
             for (int i = 0; i < _patternDefinitions.Count; i++)
             {
                 ObstaclePatternSnapshot snapshot = snapshots[i];
+                if (snapshot.Orbit1RiftCount > 0 || snapshot.Orbit2RiftCount > 0)
+                {
+                    continue;
+                }
+
                 string unavailableReason = GetUnavailableReason(snapshot, stage, circumference);
                 float baseEffectiveWeight = unavailableReason == null
                     ? PatternWeightCalculator.GetEffectiveWeight(snapshot, stage, history)
                     : 0.0f;
                 int orientations = snapshot.AllowFlip ? 2 : 1;
                 float aggregateWeight = unavailableReason == null
-                    ? GetAggregateWeight(snapshot, baseEffectiveWeight, riftSettings)
+                    ? baseEffectiveWeight * orientations
                     : 0.0f;
 
                 if (unavailableReason == null && aggregateWeight <= 0.0f)
@@ -219,51 +220,6 @@ namespace OrbitalEscape.Editor
             }
 
             return rows;
-        }
-
-        private float GetAggregateWeight(
-            ObstaclePatternSnapshot pattern,
-            float baseEffectiveWeight,
-            RiftGenerationSettings riftSettings)
-        {
-            float weight = GetOrientationWeight(pattern, false, baseEffectiveWeight, riftSettings);
-            if (pattern.AllowFlip)
-            {
-                weight += GetOrientationWeight(pattern, true, baseEffectiveWeight, riftSettings);
-            }
-
-            return weight;
-        }
-
-        private float GetOrientationWeight(
-            ObstaclePatternSnapshot pattern,
-            bool flipped,
-            float baseEffectiveWeight,
-            RiftGenerationSettings riftSettings)
-        {
-            bool lowerHasRift = pattern.GetLowerLaneRiftCount(flipped) > 0;
-            bool upperHasRift = pattern.GetUpperLaneRiftCount(flipped) > 0;
-            if (!lowerHasRift && !upperHasRift)
-            {
-                return baseEffectiveWeight;
-            }
-
-            float neighborMultiplier = 1.0f;
-            if (lowerHasRift)
-            {
-                neighborMultiplier = Mathf.Min(
-                    neighborMultiplier,
-                    riftSettings.GetNeighborWeightMultiplier(_lowerNeighborRiftDistance));
-            }
-
-            if (upperHasRift)
-            {
-                neighborMultiplier = Mathf.Min(
-                    neighborMultiplier,
-                    riftSettings.GetNeighborWeightMultiplier(_upperNeighborRiftDistance));
-            }
-
-            return baseEffectiveWeight * neighborMultiplier;
         }
 
         private List<ObstaclePatternSnapshot> CreateHistory(IReadOnlyList<ObstaclePatternSnapshot> snapshots)
@@ -304,7 +260,8 @@ namespace OrbitalEscape.Editor
                 return "Base weight is zero";
             }
 
-            if (_orbitIndex < pattern.MinOrbitIndex || _orbitIndex > pattern.MaxOrbitIndex)
+            if (!stage.IgnorePatternOrbitRange &&
+                (_orbitIndex < pattern.MinOrbitIndex || _orbitIndex > pattern.MaxOrbitIndex))
             {
                 return $"Orbit index range {pattern.MinOrbitIndex}-{FormatMaxOrbitIndex(pattern.MaxOrbitIndex)}";
             }
@@ -326,18 +283,6 @@ namespace OrbitalEscape.Editor
         {
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
-            if (!row.Available)
-            {
-                using (new EditorGUI.DisabledScope(true))
-                {
-                    EditorGUILayout.LabelField(row.Name, EditorStyles.boldLabel);
-                    EditorGUILayout.LabelField(row.UnavailableReason);
-                }
-
-                EditorGUILayout.EndVertical();
-                return;
-            }
-
             float probability = totalWeight > 0.0f ? row.AggregateWeight / totalWeight : 0.0f;
             Rect progressRect = GUILayoutUtility.GetRect(1.0f, 22.0f, GUILayout.ExpandWidth(true));
             EditorGUI.ProgressBar(
@@ -349,13 +294,9 @@ namespace OrbitalEscape.Editor
             float repetitionModifier = baseDifficultyWeight > 0.0f
                 ? row.BaseEffectiveWeight / baseDifficultyWeight
                 : 0.0f;
-            float riftModifier = row.BaseEffectiveWeight > 0.0f && row.Orientations > 0
-                ? row.AggregateWeight / (row.BaseEffectiveWeight * row.Orientations)
-                : 0.0f;
-
             EditorGUILayout.LabelField(
                 $"Base {row.Pattern.BaseWeight:0.###}  |  Difficulty {row.Pattern.DifficultyWeightMultiplier:0.###}  |  " +
-                $"Repeat/Tag {repetitionModifier:0.###}  |  Rift {riftModifier:0.###}  |  " +
+                $"Repeat/Tag {repetitionModifier:0.###}  |  " +
                 $"Orientations {row.Orientations}  |  " +
                 $"Total {row.AggregateWeight:0.###}",
                 EditorStyles.miniLabel);
@@ -364,7 +305,7 @@ namespace OrbitalEscape.Editor
 
         private void ReloadAssets()
         {
-            _patternConfig = LoadConfig<ObstaclePatternGenerationConfig>("ObstaclePatternGenerationConfig.asset");
+            _patternCatalog = LoadConfig<ObstaclePatternGenerationCatalog>("ObstaclePatternGenerationCatalog.asset");
             _orbitConfig = LoadConfig<OrbitConfig>("OrbitConfig.asset");
             _spikeConfig = LoadConfig<SpikeConfig>("SpikeConfig.asset");
             _miniSpikeConfig = LoadConfig<MiniSpikeConfig>("MiniSpikeConfig.asset");
@@ -373,13 +314,19 @@ namespace OrbitalEscape.Editor
             _laserGateConfig = LoadConfig<LaserGateConfig>("LaserGateConfig.asset");
             _riftConfig = LoadConfig<RiftConfig>("RiftConfig.asset");
 
+            LoadPatternDefinitions();
+            Repaint();
+        }
+
+        private void LoadPatternDefinitions()
+        {
+            _patternConfig = _patternCatalog != null ? _patternCatalog.GetConfig(_difficulty) : null;
             _patternDefinitions.Clear();
             if (_patternConfig != null)
             {
-                SerializedProperty patterns = new SerializedObject(_patternConfig).FindProperty("_patterns");
-                for (int i = 0; patterns != null && i < patterns.arraySize; i++)
+                foreach (ObstaclePatternDefinition pattern in _patternConfig.Patterns)
                 {
-                    if (patterns.GetArrayElementAtIndex(i).objectReferenceValue is ObstaclePatternDefinition pattern)
+                    if (pattern != null)
                     {
                         _patternDefinitions.Add(pattern);
                     }
@@ -387,12 +334,12 @@ namespace OrbitalEscape.Editor
             }
 
             _previousPatternIndex = Mathf.Clamp(_previousPatternIndex, 0, _patternDefinitions.Count);
-            Repaint();
         }
 
         private bool HasRequiredConfigs()
         {
-            return _patternConfig != null &&
+            return _patternCatalog != null &&
+                   _patternConfig != null &&
                    _orbitConfig != null &&
                    _spikeConfig != null &&
                    _miniSpikeConfig != null &&
@@ -407,20 +354,6 @@ namespace OrbitalEscape.Editor
             return Mathf.Max(
                 0.01f,
                 _orbitConfig.FirstOrbitRadius + _orbitIndex * _orbitConfig.OrbitRadiusStep);
-        }
-
-        private RiftGenerationSettings CreateRiftSettings()
-        {
-            return new RiftGenerationSettings(
-                _riftConfig.MinCenterDistanceBetweenRifts,
-                _riftConfig.RiftLength,
-                _riftConfig.RiftCount,
-                _riftConfig.BaseRiftCountRadius,
-                _riftConfig.AdditionalRiftRadiusStep,
-                _riftConfig.NeighborRiftAvoidanceDistance,
-                _riftConfig.AlignedNeighborRiftWeightMultiplier,
-                _riftConfig.RiftPaddings,
-                _riftConfig.MaxPlacementAttempts);
         }
 
         private string[] GetPatternNames()

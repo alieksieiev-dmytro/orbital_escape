@@ -9,13 +9,38 @@ This manual describes how pattern selection currently works in the project. It i
 
 The values described here are relative selection weights, not percentages or guaranteed spawn frequencies.
 
+## Per-Difficulty Configuration
+
+`ObstaclePatternGenerationCatalog.asset` assigns one `ObstaclePatternGenerationConfig`
+asset to each difficulty. Edit the matching `ObstaclePatternGeneration_<Difficulty>.asset`
+to change its pattern library, orbit-index stages, seed, selection attempts, or band
+phase without changing the other difficulties. The Pattern Probabilities window
+uses this same catalog when its Difficulty selection changes. Pattern assets
+still own their own difficulty weight modifiers; those weights are applied only
+when the pattern is included in the selected difficulty's config.
+
 ## Editor Probability Tool
 
 Open `Orbital Escape > Generation > Pattern Probabilities` in the Unity Editor.
 
 The window calculates next-placement probability for the selected orbit index, difficulty, previous-pattern streak, and rift context. Lower/upper nearest inward-neighbor rift distances can be entered independently. It shows every configured pattern, its effective weight, flip-orientation count, normalized probability, and any reason it is currently unavailable.
 
-The displayed probability is the configured candidate probability before live cursor-space, overlap, and rift-marker filtering. Those runtime constraints can remove candidates and renormalize the final choice.
+The displayed probability is the configured candidate probability for non-rift
+patterns before live cursor-space, overlap, and rift-marker filtering. Patterns
+containing a Rift on either lane are quota-driven and excluded from the rows
+and denominator. They remain available as a Previous Pattern for history-based
+weighting. Runtime constraints can remove candidates and renormalize the final
+choice.
+
+`Safe Padding` defaults to 2 world units in each difficulty's pattern generation
+config; 0 disables it. It adds
+empty lower-orbit world distance between authored pattern spans only when a
+non-Space slot at the end of one physical lane is followed by a non-Space slot
+at the start of the opposite physical lane, after Allow Flip is resolved. A
+same-lane obstacle continuation adds no padding. Existing empty cursor space
+counts toward the configured distance, and the same rule applies across the
+orbit seam. This can make a weighted candidate unable to fit; the probability
+window does not simulate a particular cursor or previous orientation.
 
 ## Selection Overview
 
@@ -51,7 +76,6 @@ The runtime formula is:
 EffectiveWeight = BaseWeight
                 * DifficultyWeightMultiplier
                 * RepetitionModifier
-                * NeighborRiftMultiplier
 ```
 
 `RepetitionModifier` is calculated as follows:
@@ -69,21 +93,45 @@ Otherwise:
 
 The same-pattern and same-tag modifiers are mutually exclusive for a candidate. Repeating the exact same pattern uses only the same-pattern rule. It does not also receive the same-tag penalty.
 
-For patterns without rifts, both rift modifiers are `1.0`.
+## Rift Markers And Fulfillment
 
-## Neighbor Rift Multiplier
+Each writable orbit receives a seeded random marker layout based on its rift quota and world-unit minimum spacing. Markers trigger authored rift patterns; they are not exact required rift centers.
 
-A candidate rift compares its midpoint with rifts on the inward orbit (`current index - 1`). Distance is circular and measured as arc length in world units, so nearby angles across the `0 degrees` seam still count as close neighbors.
+Marker layouts are planned in ascending orbit-index order. The generator creates several complete layouts that satisfy the hard same-orbit spacing rule, scores them against markers and existing rifts on inward orbits, and selects one through weighted randomness. This keeps the configured quota when a complete layout is physically possible while making long radial rift chains less likely.
 
-With the default avoidance distance of `26.18` units, the multiplier interpolates linearly from `0.25` at perfect alignment to `1.0` at or beyond `26.18` units:
+`Obstacle Clearance` expands each rift's placement-blocking interval on both edges and both sides of its owning orbit. It does not change the visible rift length. This prevents obstacle colliders from touching the player's entry or landing path even when authored patterns meet exactly at a slot boundary.
 
-| Nearest center distance | Multiplier |
+Marker eligibility uses the band's unwrapped world-distance cursor. Once a pattern reaches a marker, it stays due until an actual rift on that orbit consumes it. Clearance jumps cannot discard markers, and an ordinary non-rift pattern cannot advance while a marker is due.
+
+Candidates that satisfy all due markers on both lanes are preferred. If no such candidate fits, weighted selection can choose a valid rift pattern that satisfies part of the demand. Each rift consumes exactly one due marker on its own orbit, oldest in band traversal order first. Remaining markers stay due for later patterns, including when the other lane was satisfied first. Candidates cannot add more rifts than the number of due markers on either orbit.
+
+This may place a rift after its original marker when nearby lane markers or existing content cannot be served by a single pattern. Authored slot lengths, eligibility, weights, actual rift spacing, and obstacle overlap checks still apply.
+
+At the orbit seam, a full pattern can use the trailing empty gap and wrap into unused space before the first pattern. Its authored span cannot overlap a previously placed pattern in that band. If necessary, its start moves backward within the unused trailing gap to fit.
+
+Unfulfilled markers remain available to the orbit's next generated band. Final warnings report actual rifts versus target, including appended boundary content, plus pending markers. A quota can still fall short if marker allocation or compatible authored placements are exhausted; increasing weights cannot bypass those constraints.
+
+## Cross-Orbit Marker Distribution
+
+Cross-orbit avoidance changes marker-layout probability, not authored-pattern weight. For every marker, the generator compares its angle with markers and existing rifts on the configured number of inward orbits. Circular angular distance is converted to arc length using the current orbit radius, so positions across the `0 degrees` seam are compared correctly.
+
+The default settings are:
+
+| Setting | Default | Purpose |
+|---|---:|---|
+| `Cross Orbit Safe Distance` | `12 units` | Range over which an inward rift reduces layout probability. |
+| `Cross Orbit Lookback` | `3` | Number of consecutive inward orbits considered. |
+| `Consecutive Alignment Weight Multiplier` | `0.25` | Weight at exact alignment for each inward orbit. |
+
+For one inward orbit, the factor interpolates linearly from `0.25` at exact alignment to `1.0` at 12 units or farther:
+
+| Nearest center distance | Factor |
 |---:|---:|
 | `0 units` | `0.25` |
-| `13.09 units` | `0.625` |
-| `26.18 units` or more | `1.0` |
+| `6 units` | `0.625` |
+| `12 units` or more | `1.0` |
 
-The multiplier never reaches zero, so neighboring rifts remain possible. For a pattern placing multiple rifts, the strongest proximity penalty is used.
+Factors multiply across the lookback. Exact alignment with rifts on three consecutive inward orbits produces `0.25 * 0.25 * 0.25 = 0.015625` layout weight. The factor never reaches zero, so nearby rifts and even long chains remain possible, only increasingly uncommon.
 
 ## Base Weight
 
@@ -212,7 +260,7 @@ Use tags to describe the gameplay experience of a pattern, not every object it c
 - Candidate A: Orbit 1 is lower and Orbit 2 is upper.
 - Candidate B: Orbit 2 is lower and Orbit 1 is upper.
 
-Each valid orientation is a separate candidate. Non-rift orientations receive the same effective weight, but rift orientations can differ because flipping changes the physical orbit whose neighbor context applies. When both orientations have the same context, a flippable pattern has twice the aggregate probability of an otherwise identical non-flippable pattern.
+Each valid orientation is a separate candidate with the same authored weight. Placement constraints can still reject one orientation while leaving the other available. A flippable pattern therefore has twice the aggregate probability of an otherwise identical non-flippable pattern when both orientations are valid.
 
 Example:
 
@@ -243,7 +291,7 @@ A candidate can be removed because of:
 - A random rift marker temporarily requiring a rift-containing candidate.
 - The candidate selection limit being reached.
 
-Rift markers can substantially change observed frequencies. At the beginning of a build, each writable orbit receives random rift marker positions from `0` to its circumference, respecting the configured same-orbit center distance. When a pattern span reaches an unfulfilled marker, non-rift patterns are temporarily filtered out. Weights then choose among valid rift candidates. If no authored rift pattern can cover a marker, that marker is skipped and a warning is logged. Candidates that would add rifts without crossing a marker are removed.
+Rift markers can substantially change observed frequencies. At the beginning of a build, each writable orbit receives a weighted-random marker layout from `0` to its circumference. The hard same-orbit center distance controls validity; cross-orbit settings only influence which complete valid layout is selected. When a pattern span reaches an unfulfilled marker, non-rift patterns are temporarily filtered out. Weights then choose among valid rift candidates. If no authored rift pattern can cover a marker, that marker remains unfulfilled and a warning is logged. Candidates that would add rifts without crossing a marker are removed.
 
 Each orbit band also receives one seeded random angular phase. Both lanes rotate together, preserving the authored layout while preventing every band from beginning visually at `0 degrees`.
 
@@ -286,7 +334,7 @@ The current Basic configuration has four patterns:
 
 Every pattern has a Basic difficulty multiplier of `1`, either explicitly or through the missing-entry fallback. Flip-enabled patterns contribute two candidates when both orientations are valid; Zigzag Three Jumps contributes one.
 
-The examples below assume no inward-neighbor rift within `26.18` units, so the neighbor rift modifier is `1.0`.
+The examples below describe authored-pattern selection after marker layout planning and assume no rift marker is currently forcing a rift pattern.
 
 ### Fresh selection
 

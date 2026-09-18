@@ -15,24 +15,16 @@ MonoBehaviour:
   _enabled: 1
   _orbit1Slots:
   - _type: 0
-    _length: 2.75
-  - _type: 1
-    _length: 0
-  - _type: 1
-    _length: 0
-  - _type: 1
-    _length: 0
-  - _type: 0
-    _length: 2.75
+    _length: 7
   _orbit2Slots:
   - _type: 0
-    _length: 1
+    _length: 2
   - _type: 4
     _length: 0
   - _type: 0
-    _length: 1
+    _length: 2
   _tags: 0
-  _baseWeight: 100
+  _baseWeight: 1
   _minOrbitIndex: 0
   _maxOrbitIndex: 0
   _difficultyWeightModifiers: []

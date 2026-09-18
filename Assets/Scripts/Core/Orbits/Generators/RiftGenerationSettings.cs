@@ -9,9 +9,11 @@ namespace OrbitalEscape.Orbits.Generators
         public float RiftCount { get; }
         public float BaseRiftCountRadius { get; }
         public float AdditionalRiftRadiusStep { get; }
-        public float NeighborRiftAvoidanceDistance { get; }
-        public float AlignedNeighborRiftWeightMultiplier { get; }
+        public float CrossOrbitSafeDistance { get; }
+        public int CrossOrbitLookback { get; }
+        public float ConsecutiveAlignmentWeightMultiplier { get; }
         public float RiftPadding { get; }
+        public float ObstacleClearance { get; }
         public int MaxPlacementAttempts { get; }
 
         public RiftGenerationSettings(
@@ -20,9 +22,11 @@ namespace OrbitalEscape.Orbits.Generators
             float riftCount,
             float baseRiftCountRadius,
             float additionalRiftRadiusStep,
-            float neighborRiftAvoidanceDistance,
-            float alignedNeighborRiftWeightMultiplier,
+            float crossOrbitSafeDistance,
+            int crossOrbitLookback,
+            float consecutiveAlignmentWeightMultiplier,
             float riftPadding,
+            float obstacleClearance,
             int maxPlacementAttempts)
         {
             RiftLength = Math.Max(0.01f, riftLength);
@@ -30,11 +34,13 @@ namespace OrbitalEscape.Orbits.Generators
             RiftCount = riftCount;
             BaseRiftCountRadius = Math.Max(0.01f, baseRiftCountRadius);
             AdditionalRiftRadiusStep = Math.Max(0.01f, additionalRiftRadiusStep);
-            NeighborRiftAvoidanceDistance = Math.Max(0.01f, neighborRiftAvoidanceDistance);
-            AlignedNeighborRiftWeightMultiplier = Math.Min(
+            CrossOrbitSafeDistance = Math.Max(0.01f, crossOrbitSafeDistance);
+            CrossOrbitLookback = Math.Max(1, crossOrbitLookback);
+            ConsecutiveAlignmentWeightMultiplier = Math.Min(
                 1.0f,
-                Math.Max(0.01f, alignedNeighborRiftWeightMultiplier));
+                Math.Max(0.01f, consecutiveAlignmentWeightMultiplier));
             RiftPadding = riftPadding;
+            ObstacleClearance = Math.Max(0.0f, obstacleClearance);
             MaxPlacementAttempts = Math.Max(1, maxPlacementAttempts);
         }
 
@@ -64,13 +70,13 @@ namespace OrbitalEscape.Orbits.Generators
             return Math.Max(RiftLength, Math.Min(preferredDistance, feasibleCenterDistance));
         }
 
-        public float GetNeighborWeightMultiplier(float centerDistance)
+        public float GetCrossOrbitWeightMultiplier(float centerDistance)
         {
             float normalizedDistance = Math.Min(
                 1.0f,
-                Math.Max(0.0f, centerDistance) / NeighborRiftAvoidanceDistance);
-            return AlignedNeighborRiftWeightMultiplier +
-                   (1.0f - AlignedNeighborRiftWeightMultiplier) * normalizedDistance;
+                Math.Max(0.0f, centerDistance) / CrossOrbitSafeDistance);
+            return ConsecutiveAlignmentWeightMultiplier +
+                   (1.0f - ConsecutiveAlignmentWeightMultiplier) * normalizedDistance;
         }
     }
 }

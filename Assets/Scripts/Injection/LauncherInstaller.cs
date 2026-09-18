@@ -96,7 +96,7 @@ namespace OrbitalEscape.Injection
         {
             Container.Bind(typeof(OrbitConfig)).To<OrbitConfig>().FromScriptableObjectResource("Configs/OrbitConfig").AsSingle();
             Container.Bind(typeof(LevelGenerationConfig)).To<LevelGenerationConfig>().FromScriptableObjectResource("Configs/LevelGenerationConfig").AsSingle();
-            Container.Bind(typeof(ObstaclePatternGenerationConfig)).To<ObstaclePatternGenerationConfig>().FromScriptableObjectResource("Configs/ObstaclePatternGenerationConfig").AsSingle();
+            Container.Bind<ObstaclePatternGenerationCatalog>().FromScriptableObjectResource("Configs/ObstaclePatternGenerationCatalog").AsSingle();
             Container.Bind(typeof(GamePaletteConfig)).To<GamePaletteConfig>().FromScriptableObjectResource("Configs/GamePaletteConfig").AsSingle();
             Container.Bind<MainMenuPaletteConfig>().FromScriptableObjectResource("Configs/MainMenuPaletteConfig").AsSingle();
             Container.Bind<PaletteFontMaterialConfig>().FromScriptableObjectResource("Configs/PaletteFontMaterialConfig").AsSingle();

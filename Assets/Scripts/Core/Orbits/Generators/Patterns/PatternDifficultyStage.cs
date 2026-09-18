@@ -14,6 +14,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         [SerializeField, Range(0.0f, 1.0f)] private float _samePatternWeightMultiplier;
         [SerializeField, Range(0.0f, 1.0f)] private float _sameTagWeightMultiplier;
         [SerializeField] private PatternSlotTypeFlags _unlockedSlots;
+        [SerializeField] private bool _ignorePatternOrbitRange;
 
         public static PatternDifficultyStage Default => new PatternDifficultyStage
         {
@@ -29,7 +30,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 _maxOrbitIndex,
                 _samePatternWeightMultiplier <= 0.0f ? 0.35f : _samePatternWeightMultiplier,
                 _sameTagWeightMultiplier <= 0.0f ? 0.75f : _sameTagWeightMultiplier,
-                _unlockedSlots == PatternSlotTypeFlags.None ? PatternSlotTypeFlags.All : _unlockedSlots);
+                _unlockedSlots == PatternSlotTypeFlags.None ? PatternSlotTypeFlags.All : _unlockedSlots,
+                _ignorePatternOrbitRange);
         }
     }
 }

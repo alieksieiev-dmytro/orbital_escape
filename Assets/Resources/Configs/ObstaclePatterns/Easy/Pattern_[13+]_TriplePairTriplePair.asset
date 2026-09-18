@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 092359f5d35642369d625d66832e8ef0, type: 3}
+  m_Name: Pattern_[13+]_TriplePairTriplePair
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.Generators.Patterns.ObstaclePatternDefinition
+  _enabled: 1
+  _orbit1Slots:
+  - _type: 0
+    _length: 1.25
+  - _type: 1
+    _length: 0.5
+  - _type: 1
+    _length: 0.5
+  - _type: 1
+    _length: 0.5
+  - _type: 0
+    _length: 5.6
+  - _type: 1
+    _length: 0.5
+  - _type: 1
+    _length: 0.5
+  - _type: 1
+    _length: 0.5
+  - _type: 0
+    _length: 4.3
+  _orbit2Slots:
+  - _type: 0
+    _length: 5.05
+  - _type: 1
+    _length: 0.5
+  - _type: 1
+    _length: 0.5
+  - _type: 0
+    _length: 6.1
+  - _type: 1
+    _length: 0.5
+  - _type: 1
+    _length: 0.5
+  - _type: 0
+    _length: 1
+  _tags: 8
+  _baseWeight: 2
+  _minOrbitIndex: 13
+  _maxOrbitIndex: 0
+  _difficultyWeightModifiers:
+  - _difficulty: 0
+    _weightMultiplier: 1
+  - _difficulty: 1
+    _weightMultiplier: 0
+  - _difficulty: 2
+    _weightMultiplier: 0
+  - _difficulty: 3
+    _weightMultiplier: 0
+  - _difficulty: 4
+    _weightMultiplier: 0
+  _allowFlip: 1

@@ -10,19 +10,22 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         public bool UseFixedSeed { get; }
         public int FixedSeed { get; }
         public int MaxSelectionAttempts { get; }
+        public float SafePadding { get; }
 
         public PatternGenerationSettings(
             IReadOnlyList<ObstaclePatternSnapshot> patterns,
             IReadOnlyList<PatternDifficultyStageSnapshot> stages,
             bool useFixedSeed,
             int fixedSeed,
-            int maxSelectionAttempts)
+            int maxSelectionAttempts,
+            float safePadding)
         {
             Patterns = patterns ?? Array.Empty<ObstaclePatternSnapshot>();
             Stages = stages ?? Array.Empty<PatternDifficultyStageSnapshot>();
             UseFixedSeed = useFixedSeed;
             FixedSeed = fixedSeed;
             MaxSelectionAttempts = Math.Max(1, maxSelectionAttempts);
+            SafePadding = Math.Max(0.0f, safePadding);
         }
 
         public PatternDifficultyStageSnapshot GetStage(int orbitIndex)

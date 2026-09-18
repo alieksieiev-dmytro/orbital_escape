@@ -9,13 +9,15 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         public float SamePatternWeightMultiplier { get; }
         public float SameTagWeightMultiplier { get; }
         public PatternSlotTypeFlags UnlockedSlots { get; }
+        public bool IgnorePatternOrbitRange { get; }
 
         public PatternDifficultyStageSnapshot(
             int minOrbitIndex,
             int maxOrbitIndex,
             float samePatternWeightMultiplier,
             float sameTagWeightMultiplier,
-            PatternSlotTypeFlags unlockedSlots)
+            PatternSlotTypeFlags unlockedSlots,
+            bool ignorePatternOrbitRange = false)
         {
             MinOrbitIndex = Math.Max(0, minOrbitIndex);
             MaxOrbitIndex = maxOrbitIndex <= 0 ? int.MaxValue : Math.Max(MinOrbitIndex, maxOrbitIndex);
@@ -24,6 +26,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             UnlockedSlots = unlockedSlots == PatternSlotTypeFlags.None
                 ? PatternSlotTypeFlags.Space
                 : unlockedSlots;
+            IgnorePatternOrbitRange = ignorePatternOrbitRange;
         }
 
         public bool Contains(int orbitIndex)

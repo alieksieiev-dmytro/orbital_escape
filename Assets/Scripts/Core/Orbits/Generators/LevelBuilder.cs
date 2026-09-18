@@ -19,7 +19,7 @@ namespace OrbitalEscape.Orbits.Generators
         private readonly ImpulseTrapConfig _impulseTrapConfig;
         private readonly GravityWellConfig _gravityWellConfig;
         private readonly LaserGateConfig _laserGateConfig;
-        private readonly ObstaclePatternGenerationConfig _patternGenerationConfig;
+        private readonly ObstaclePatternGenerationCatalog _patternGenerationCatalog;
         private readonly ILevelContentGenerator _contentGenerator;
         private readonly IDifficultyService _difficultyService;
         private int _seedSequence;
@@ -35,7 +35,7 @@ namespace OrbitalEscape.Orbits.Generators
             ImpulseTrapConfig impulseTrapConfig,
             GravityWellConfig gravityWellConfig,
             LaserGateConfig laserGateConfig,
-            ObstaclePatternGenerationConfig patternGenerationConfig,
+            ObstaclePatternGenerationCatalog patternGenerationCatalog,
             ILevelContentGenerator contentGenerator,
             IDifficultyService difficultyService)
         {
@@ -48,7 +48,7 @@ namespace OrbitalEscape.Orbits.Generators
             _impulseTrapConfig = impulseTrapConfig;
             _gravityWellConfig = gravityWellConfig;
             _laserGateConfig = laserGateConfig;
-            _patternGenerationConfig = patternGenerationConfig;
+            _patternGenerationCatalog = patternGenerationCatalog;
             _contentGenerator = contentGenerator;
             _difficultyService = difficultyService;
         }
@@ -69,6 +69,7 @@ namespace OrbitalEscape.Orbits.Generators
         private LevelBuildRequest CreateRequest(IReadOnlyList<Orbit> existingOrbits, int count)
         {
             DifficultyType difficulty = _difficultyService.CurrentDifficulty;
+            ObstaclePatternGenerationConfig patternGenerationConfig = _patternGenerationCatalog.GetConfig(difficulty);
 
             PatternSlotLengthProvider patternSlotLengthProvider = new PatternSlotLengthProvider(
                 _spikeConfig.SpikeArcLength,
@@ -87,9 +88,11 @@ namespace OrbitalEscape.Orbits.Generators
                     _riftConfig.RiftCount,
                     _riftConfig.BaseRiftCountRadius,
                     _riftConfig.AdditionalRiftRadiusStep,
-                    _riftConfig.NeighborRiftAvoidanceDistance,
-                    _riftConfig.AlignedNeighborRiftWeightMultiplier,
+                    _riftConfig.CrossOrbitSafeDistance,
+                    _riftConfig.CrossOrbitLookback,
+                    _riftConfig.ConsecutiveAlignmentWeightMultiplier,
                     _riftConfig.RiftPaddings,
+                    _riftConfig.ObstacleClearance,
                     _riftConfig.MaxPlacementAttempts),
                 new SpikeGenerationSettings(
                     _spikeConfig.Density,
@@ -118,11 +121,11 @@ namespace OrbitalEscape.Orbits.Generators
                     _laserGateConfig.ActiveTime,
                     _laserGateConfig.LowerBaseYOffset,
                     _laserGateConfig.UpperBaseYOffset),
-                _patternGenerationConfig.CreateSettings(difficulty, patternSlotLengthProvider),
-                _patternGenerationConfig.RandomizeBandPhase);
+                patternGenerationConfig.CreateSettings(difficulty, patternSlotLengthProvider),
+                patternGenerationConfig.RandomizeBandPhase);
 
-            int seedBase = _patternGenerationConfig.UseFixedSeed
-                ? _patternGenerationConfig.FixedSeed
+            int seedBase = patternGenerationConfig.UseFixedSeed
+                ? patternGenerationConfig.FixedSeed
                 : HashCode.Combine(Environment.TickCount, Interlocked.Increment(ref _seedSequence));
             int seed = HashCode.Combine(seedBase, existingOrbits.Count, count, difficulty);
             var orbitSnapshots = new List<Orbit>(existingOrbits.Count);

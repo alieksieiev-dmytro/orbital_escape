@@ -50,8 +50,7 @@ namespace OrbitalEscape.Factories
                     ((SpikeObstacle)spikeData.Object).Height / root.lossyScale.y,
                     1f);
 
-            var angleDelta = OrbitMath.DeltaDegrees(spikeData.Arc.StartAngleDegree, spikeData.Arc.EndAngleDegree) / 2f;
-            var angle = spikeData.Arc.StartAngleDegree + angleDelta * 0.5f;
+            float angle = spikeData.Arc.MidAngleDegree();
 
             float radius = spikeData.Type switch
             {

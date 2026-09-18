@@ -12,15 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 429e0a77a3e4069448ca2f4fa832b1a8, type: 3}
   m_Name: RiftConfig
   m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.RiftConfig
-  <MinCenterDistanceBetweenRifts>k__BackingField: 26.18
-  <RiftLength>k__BackingField: 5
+  <RiftLength>k__BackingField: 3
+  <RiftPaddings>k__BackingField: 0
+  <ObstacleClearance>k__BackingField: 0.5
   <RiftCount>k__BackingField: 3
   <BaseRiftCountRadius>k__BackingField: 20
-  <AdditionalRiftRadiusStep>k__BackingField: 25
-  <RiftWeightIncreasePerNonRiftPattern>k__BackingField: 0.5
-  <MaxRiftPressureMultiplier>k__BackingField: 4
-  <NeighborRiftAvoidanceDistance>k__BackingField: 26.18
-  <AlignedNeighborRiftWeightMultiplier>k__BackingField: 0.25
-  <RiftPaddings>k__BackingField: 1.5
+  <MinCenterDistanceBetweenRifts>k__BackingField: 30
+  <AdditionalRiftRadiusStep>k__BackingField: 20
+  <CrossOrbitSafeDistance>k__BackingField: 150
+  <CrossOrbitLookback>k__BackingField: 1
+  <ConsecutiveAlignmentWeightMultiplier>k__BackingField: 0.01
   <AuroraRiftAlphaMultiplier>k__BackingField: 0.25
-  <MaxPlacementAttempts>k__BackingField: 128
+  <MaxPlacementAttempts>k__BackingField: 256

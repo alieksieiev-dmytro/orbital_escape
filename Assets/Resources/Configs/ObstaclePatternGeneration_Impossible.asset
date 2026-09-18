@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27e192da77ba4eb1b3d339d03d35485d, type: 3}
+  m_Name: ObstaclePatternGeneration_Impossible
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.Generators.Patterns.ObstaclePatternGenerationConfig
+  _patterns:
+  - {fileID: 11400000, guid: 1b32cc3162404eac90b2cf757dbf0797, type: 2}
+  - {fileID: 11400000, guid: 9902966d2fee5f7498604e56bf1543aa, type: 2}
+  - {fileID: 11400000, guid: cac92409a8bb9dc458a391e253ba997c, type: 2}
+  - {fileID: 11400000, guid: 0d29b7a8115232c4091dd8929069d017, type: 2}
+  - {fileID: 11400000, guid: 164c72408d634f04ebbc297dff4767c2, type: 2}
+  - {fileID: 11400000, guid: d63813713c75207409bc94a769050994, type: 2}
+  - {fileID: 11400000, guid: 4388465f2e5b6ce459eab5e213ecd265, type: 2}
+  - {fileID: 11400000, guid: 8ddad4aa553a3d441bd77f91569765a5, type: 2}
+  - {fileID: 11400000, guid: 4d78ca26a0344aa084d87322ed47d932, type: 2}
+  - {fileID: 11400000, guid: 54bf4e9668294fb19136eb37676e35e9, type: 2}
+  - {fileID: 11400000, guid: 4241f3a904ca401c8f126a5104af6714, type: 2}
+  - {fileID: 11400000, guid: 45109fcc6ebd4a88adefa9200017b64b, type: 2}
+  - {fileID: 11400000, guid: 413ffb20e93841cab8cd9e45f2701a41, type: 2}
+  - {fileID: 11400000, guid: 958dc64bf4d44731976ed9dcd1f4948c, type: 2}
+  - {fileID: 11400000, guid: 2826ffe987cc42db9092f3e5c27c57df, type: 2}
+  - {fileID: 11400000, guid: 3ae5b38499534716b8327c93c186191c, type: 2}
+  _stages:
+  - _minOrbitIndex: 0
+    _maxOrbitIndex: 5
+    _samePatternWeightMultiplier: 0.9
+    _sameTagWeightMultiplier: 1
+    _unlockedSlots: 51
+  - _minOrbitIndex: 5
+    _maxOrbitIndex: 10
+    _samePatternWeightMultiplier: 0.8
+    _sameTagWeightMultiplier: 0.8
+    _unlockedSlots: 119
+  - _minOrbitIndex: 10
+    _maxOrbitIndex: 15
+    _samePatternWeightMultiplier: 0.35
+    _sameTagWeightMultiplier: 0.6
+    _unlockedSlots: 127
+  _useFixedSeed: 0
+  _fixedSeed: 1337
+  _maxSelectionAttempts: 64
+  _randomizeBandPhase: 1
+  _safePadding: 2

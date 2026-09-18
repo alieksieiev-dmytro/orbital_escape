@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27e192da77ba4eb1b3d339d03d35485d, type: 3}
+  m_Name: ObstaclePatternGeneration_Test
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitalEscape.Orbits.Generators.Patterns.ObstaclePatternGenerationConfig
+  _patterns:
+  - {fileID: 11400000, guid: 1b32cc3162404eac90b2cf757dbf0797, type: 2}
+  - {fileID: 11400000, guid: cf936b50cf6bd4c49a3df77721894c67, type: 2}
+  - {fileID: 11400000, guid: b8e3b5dc9f7c7f849b0ad450937236f3, type: 2}
+  - {fileID: 11400000, guid: efe590be821a0b8498259b6ed78a2f92, type: 2}
+  - {fileID: 11400000, guid: c944a7fb476c61245858ea36ac11ddd8, type: 2}
+  - {fileID: 11400000, guid: 47e4a9884e9e3d54ba30c1b2c9386640, type: 2}
+  - {fileID: 11400000, guid: f0a26a1b8ed6ee649a458a937c20b096, type: 2}
+  _stages:
+  - _minOrbitIndex: 0
+    _maxOrbitIndex: 5
+    _samePatternWeightMultiplier: 0.9
+    _sameTagWeightMultiplier: 1
+    _unlockedSlots: 51
+    _ignorePatternOrbitRange: 0
+  - _minOrbitIndex: 5
+    _maxOrbitIndex: 10
+    _samePatternWeightMultiplier: 0.8
+    _sameTagWeightMultiplier: 0.8
+    _unlockedSlots: 119
+    _ignorePatternOrbitRange: 0
+  - _minOrbitIndex: 10
+    _maxOrbitIndex: 15
+    _samePatternWeightMultiplier: 0.35
+    _sameTagWeightMultiplier: 0.6
+    _unlockedSlots: 127
+    _ignorePatternOrbitRange: 0
+  _useFixedSeed: 0
+  _fixedSeed: 1337
+  _maxSelectionAttempts: 64
+  _randomizeBandPhase: 1
+  _safePadding: 2

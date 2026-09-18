@@ -7,8 +7,9 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
     {
         None = 0,
         Recovery = 1,
-        Complement = 2,
+        Zigzag = 2,
         Mirror = 4,
         Alternating = 8,
+        OneSideBlock = 16,
     }
 }
