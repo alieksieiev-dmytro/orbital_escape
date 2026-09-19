@@ -94,12 +94,6 @@ namespace OrbitalEscape.Orbits.Generators
                     _riftConfig.RiftPaddings,
                     _riftConfig.ObstacleClearance,
                     _riftConfig.MaxPlacementAttempts),
-                new SpikeGenerationSettings(
-                    _spikeConfig.Density,
-                    _spikeConfig.ConsecutiveSpikeChance,
-                    _spikeConfig.MinSpikeHeight,
-                    _spikeConfig.MaxSpikeHeight,
-                    _spikeConfig.SpikeArcLength),
                 new MiniSpikeGenerationSettings(
                     _miniSpikeConfig.Height,
                     _miniSpikeConfig.SpikeArcLength),

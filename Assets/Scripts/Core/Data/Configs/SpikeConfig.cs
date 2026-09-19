@@ -7,8 +7,6 @@ namespace OrbitalEscape.Orbits.Generators
     {
         [field: SerializeField, Range(0.0f, 1.0f)] public float Density { get; private set; }
         [field: SerializeField, Range(0.0f, 1.0f)] public float ConsecutiveSpikeChance { get; private set; }
-        [field: SerializeField] public float MinSpikeHeight { get; private set; }
-        [field: SerializeField] public float MaxSpikeHeight { get; private set; }
         [field: SerializeField] public float SpikeArcLength { get; private set; }
     }
 }

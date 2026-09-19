@@ -70,7 +70,12 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             for (int i = 0; i < slots.Count; i++)
             {
                 PatternSlot slot = slots[i];
-                snapshots[i] = new PatternSlotSnapshot(slot.Type, slot.ResolveLength(lengthProvider));
+                snapshots[i] = new PatternSlotSnapshot(
+                    slot.Type,
+                    slot.ResolveLength(lengthProvider),
+                    slot.Type == PatternSlotType.Spike ? slot.Height : 0.0f,
+                    slot.Type == PatternSlotType.RandomizedSpike ? slot.MinHeight : 0.0f,
+                    slot.Type == PatternSlotType.RandomizedSpike ? slot.MaxHeight : 0.0f);
             }
 
             return snapshots;

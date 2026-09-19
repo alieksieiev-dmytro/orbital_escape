@@ -7,7 +7,6 @@ namespace OrbitalEscape.Orbits.Generators
         public OrbitGenerationSettings Orbit { get; }
         public LevelContentSettings Content { get; }
         public RiftGenerationSettings Rift { get; }
-        public SpikeGenerationSettings Spike { get; }
         public MiniSpikeGenerationSettings MiniSpike { get; }
         public ImpulseTrapGenerationSettings ImpulseTrap { get; }
         public GravityWellGenerationSettings GravityWell { get; }
@@ -19,7 +18,6 @@ namespace OrbitalEscape.Orbits.Generators
             OrbitGenerationSettings orbit,
             LevelContentSettings content,
             RiftGenerationSettings rift,
-            SpikeGenerationSettings spike,
             MiniSpikeGenerationSettings miniSpike,
             ImpulseTrapGenerationSettings impulseTrap,
             GravityWellGenerationSettings gravityWell,
@@ -30,7 +28,6 @@ namespace OrbitalEscape.Orbits.Generators
             Orbit = orbit;
             Content = content;
             Rift = rift;
-            Spike = spike;
             MiniSpike = miniSpike;
             ImpulseTrap = impulseTrap;
             GravityWell = gravityWell;

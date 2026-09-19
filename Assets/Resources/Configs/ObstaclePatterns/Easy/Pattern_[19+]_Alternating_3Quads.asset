@@ -18,22 +18,30 @@ MonoBehaviour:
     _length: 2.5
   - _type: 1
     _length: 0.5
+    _height: 0.95
   - _type: 1
     _length: 0.5
+    _height: 0.95
   - _type: 1
     _length: 0.5
+    _height: 0.95
   - _type: 1
     _length: 0.5
+    _height: 0.95
   - _type: 0
     _length: 6.2
   - _type: 1
     _length: 0.5
+    _height: 0.95
   - _type: 1
     _length: 0.5
+    _height: 0.95
   - _type: 1
     _length: 0.5
+    _height: 0.95
   - _type: 1
     _length: 0.5
+    _height: 0.95
   - _type: 0
     _length: 1
   _orbit2Slots:
@@ -41,12 +49,16 @@ MonoBehaviour:
     _length: 6.6
   - _type: 1
     _length: 0.5
+    _height: 0.95
   - _type: 1
     _length: 0.5
+    _height: 0.95
   - _type: 1
     _length: 0.5
+    _height: 0.95
   - _type: 1
     _length: 0.5
+    _height: 0.95
   - _type: 0
     _length: 5.1
   _tags: 8

@@ -8,6 +8,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             {
                 PatternSlotType.Space => PatternSlotTypeFlags.Space,
                 PatternSlotType.Spike => PatternSlotTypeFlags.Spike,
+                PatternSlotType.RandomizedSpike => PatternSlotTypeFlags.Spike,
                 PatternSlotType.ImpulseTrap => PatternSlotTypeFlags.ImpulseTrap,
                 PatternSlotType.GravityWell => PatternSlotTypeFlags.GravityWell,
                 PatternSlotType.Rift => PatternSlotTypeFlags.Rift,

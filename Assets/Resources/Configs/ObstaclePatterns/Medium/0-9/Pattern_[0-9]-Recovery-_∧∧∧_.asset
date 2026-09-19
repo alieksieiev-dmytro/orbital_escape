@@ -18,10 +18,13 @@ MonoBehaviour:
     _length: 2.5
   - _type: 1
     _length: 2.5
+    _height: 0.95
   - _type: 1
     _length: 2.5
+    _height: 0.95
   - _type: 1
     _length: 2.5
+    _height: 0.95
   - _type: 0
     _length: 2.5
   _orbit2Slots:

@@ -16,27 +16,34 @@ MonoBehaviour:
   _orbit1Slots:
   - _type: 1
     _length: 1
+    _height: 0.95
   - _type: 1
     _length: 1
+    _height: 0.95
   - _type: 0
     _length: 2.25
   - _type: 1
     _length: 1
+    _height: 0.95
   - _type: 0
     _length: 2.25
   - _type: 1
     _length: 2
+    _height: 0.95
   - _type: 1
     _length: 2
+    _height: 0.95
   _orbit2Slots:
   - _type: 0
     _length: 1.85
   - _type: 1
     _length: 1.5
+    _height: 0.95
   - _type: 0
     _length: 2.3
   - _type: 1
     _length: 2.5
+    _height: 0.95
   - _type: 0
     _length: 1.85
   _tags: 2

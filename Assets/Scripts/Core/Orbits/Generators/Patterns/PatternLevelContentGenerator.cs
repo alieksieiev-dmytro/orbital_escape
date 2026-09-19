@@ -131,7 +131,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     placement.StartWorld,
                     bandPhaseDegree,
                     context,
-                    randomizeSpikeHeight: true);
+                    sampleRandomSpikeHeight: true);
 
                 ApplyPlacement(placement, context, writableOrbitIndices);
                 FulfillRiftMarkers(placement, riftMarkerAngles, writableOrbitIndices, bandPhaseDegree);
@@ -223,7 +223,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
 
                     PatternPlacement placement = CreatePlacement(
                         pattern, flipped, lowerOrbit, upperOrbit, startWorld,
-                        bandPhaseDegree, context, randomizeSpikeHeight: false);
+                        bandPhaseDegree, context, sampleRandomSpikeHeight: false);
 
                     float weight = PatternWeightCalculator.GetEffectiveWeight(pattern, stage, history);
                     if (weight <= 0.0f)
@@ -302,7 +302,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             float startWorld,
             float bandPhaseDegree,
             LevelBuildContext context,
-            bool randomizeSpikeHeight)
+            bool sampleRandomSpikeHeight)
         {
             List<PatternPlacedObject> objects = new List<PatternPlacedObject>();
 
@@ -328,7 +328,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 startWorld,
                 bandPhaseDegree,
                 context,
-                randomizeSpikeHeight,
+                sampleRandomSpikeHeight,
                 objects);
 
             AddLaneObjects(
@@ -340,7 +340,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                 upperStartWorld,
                 bandPhaseDegree,
                 context,
-                randomizeSpikeHeight,
+                sampleRandomSpikeHeight,
                 objects);
 
             float startAngle = bandPhaseDegree + WorldToDegrees(startWorld, lowerOrbit.Radius);
@@ -366,7 +366,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             float patternStartWorld,
             float bandPhaseDegree,
             LevelBuildContext context,
-            bool randomizeSpikeHeight,
+            bool sampleRandomSpikeHeight,
             List<PatternPlacedObject> objects)
         {
             float localWorld = Math.Max(0.0f, (patternLength - laneLength) * 0.5f);
@@ -383,7 +383,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     ArcType arcType = slot.Type == PatternSlotType.Rift ? ArcType.TwoSide : side;
                     objects.Add(new PatternPlacedObject(
                         orbit,
-                        new ArcObject(arc, CreateOrbitObject(slot.Type, context, randomizeSpikeHeight), arcType)));
+                        new ArcObject(arc, CreateOrbitObject(slot, context, sampleRandomSpikeHeight), arcType)));
                 }
 
                 localWorld += slot.Length;
@@ -434,7 +434,10 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     : 1.0f / spaceCount;
                 adjustedSlots[i] = new PatternSlotSnapshot(
                     PatternSlotType.Space,
-                    slot.Length + extraLength * share);
+                    slot.Length + extraLength * share,
+                    0.0f,
+                    0.0f,
+                    0.0f);
             }
 
             return adjustedSlots;
@@ -452,16 +455,17 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         }
 
         private static IOrbitObject CreateOrbitObject(
-            PatternSlotType type,
+            PatternSlotSnapshot slot,
             LevelBuildContext context,
-            bool randomizeSpikeHeight)
+            bool sampleRandomSpikeHeight)
         {
-            return type switch
+            return slot.Type switch
             {
-                PatternSlotType.Spike => new SpikeObstacle(GetSpikeHeight(
-                    context,
-                    context.Settings.Spike,
-                    randomizeSpikeHeight)),
+                PatternSlotType.Spike => new SpikeObstacle(slot.Height),
+                PatternSlotType.RandomizedSpike => new SpikeObstacle(
+                    sampleRandomSpikeHeight && slot.MaxHeight > slot.MinHeight
+                        ? context.Random.Range(slot.MinHeight, slot.MaxHeight)
+                        : slot.MinHeight + (slot.MaxHeight - slot.MinHeight) * 0.5f),
                 PatternSlotType.MiniSpike => new SpikeObstacle(context.Settings.MiniSpike.Height),
                 PatternSlotType.ImpulseTrap => new ImpulseTrap(context.Settings.ImpulseTrap.Height),
                 PatternSlotType.GravityWell => new GravityWell(
@@ -476,21 +480,8 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
                     context.Settings.LaserGate.ActiveTime,
                     context.Settings.LaserGate.LowerBaseYOffset,
                     context.Settings.LaserGate.UpperBaseYOffset),
-                _ => throw new ArgumentOutOfRangeException(nameof(type), type, "Unsupported obstacle pattern slot type.")
+                _ => throw new ArgumentOutOfRangeException(nameof(slot), slot.Type, "Unsupported obstacle pattern slot type.")
             };
-        }
-
-        private static float GetSpikeHeight(
-            LevelBuildContext context,
-            SpikeGenerationSettings settings,
-            bool randomizeSpikeHeight)
-        {
-            if (!randomizeSpikeHeight)
-            {
-                return (settings.MinSpikeHeight + settings.MaxSpikeHeight) * 0.5f;
-            }
-
-            return context.Random.Range(settings.MinSpikeHeight, settings.MaxSpikeHeight);
         }
 
         private void ApplyPlacement(

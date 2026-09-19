@@ -8,6 +8,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
         GravityWell = 3,
         Rift = 4,
         MiniSpike = 5,
-        LaserGate = 6
+        LaserGate = 6,
+        RandomizedSpike = 7
     }
 }

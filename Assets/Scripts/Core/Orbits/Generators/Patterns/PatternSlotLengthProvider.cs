@@ -32,6 +32,7 @@ namespace OrbitalEscape.Orbits.Generators.Patterns
             return type switch
             {
                 PatternSlotType.Spike => _spikeLength,
+                PatternSlotType.RandomizedSpike => _spikeLength,
                 PatternSlotType.MiniSpike => _miniSpikeLength,
                 PatternSlotType.ImpulseTrap => _impulseTrapLength,
                 PatternSlotType.GravityWell => _gravityWellLength,
